@@ -27,6 +27,16 @@ class ProgramPresenter internal constructor(
         val loadingProcessor = PublishProcessor.create<Boolean>()
 
         disposable.add(
+            loadingProcessor
+                .subscribeOn(schedulerProvider.io())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(
+                    { view.showFilterProgress() },
+                    { Timber.e(it) }
+                )
+        )
+
+        disposable.add(
             filterManager.asFlowable()
                 .startWith(filterManager)
                 .doOnNext { Timber.tag("INIT DATA").d("NEW FILTER") }
@@ -57,16 +67,6 @@ class ProgramPresenter internal constructor(
                     { programs -> view.swapProgramModelData(programs) },
                     { throwable -> view.renderError(throwable.message ?: "") },
                     { Timber.tag("INIT DATA").d("LOADING ENDED") }
-                )
-        )
-
-        disposable.add(
-            loadingProcessor
-                .subscribeOn(schedulerProvider.io())
-                .observeOn(schedulerProvider.ui())
-                .subscribe(
-                    { view.showFilterProgress() },
-                    { Timber.e(it) }
                 )
         )
 
