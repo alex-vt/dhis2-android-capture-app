@@ -7,5 +7,5 @@ import org.dhis2.core.types.TreeNode
 abstract class TreeAdapterBinder(val contentJavaClass: Class<*>) {
     abstract val layoutId: Int
     abstract fun provideViewHolder(itemView: View): RecyclerView.ViewHolder
-    abstract fun bindView(holder: RecyclerView.ViewHolder, node: TreeNode<*>)
+    abstract fun bindView(holder: RecyclerView.ViewHolder, node: TreeNode<*>, isExpanded: Boolean)
 }

@@ -21,7 +21,8 @@ class FeedbackItemBinder : TreeAdapterBinder(FeedbackItem::class.java) {
 
     override fun bindView(
         holder: RecyclerView.ViewHolder,
-        node: TreeNode<*>
+        node: TreeNode<*>,
+        isExpanded: Boolean
     ) {
         with(holder as ViewHolder) {
             val feedbackItem: FeedbackItem = node.content as FeedbackItem
@@ -29,7 +30,7 @@ class FeedbackItemBinder : TreeAdapterBinder(FeedbackItem::class.java) {
             renderColor(itemView, node)
             renderName(name, feedbackItem, node)
             renderValue(value, feedbackItem, feedbackItem.value)
-            renderArrow(arrow, node)
+            renderArrow(arrow, node, isExpanded)
         }
     }
 
@@ -91,9 +92,10 @@ class FeedbackItemBinder : TreeAdapterBinder(FeedbackItem::class.java) {
 
     private fun renderArrow(
         arrow: ImageView,
-        node: TreeNode<*>
+        node: TreeNode<*>,
+        isExpanded: Boolean
     ) {
-        if (node is TreeNode.Node && node.expanded) {
+        if (node is TreeNode.Node && isExpanded) {
             arrow.setImageResource(R.drawable.ic_arrow_up)
         } else {
             arrow.setImageResource(R.drawable.ic_arrow_down)

@@ -24,6 +24,7 @@ class FeedbackContentFragment : FragmentGlobalAbstract(),
     lateinit var presenter: FeedbackContentPresenter
     private lateinit var binding: FragmentFeedbackContentBinding
     private lateinit var activity: TeiDashboardMobileActivity
+    private val adapter = TreeAdapter(listOf(FeedbackItemBinder(), FeedbackHelpItemBinder()))
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -57,6 +58,8 @@ class FeedbackContentFragment : FragmentGlobalAbstract(),
         binding.failedCheckBox.setOnClickListener {
             presenter.changeOnlyFailedFilter(binding.failedCheckBox.isChecked)
         }
+
+        binding.feedbackRecyclerView.adapter = adapter
 
         return binding.root
     }
@@ -131,8 +134,7 @@ class FeedbackContentFragment : FragmentGlobalAbstract(),
     }
 
     private fun setFeedbackAdapter(nodes: List<TreeNode<*>>) {
-        val adapter = TreeAdapter(nodes, listOf(FeedbackItemBinder(), FeedbackHelpItemBinder()))
-        binding.feedbackRecyclerView.adapter = adapter
+        adapter.render(nodes)
     }
 
     companion object {

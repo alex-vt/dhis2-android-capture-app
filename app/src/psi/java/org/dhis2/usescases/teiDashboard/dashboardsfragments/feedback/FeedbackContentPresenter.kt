@@ -58,43 +58,9 @@ class FeedbackContentPresenter(private val getFeedback: GetFeedback) :
         result.fold(
             { failure -> handleFailure(failure) },
             { feedback ->
-
-                if (lastLoaded != null && lastLoaded!!.feedback.isNotEmpty()) {
-                    tryMaintainCurrentExpandedItems(feedback)
-                }
-
                 lastLoaded = FeedbackContentState.Loaded(feedback, onlyFailedFilter)
                 render(lastLoaded!!)
             })
-    }
-
-    private fun tryMaintainCurrentExpandedItems(feedback: List<TreeNode<FeedbackItem>>) {
-        val flattedLastFeedback = flatTreeNodes(lastLoaded!!.feedback)
-        val flattedFeedback = flatTreeNodes(feedback)
-
-        flattedFeedback.forEach { current ->
-            val last = flattedLastFeedback.firstOrNull { last ->
-                last.content == current.content && last.content.code == current.content.code
-            }
-
-            if (last != null) {
-                (current as TreeNode.Node).expanded = (last as TreeNode.Node).expanded
-            }
-        }
-    }
-
-    private fun flatTreeNodes(nodes: List<TreeNode<*>>): List<TreeNode<FeedbackItem>> {
-        var flattedNodes: MutableList<TreeNode<*>> = mutableListOf()
-
-        for (node in nodes) {
-            flattedNodes.add(node)
-
-            if (node is TreeNode.Node && node.children.isNotEmpty()) {
-                flattedNodes.addAll(flatTreeNodes(node.children))
-            }
-        }
-
-        return flattedNodes.filterIsInstance<TreeNode.Node<FeedbackItem>>()
     }
 
     private fun handleFailure(failure: FeedbackFailure) {

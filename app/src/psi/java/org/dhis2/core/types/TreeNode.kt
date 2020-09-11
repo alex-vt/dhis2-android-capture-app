@@ -15,8 +15,7 @@ sealed class TreeNode<T>(val content: T) {
 
     class Node<N>(
         content: N,
-        initialChildren: List<TreeNode<*>> = mutableListOf(),
-        var expanded: Boolean = false
+        initialChildren: List<TreeNode<*>> = mutableListOf()
     ) : TreeNode<N>(content) {
         private val internalChildren: MutableList<TreeNode<*>> = initialChildren.toMutableList()
 
@@ -61,7 +60,6 @@ sealed class TreeNode<T>(val content: T) {
 
             other as Node<*>
 
-            if (expanded != other.expanded) return false
             if (internalChildren != other.internalChildren) return false
             if (content != other.content) return false
 
@@ -69,7 +67,7 @@ sealed class TreeNode<T>(val content: T) {
         }
 
         override fun hashCode(): Int {
-            var result = expanded.hashCode()
+            var result = content.hashCode()
             result = 31 * result + internalChildren.hashCode()
             return result
         }

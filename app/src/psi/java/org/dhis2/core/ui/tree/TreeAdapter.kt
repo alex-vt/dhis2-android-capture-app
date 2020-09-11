@@ -6,22 +6,25 @@ import androidx.recyclerview.widget.RecyclerView
 import org.dhis2.core.types.TreeNode
 
 class TreeAdapter(
-    private val nodes: List<TreeNode<*>>,
     private val binders: List<TreeAdapterBinder>
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder?>() {
 
-    private var displayNodes: MutableList<TreeNode<*>> = mutableListOf()
+    private val nodes: MutableList<TreeNode<*>> = mutableListOf()
+    private val displayNodes: MutableList<TreeNode<*>> = mutableListOf()
+    private val expandedNodes: MutableList<TreeNode.Node<*>> = mutableListOf()
 
-    init {
-        findDisplayNodes(nodes)
+    fun render( nodesToRender: List<TreeNode<*>>) {
+        nodes.clear()
+        nodes.addAll(nodesToRender)
+        refresh()
     }
 
     private fun findDisplayNodes(nodes: List<TreeNode<*>>) {
         for (node in nodes) {
             displayNodes.add(node)
 
-            if (node is TreeNode.Node && node.expanded) {
+            if (node is TreeNode.Node && expandedNodes.contains(node)) {
                 findDisplayNodes(node.children)
             }
         }
@@ -30,6 +33,11 @@ class TreeAdapter(
     private fun refresh() {
         displayNodes.clear()
         findDisplayNodes(nodes)
+
+        val expandedNodesCopy = expandedNodes.toList()
+        expandedNodes.clear()
+        expandedNodes.addAll(expandedNodesCopy.filter { displayNodes.contains(it) })
+
         notifyDataSetChanged()
     }
 
@@ -57,7 +65,13 @@ class TreeAdapter(
             val node = displayNodes[viewHolder.adapterPosition]
 
             if (node is TreeNode.Node) {
-                node.expanded = !node.expanded
+                if (expandedNodes.contains(node)) {
+                    expandedNodes.remove(node)
+                } else {
+                    expandedNodes.add(node)
+                }
+
+                //node.expanded = !node.expanded
                 refresh()
             }
         }
@@ -72,6 +86,6 @@ class TreeAdapter(
 
         binders.first() {
             it.contentJavaClass == node.content!!::class.java
-        }.bindView(viewHolder, node)
+        }.bindView(viewHolder, node, expandedNodes.contains(node))
     }
 }

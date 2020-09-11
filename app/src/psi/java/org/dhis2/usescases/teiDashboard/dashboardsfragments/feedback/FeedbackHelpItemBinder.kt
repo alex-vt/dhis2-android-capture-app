@@ -17,10 +17,7 @@ class FeedbackHelpItemBinder : TreeAdapterBinder(FeedbackHelpItem::class.java) {
         return ViewHolder(itemView)
     }
 
-    override fun bindView(
-        holder: RecyclerView.ViewHolder,
-        node: TreeNode<*>
-    ) {
+    override fun bindView(holder: RecyclerView.ViewHolder, node: TreeNode<*>, isExpanded: Boolean) {
         with(holder as ViewHolder) {
             val feedbackHelpItem: FeedbackHelpItem = node.content as FeedbackHelpItem
 
