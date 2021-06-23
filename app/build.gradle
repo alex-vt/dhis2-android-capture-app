@@ -49,7 +49,8 @@ android {
         setProperty("archivesBaseName", "dhis2-v" + versions.vName)
 
         buildConfigField "String", "SDK_VERSION", "\"" + libraries.dhis2sdk + "\""
-        buildConfigField "String", "MAPBOX_ACCESS_TOKEN", "\"pk.eyJ1Ijoib3Jpa2dnIiwiYSI6ImNqdWpqb24zYTFsOXo0M2xwcXRseGx3aXkifQ.6N9aqvpqdrrSBwO9GyfjUw\""
+        //buildConfigField "String", "MAPBOX_ACCESS_TOKEN", "\"pk.eyJ1Ijoib3Jpa2dnIiwiYSI6ImNqdWpqb24zYTFsOXo0M2xwcXRseGx3aXkifQ.6N9aqvpqdrrSBwO9GyfjUw\""
+        buildConfigField "String", "MAPBOX_ACCESS_TOKEN", "\"pk.eyJ1IjoieHVyeG9kZXYiLCJhIjoiY2txNmJkNWJoMTVkbDJ2bzZuNXd2Y2NlYSJ9.W6vmvpHIlUqkJckJFoq63w\""
         buildConfigField "String", "MATOMO_URL", "\"https://usage.analytics.dhis2.org/matomo.php\""
 
         javaCompileOptions {
