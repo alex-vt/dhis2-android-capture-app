@@ -61,6 +61,10 @@ android {
         psi {
 
         }
+
+        simprints {
+
+        }
     }
 
     compileOptions {

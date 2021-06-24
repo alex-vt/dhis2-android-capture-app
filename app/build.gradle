@@ -164,6 +164,13 @@ android {
             versionCode 9
             versionName "2.4.1-psi-fork-1"
         }
+
+        simprints {
+            applicationId "com.eyeseetea.simprints"
+            dimension "default"
+            versionCode versions.vCode
+            versionName "2.4.1-simprints-fork-1"
+        }
     }
 
     applicationVariants.all { variant ->
