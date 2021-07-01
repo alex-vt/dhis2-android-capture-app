@@ -44,11 +44,11 @@ public abstract class SpinnerViewModel extends FieldViewModel {
             Boolean mandatory, String optionSet, String value,
             String section, Boolean editable, String description,
             ObjectStyle objectStyle, boolean isBackgroundTransparent,
-            String renderType, LegendValue colorLegend) {
+            String renderType, LegendValue colorLegend, String url) {
         return new AutoValue_SpinnerViewModel(id, label, mandatory, value, section, null,
                 editable, null, null, description, objectStyle, null,
                 DataEntryViewHolderTypes.OPTION_SET_SPINNER, null, null,false,
-                colorLegend, hintFilterOptions, optionSet,
+                url, colorLegend, hintFilterOptions, optionSet,
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
                 isBackgroundTransparent, renderType);
     }
@@ -58,11 +58,11 @@ public abstract class SpinnerViewModel extends FieldViewModel {
             String section, Boolean editable, String description,
             ObjectStyle objectStyle, boolean isBackgroundTransparent,
             String renderType, FlowableProcessor<RowAction> processor,
-            LegendValue legendValue) {
+            LegendValue legendValue, String url) {
         return new AutoValue_SpinnerViewModel(id, label, mandatory, value, section, null,
                 editable, null, null, description, objectStyle, null,
                 DataEntryViewHolderTypes.OPTION_SET_SPINNER, processor, null,false,
-                legendValue, hintFilterOptions, optionSet,
+                url, legendValue, hintFilterOptions, optionSet,
                 new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
                 isBackgroundTransparent, renderType);
     }
@@ -72,7 +72,7 @@ public abstract class SpinnerViewModel extends FieldViewModel {
         return new AutoValue_SpinnerViewModel(uid(), label(), true, value(), programStageSection(),
                 allowFutureDate(), editable(), warning(), error(), description(), objectStyle(),
                 null, DataEntryViewHolderTypes.OPTION_SET_SPINNER, processor(),
-                style(), activated(), legendValue(), hint(), optionSet(),
+                style(), activated(), url(), legendValue(), hint(), optionSet(),
                 optionsToHide(), optionGroupsToHide(), optionGroupsToShow(),
                 isBackgroundTransparent(), renderType());
     }
@@ -83,7 +83,7 @@ public abstract class SpinnerViewModel extends FieldViewModel {
         return new AutoValue_SpinnerViewModel(uid(), label(), mandatory(), value(), programStageSection(),
                 allowFutureDate(), editable(), warning(), error, description(), objectStyle(),
                 null, DataEntryViewHolderTypes.OPTION_SET_SPINNER, processor(),
-                style(), activated(), legendValue(), hint(), optionSet(),
+                style(), activated(), url(), legendValue(), hint(), optionSet(),
                 optionsToHide(), optionGroupsToHide(), optionGroupsToShow(),
                 isBackgroundTransparent(), renderType());
     }
@@ -94,7 +94,7 @@ public abstract class SpinnerViewModel extends FieldViewModel {
         return new AutoValue_SpinnerViewModel(uid(), label(), mandatory(), value(), programStageSection(),
                 allowFutureDate(), editable(), warning, error(), description(), objectStyle(),
                 null, DataEntryViewHolderTypes.OPTION_SET_SPINNER, processor(), style(),
-                activated(), legendValue(), hint(), optionSet(),
+                activated(),  url(), legendValue(), hint(), optionSet(),
                 optionsToHide(), optionGroupsToHide(), optionGroupsToShow(),
                 isBackgroundTransparent(), renderType());
     }
@@ -105,7 +105,7 @@ public abstract class SpinnerViewModel extends FieldViewModel {
         return new AutoValue_SpinnerViewModel(uid(), label(), mandatory(), data, programStageSection(),
                 allowFutureDate(), editable(), warning(), error(), description(), objectStyle(),
                 null, DataEntryViewHolderTypes.OPTION_SET_SPINNER, processor(),
-                style(), activated(), legendValue(), hint(), optionSet(),
+                style(), activated(), url(), legendValue(), hint(), optionSet(),
                 optionsToHide(), optionGroupsToHide(), optionGroupsToShow(),
                 isBackgroundTransparent(), renderType());
     }
@@ -116,7 +116,7 @@ public abstract class SpinnerViewModel extends FieldViewModel {
         return new AutoValue_SpinnerViewModel(uid(), label(), mandatory(), value(), programStageSection(),
                 allowFutureDate(), isEditable, warning(), error(), description(), objectStyle(),
                 null, DataEntryViewHolderTypes.OPTION_SET_SPINNER, processor(),
-                style(), activated(), legendValue(), hint(), optionSet(),
+                style(), activated(), url(), legendValue(), hint(), optionSet(),
                 optionsToHide(), optionGroupsToHide(), optionGroupsToShow(),
                 isBackgroundTransparent(), renderType());
     }
@@ -127,7 +127,7 @@ public abstract class SpinnerViewModel extends FieldViewModel {
         return new AutoValue_SpinnerViewModel(uid(), label(), mandatory(), value(),
                 programStageSection(), allowFutureDate(), editable(), warning(), error(),
                 description(), objectStyle(), null, dataEntryViewType(),
-                processor(), style(), isFocused, legendValue(), hint(), optionSet(),
+                processor(), style(), isFocused, url(),legendValue(), hint(), optionSet(),
                 optionsToHide(), optionGroupsToHide(), optionGroupsToShow(),
                 isBackgroundTransparent(), renderType());
     }
@@ -137,7 +137,7 @@ public abstract class SpinnerViewModel extends FieldViewModel {
         return new AutoValue_SpinnerViewModel(uid(), label(), mandatory(), value(),
                 programStageSection(), allowFutureDate(), editable(), warning(), error(),
                 description(), objectStyle(), null, dataEntryViewType(),
-                processor(), style(), activated(), legendValue, hint(), optionSet(),
+                processor(), style(), activated(), url(), legendValue, hint(), optionSet(),
                 optionsToHide(), optionGroupsToHide(), optionGroupsToShow(),
                 isBackgroundTransparent(), renderType());
     }
@@ -147,7 +147,7 @@ public abstract class SpinnerViewModel extends FieldViewModel {
         return new AutoValue_SpinnerViewModel(uid(), label(), mandatory(), value(),
                 programStageSection(), allowFutureDate(), editable(), warning(), error(),
                 description(), objectStyle(), null, dataEntryViewType(),
-                processor(), style(), activated(), legendValue(), hint(), optionSet(),
+                processor(), style(), activated(), url(), legendValue(), hint(), optionSet(),
                 optionsToHide, optionsGroupsToHide, optionGroupsToShow(),
                 isBackgroundTransparent(), renderType());
     }
@@ -157,7 +157,7 @@ public abstract class SpinnerViewModel extends FieldViewModel {
         return new AutoValue_SpinnerViewModel(uid(), label(), mandatory(), value(),
                 programStageSection(), allowFutureDate(), editable(), warning(), error(),
                 description(), objectStyle(), null, dataEntryViewType(),
-                processor(), style(), activated(), legendValue(), hint(), optionSet(),
+                processor(), style(), activated(), url(), legendValue(), hint(), optionSet(),
                 optionsToHide(), optionGroupsToHide(), optionGroupsToShow,
                 isBackgroundTransparent(), renderType());
     }

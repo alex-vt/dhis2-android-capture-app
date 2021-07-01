@@ -264,7 +264,15 @@ public class OptionSetView extends FieldLayout implements OptionSetOnClickListen
         setValue(viewModel.value());
         setWarning(viewModel.warning(), viewModel.error());
         setLabel(viewModel.getFormattedLabel());
-        setDescription(viewModel.description());
+
+        String description = viewModel.description();
+
+        if (viewModel.url() != null){
+            description = description + "\n" + viewModel.url()  ;
+        }
+
+        setDescription(description);
+
         setOnClickListener(this);
     }
 }

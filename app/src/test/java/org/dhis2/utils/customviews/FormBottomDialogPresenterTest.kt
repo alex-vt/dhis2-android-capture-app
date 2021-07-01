@@ -50,6 +50,7 @@ class FormBottomDialogPresenterTest {
                     false,
                     false,
                     PublishProcessor.create(),
+                    null,
                     null
                 )
             ),
@@ -66,6 +67,7 @@ class FormBottomDialogPresenterTest {
                     null,
                     ObjectStyle.builder().build(),
                     PublishProcessor.create(),
+                    null,
                     emptyList(),
                     2
                 )

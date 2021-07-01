@@ -506,7 +506,13 @@ public class CustomTextView extends FieldLayout {
         setLabel(viewModel.getFormattedLabel());
         setHint(viewModel.hint());
         binding.setVariable(BR.legend, viewModel.legendValue());
-        setDescription(viewModel.description());
+        String description = viewModel.description();
+
+        if (viewModel.url() != null){
+            description = description + "\n" + viewModel.url()  ;
+        }
+
+        setDescription(description);
         setText(viewModel.value());
         setWarning(viewModel.warning(), viewModel.error());
         if (!viewModel.isSearchMode() && viewModel.value() != null &&

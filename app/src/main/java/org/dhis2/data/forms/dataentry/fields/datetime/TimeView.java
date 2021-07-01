@@ -273,7 +273,15 @@ public class TimeView extends FieldLayout implements View.OnClickListener {
         }
 
         setLabel(viewModel.getFormattedLabel());
-        setDescription(viewModel.description());
+
+        String description = viewModel.description();
+
+        if (viewModel.url() != null){
+            description = description + "\n" + viewModel.url()  ;
+        }
+
+        setDescription(description);
+
         initData(viewModel.value());
         setEditable(viewModel.editable());
         setDateListener(viewModel::onDateSelected);

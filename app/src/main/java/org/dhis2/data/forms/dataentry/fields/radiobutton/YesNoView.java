@@ -357,7 +357,13 @@ public class YesNoView extends FieldLayout {
             setIsBgTransparent(viewModel.isBackgroundTransparent());
         }
         setLabel(viewModel.getFormattedLabel());
-        setDescription(viewModel.description());
+        String description = viewModel.description();
+
+        if (viewModel.url() != null){
+            description = description + "\n" + viewModel.url()  ;
+        }
+
+        setDescription(description);
         setValueType(viewModel.valueType());
         setRendering(viewModel.renderingType());
         setInitialValue(viewModel.value());

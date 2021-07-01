@@ -5,14 +5,13 @@ import androidx.databinding.ObservableField;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import org.dhis2.data.tuples.Pair;
+
 import org.dhis2.utils.filters.sorting.SortingItem;
 import org.dhis2.R;
 import org.dhis2.data.filter.EmptyWorkingList;
 import org.dhis2.data.filter.FilterStateExtensionsKt;
 import org.dhis2.data.filter.WorkingListScope;
 import org.dhis2.utils.filters.cat_opt_comb.CatOptCombFilterAdapter;
-import org.dhis2.utils.filters.sorting.SortingItem;
 import org.dhis2.utils.filters.sorting.SortingStatus;
 import org.dhis2.utils.filters.workingLists.WorkingListItem;
 import org.dhis2.utils.resources.ResourceManager;
@@ -67,7 +66,6 @@ public class FilterManager implements Serializable {
     private List<EventStatus> eventStatusFilters;
     private ObservableField<List<EventStatus>> observableEventStatus = new ObservableField<>();
     private List<EnrollmentStatus> enrollmentStatusFilters;
-    private Pair<String,String> textValueFilter;
     private ObservableField<EnrollmentStatus> observableEnrollmentStatus = new ObservableField<>();
     private boolean assignedFilter;
     private ObservableField<Boolean> observableAssignedToMe = new ObservableField<>();
@@ -82,7 +80,6 @@ public class FilterManager implements Serializable {
     private ObservableField<Integer> catOptCombFiltersApplied;
     private ObservableField<Integer> eventStatusFiltersApplied;
     private ObservableField<Integer> enrollmentStatusFiltersApplied;
-    private ObservableField<Integer> textValueFiltersApplied;
     private ObservableField<Integer> assignedToMeApplied;
 
     private List<String> stateValues = new ArrayList<>();
@@ -137,7 +134,6 @@ public class FilterManager implements Serializable {
         catOptComboFilters = new ArrayList<>();
         eventStatusFilters = new ArrayList<>();
         enrollmentStatusFilters = new ArrayList<>();
-        textValueFilter = Pair.create("","");
         assignedFilter = false;
         sortingItem = null;
 
@@ -149,7 +145,6 @@ public class FilterManager implements Serializable {
         eventStatusFiltersApplied = new ObservableField<>(0);
         enrollmentStatusFiltersApplied = new ObservableField<>(0);
         assignedToMeApplied = new ObservableField<>(0);
-        textValueFiltersApplied = new ObservableField<>(0);
 
         filterProcessor = PublishProcessor.create();
         ouTreeProcessor = PublishProcessor.create();
@@ -168,7 +163,6 @@ public class FilterManager implements Serializable {
         copy.enrollmentStatusFilters = new ArrayList<>(getEnrollmentStatusFilters());
         copy.assignedFilter = getAssignedFilter();
         copy.sortingItem = getSortingItem();
-        copy.textValueFilter = getTexValueFilter();
         return copy;
     }
 
@@ -181,7 +175,6 @@ public class FilterManager implements Serializable {
                 Objects.equals(filterManager.eventStatusFilters, this.eventStatusFilters) &&
                 Objects.equals(filterManager.enrollmentStatusFilters, this.enrollmentStatusFilters) &&
                 filterManager.assignedFilter == this.assignedFilter &&
-                Objects.equals(filterManager.textValueFilter, this.textValueFilter) &&
                 Objects.equals(filterManager.sortingItem, this.sortingItem);
     }
 
@@ -318,8 +311,6 @@ public class FilterManager implements Serializable {
                 return eventStatusFiltersApplied;
             case ENROLLMENT_STATUS:
                 return enrollmentStatusFiltersApplied;
-            case TEXT_VALUE:
-                return textValueFiltersApplied;
             case ASSIGNED_TO_ME:
                 return assignedToMeApplied;
             default:
@@ -329,6 +320,10 @@ public class FilterManager implements Serializable {
 
     public FlowableProcessor<Boolean> getOuTreeProcessor() {
         return ouTreeProcessor;
+    }
+
+    public FlowableProcessor<FilterManager> asFlowableProcessor() {
+        return filterProcessor;
     }
 
     public Flowable<FilterManager> asFlowable() {
@@ -363,14 +358,13 @@ public class FilterManager implements Serializable {
         int eventStatusApplying = eventStatusFilters.isEmpty() ? 0 : 1;
         int enrollmentStatusApplying = unsupportedFilters.contains(Filters.ENROLLMENT_STATUS) || enrollmentStatusFilters.isEmpty() ? 0 : 1;
         int catComboApplying = catOptComboFilters.isEmpty() ? 0 : 1;
-        int textValueApplying = textValueFilter == null || textValueFilter.val0().isEmpty() ? 0 : 1;
         int assignedApplying = assignedFilter ? 1 : 0;
         int sortingIsActive = sortingItem != null ? 1 : 0;
         int workingListFilters = getTotalFilterCounterForWorkingList(currentWorkingListScope.get());
         return ouIsApplying + stateIsApplying + periodIsApplying +
                 eventStatusApplying + catComboApplying +
                 assignedApplying + enrollmentPeriodIsApplying + enrollmentStatusApplying +
-                sortingIsActive + workingListFilters+ textValueApplying;
+                sortingIsActive + workingListFilters;
     }
 
     public List<DatePeriod> getPeriodFilters() {
@@ -423,20 +417,6 @@ public class FilterManager implements Serializable {
 
     public void addPeriodRequest(PeriodRequest periodRequest, Filters filter) {
         periodRequestProcessor.onNext( new kotlin.Pair(periodRequest, filter));
-    }
-
-    public Pair<String,String> getTexValueFilter(){
-        return textValueFilter;
-    }
-
-    public void setTexValueFilter(Pair<String,String> filter){
-        if (filter.val0().isEmpty() || filter.val1().isEmpty()){
-            clearTextValues();
-        } else {
-            textValueFilter = filter;
-            textValueFiltersApplied.set(1);
-            publishData();
-        }
     }
 
     public void addCatOptComboRequest(String catOptComboUid) {
@@ -545,12 +525,6 @@ public class FilterManager implements Serializable {
         filterProcessor.onNext(this);
     }
 
-    public void clearTextValues() {
-        textValueFilter = Pair.create("","");
-        textValueFiltersApplied.set(0);
-        publishData();
-    }
-
     public void clearAllFilters() {
         eventStatusFilters.clear();
         observableEventStatus.set(eventStatusFilters);
@@ -567,7 +541,6 @@ public class FilterManager implements Serializable {
         enrollmentPeriodIdSelected.set(R.id.anytime);
         periodIdSelected.set(R.id.anytime);
         assignedFilter = false;
-        textValueFilter =  Pair.create("","");
         observableAssignedToMe.set(false);
         sortingItem = null;
 
@@ -578,7 +551,6 @@ public class FilterManager implements Serializable {
         ouFiltersApplied.set(ouFilters.size());
         periodFiltersApplied.set(0);
         assignedToMeApplied.set(0);
-        textValueFiltersApplied.set(0);
 
         this.currentWorkingList = null;
         setWorkingListScope(new EmptyWorkingList());

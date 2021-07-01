@@ -41,7 +41,8 @@ public interface FieldViewModelFactory {
                           @Nullable String fieldMask,
                           @Nullable LegendValue legendValue,
                           FlowableProcessor<RowAction> processor,
-                          List<Option> options);
+                          List<Option> options,
+                          @Nullable String url);
 
     @Nullable
     FieldUiModel createForAttribute(@$NonNull TrackedEntityAttribute trackedEntityAttribute,

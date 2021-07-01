@@ -246,6 +246,7 @@ class EnrollmentRepository(
             attribute.fieldMask(),
             null,
             onRowActionProccesor,
+            null,
             null
         )
 
@@ -383,7 +384,8 @@ class EnrollmentRepository(
             ObjectStyle.builder().build(),
             true,
             false,
-            onRowActionProccesor
+            onRowActionProccesor,
+            null
         )
     }
 
@@ -406,7 +408,8 @@ class EnrollmentRepository(
             ObjectStyle.builder().build(),
             true,
             false,
-            onRowActionProccesor
+            onRowActionProccesor,
+            null
         )
     }
 
@@ -422,7 +425,8 @@ class EnrollmentRepository(
             ObjectStyle.builder().build(),
             true,
             ProgramStageSectionRenderingType.LISTING.name,
-            onRowActionProccesor
+            onRowActionProccesor,
+            null
         )
     }
 
@@ -448,7 +452,8 @@ class EnrollmentRepository(
             true,
             false,
             onRowActionProccesor,
-            fieldFactory.style()
+            fieldFactory.style(),
+            null
         )
     }
 
@@ -471,7 +476,8 @@ class EnrollmentRepository(
             true,
             false,
             onRowActionProccesor,
-            fieldFactory.style()
+            fieldFactory.style(),
+            null
         )
     }
 

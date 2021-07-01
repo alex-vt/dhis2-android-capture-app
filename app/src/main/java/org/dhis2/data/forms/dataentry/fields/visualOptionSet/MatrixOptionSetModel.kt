@@ -38,6 +38,7 @@ abstract class MatrixOptionSetModel : FieldViewModel() {
             description: String?,
             style: ObjectStyle,
             processor: FlowableProcessor<RowAction>?,
+            url: String?,
             options: List<Option>,
             numberOfColumns: Int
         ): MatrixOptionSetModel {
@@ -59,6 +60,7 @@ abstract class MatrixOptionSetModel : FieldViewModel() {
                 processor,
                 null,
                 false,
+                url,
                 options,
                 numberOfColumns,
                 emptyList()
@@ -85,6 +87,7 @@ abstract class MatrixOptionSetModel : FieldViewModel() {
             processor(),
             style(),
             activated(),
+            url(),
             options(),
             numberOfColumns(),
             emptyList<String>()
@@ -110,6 +113,7 @@ abstract class MatrixOptionSetModel : FieldViewModel() {
             processor(),
             style(),
             activated(),
+            url(),
             options(),
             numberOfColumns(),
             emptyList<String>()
@@ -135,6 +139,7 @@ abstract class MatrixOptionSetModel : FieldViewModel() {
             processor(),
             style(),
             activated(),
+            url(),
             options(),
             numberOfColumns(),
             emptyList<String>()
@@ -160,6 +165,7 @@ abstract class MatrixOptionSetModel : FieldViewModel() {
             processor(),
             style(),
             activated(),
+            url(),
             options(),
             numberOfColumns(),
             emptyList<String>()
@@ -185,6 +191,7 @@ abstract class MatrixOptionSetModel : FieldViewModel() {
             processor(),
             style(),
             activated(),
+            url(),
             options(),
             numberOfColumns(),
             emptyList<String>()
@@ -210,6 +217,7 @@ abstract class MatrixOptionSetModel : FieldViewModel() {
             processor(),
             style(),
             isFocused,
+            url(),
             options(),
             numberOfColumns(),
             emptyList<String>()
@@ -266,6 +274,7 @@ abstract class MatrixOptionSetModel : FieldViewModel() {
             processor(),
             style(),
             activated(),
+            url(),
             options(),
             numberOfColumns(),
             options

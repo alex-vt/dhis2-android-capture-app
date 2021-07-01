@@ -93,6 +93,7 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
                 trackedEntityAttribute.fieldMask(),
                 null,
                 fieldProcessor,
+                null,
                 null);
     }
 
@@ -102,7 +103,7 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
                                @NonNull Boolean mandatory, @Nullable String optionSet, @Nullable String value,
                                @Nullable String section, @Nullable Boolean allowFutureDates, @NonNull Boolean editable, @Nullable ProgramStageSectionRenderingType renderingType,
                                @Nullable String description, @Nullable ValueTypeDeviceRendering fieldRendering, @Nullable Integer optionCount, ObjectStyle objectStyle,
-                               @Nullable String fieldMask, @Nullable LegendValue legendValue, @NonNull FlowableProcessor<RowAction> processor, List<Option> options) {
+                               @Nullable String fieldMask, @Nullable LegendValue legendValue, @NonNull FlowableProcessor<RowAction> processor, List<Option> options,@Nullable String url) {
         isNull(type, "type must be supplied");
         FormUiModelStyle style = new BasicFormUiModelStyle(colorFactory);
 
@@ -111,20 +112,20 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
         if (DhisTextUtils.Companion.isNotEmpty(optionSet)) {
             if (renderingType == null || renderingType == ProgramStageSectionRenderingType.LISTING) {
                 if (fieldRendering != null && (fieldRendering.type().equals(ValueTypeRenderingType.QR_CODE) || fieldRendering.type().equals(ValueTypeRenderingType.BAR_CODE))) {
-                    return ScanTextViewModel.create(id, label, mandatory, value, section, editable, optionSet, description, objectStyle, fieldRendering, valueTypeHintMap.get(type), !searchMode, searchMode, processor);
+                    return ScanTextViewModel.create(id, label, mandatory, value, section, editable, optionSet, description, objectStyle, fieldRendering, valueTypeHintMap.get(type), !searchMode, searchMode, processor, url);
                 } else if (fieldRendering != null && type == ValueType.TEXT && optionSetTextRenderings.contains(fieldRendering.type())) {
-                    return OptionSetViewModel.create(id, label, mandatory, optionSet, value, section, editable, description, objectStyle, true, ProgramStageSectionRenderingType.LISTING.toString(), fieldRendering, processor, options);
+                    return OptionSetViewModel.create(id, label, mandatory, optionSet, value, section, editable, description, objectStyle, true, ProgramStageSectionRenderingType.LISTING.toString(), fieldRendering, processor, options, url);
                 } else {
-                    return SpinnerViewModel.create(id, label, valueTypeHintMap.get(type), mandatory, optionSet, value, section, editable, description, objectStyle, !searchMode, ProgramStageSectionRenderingType.LISTING.toString(), processor, legendValue);
+                    return SpinnerViewModel.create(id, label, valueTypeHintMap.get(type), mandatory, optionSet, value, section, editable, description, objectStyle, !searchMode, ProgramStageSectionRenderingType.LISTING.toString(), processor, legendValue, url);
                 }
             } else {
-                return MatrixOptionSetModel.create(id, label, mandatory, value, section, editable, optionSet, description, objectStyle, processor, options, renderingType == ProgramStageSectionRenderingType.MATRIX ? 2 : 1);
+                return MatrixOptionSetModel.create(id, label, mandatory, value, section, editable, optionSet, description, objectStyle, processor, url, options, renderingType == ProgramStageSectionRenderingType.MATRIX ? 2 : 1);
             }
         }
 
         switch (type) {
             case AGE:
-                FieldUiModel ageViewModel = AgeViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, !searchMode, searchMode, processor, style);
+                FieldUiModel ageViewModel = AgeViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, !searchMode, searchMode, processor, style, url);
                 return ageViewModel;
             case TEXT:
             case EMAIL:
@@ -140,30 +141,30 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
             case UNIT_INTERVAL:
             case URL:
                 if (fieldRendering != null && (fieldRendering.type().equals(ValueTypeRenderingType.QR_CODE) || fieldRendering.type().equals(ValueTypeRenderingType.BAR_CODE))) {
-                    return ScanTextViewModel.create(id, label, mandatory, value, section, editable, optionSet, description, objectStyle, fieldRendering, valueTypeHintMap.get(type), !searchMode, searchMode, processor);
+                    return ScanTextViewModel.create(id, label, mandatory, value, section, editable, optionSet, description, objectStyle, fieldRendering, valueTypeHintMap.get(type), !searchMode, searchMode, processor, url);
                 } else {
-                    return EditTextViewModel.create(id, label, mandatory, value, valueTypeHintMap.get(type), 1, type, section, editable, description, fieldRendering, objectStyle, fieldMask, ProgramStageSectionRenderingType.LISTING.toString(), !searchMode, searchMode, processor, legendValue);
+                    return EditTextViewModel.create(id, label, mandatory, value, valueTypeHintMap.get(type), 1, type, section, editable, description, fieldRendering, objectStyle, fieldMask, ProgramStageSectionRenderingType.LISTING.toString(), !searchMode, searchMode, processor, legendValue, url);
                 }
             case IMAGE:
-                return PictureViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, processor, !searchMode);
+                return PictureViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, processor, !searchMode, url);
             case TIME:
             case DATE:
             case DATETIME:
-                return DateTimeViewModel.create(id, label, mandatory, type, value, section, allowFutureDates, editable, description, objectStyle, !searchMode, searchMode, processor);
+                return DateTimeViewModel.create(id, label, mandatory, type, value, section, allowFutureDates, editable, description, objectStyle, !searchMode, searchMode, processor, url);
             case COORDINATE:
-                return CoordinateViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, FeatureType.POINT, !searchMode, searchMode, processor, style);
+                return CoordinateViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, FeatureType.POINT, !searchMode, searchMode, processor, style, url);
             case BOOLEAN:
             case TRUE_ONLY:
                 return RadioButtonViewModel.fromRawValue(id, label, type, mandatory, value, section, editable, description, objectStyle,
-                        fieldRendering != null ? fieldRendering.type() : ValueTypeRenderingType.DEFAULT, !searchMode, processor, searchMode);
+                        fieldRendering != null ? fieldRendering.type() : ValueTypeRenderingType.DEFAULT, !searchMode, processor, searchMode, url);
             case ORGANISATION_UNIT:
-                return OrgUnitViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, !searchMode, ProgramStageSectionRenderingType.LISTING.toString(), processor);
+                return OrgUnitViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, !searchMode, ProgramStageSectionRenderingType.LISTING.toString(), processor, url);
             case FILE_RESOURCE:
             case TRACKER_ASSOCIATE:
             case USERNAME:
-                return UnsupportedViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, processor);
+                return UnsupportedViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, processor, url);
             default:
-                return EditTextViewModel.create(id, label, mandatory, value, valueTypeHintMap.get(type), 1, type, section, editable, description, fieldRendering, objectStyle, fieldMask, ProgramStageSectionRenderingType.LISTING.toString(), !searchMode, searchMode, processor, legendValue);
+                return EditTextViewModel.create(id, label, mandatory, value, valueTypeHintMap.get(type), 1, type, section, editable, description, fieldRendering, objectStyle, fieldMask, ProgramStageSectionRenderingType.LISTING.toString(), !searchMode, searchMode, processor, legendValue, url);
         }
     }
 

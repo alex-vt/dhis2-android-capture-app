@@ -95,6 +95,9 @@ public abstract class FieldViewModel implements FieldUiModel {
     @NonNull
     public abstract Boolean activated();
 
+    @Nullable
+    public abstract String url();
+
     public String getFormattedLabel() {
         if (mandatory()) {
             return label() + " *";

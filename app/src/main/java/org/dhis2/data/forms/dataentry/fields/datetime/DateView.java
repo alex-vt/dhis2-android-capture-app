@@ -293,7 +293,15 @@ public class DateView extends FieldLayout implements View.OnClickListener {
             setLayout(viewModel.isBackgroundTransparent());
         }
         setLabel(viewModel.getFormattedLabel());
-        setDescription(viewModel.description());
+
+        String description = viewModel.description();
+
+        if (viewModel.url() != null){
+            description = description + "\n" + viewModel.url()  ;
+        }
+
+        setDescription(description);
+
         initData(viewModel.value());
         setWarningErrorMessage(viewModel.warning(), viewModel.error());
         setAllowFutureDates(viewModel.allowFutureDate());

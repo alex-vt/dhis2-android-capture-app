@@ -31,43 +31,43 @@ public abstract class AgeViewModel extends FieldViewModel {
     @Nullable
     public abstract String value();
 
-    public static FieldViewModel create(String id, String label, Boolean mandatory, String value, String section, Boolean editable, String description, ObjectStyle objectStyle, boolean isBackgroundTransparent, boolean isSearchMode, FlowableProcessor<RowAction> processor, FormUiModelStyle style) {
-        return new AutoValue_AgeViewModel(id, label, section, null, editable, null, null, null, description, objectStyle, null, DataEntryViewHolderTypes.AGE_VIEW, processor, style,false, mandatory, value, isBackgroundTransparent, isSearchMode);
+    public static FieldViewModel create(String id, String label, Boolean mandatory, String value, String section, Boolean editable, String description, ObjectStyle objectStyle, boolean isBackgroundTransparent, boolean isSearchMode, FlowableProcessor<RowAction> processor, FormUiModelStyle style,String url) {
+        return new AutoValue_AgeViewModel(id, label, section, null, editable, null, null, null, description, objectStyle, null, DataEntryViewHolderTypes.AGE_VIEW, processor, style,false, url, mandatory, value, isBackgroundTransparent, isSearchMode);
     }
 
     @Override
     public FieldViewModel setMandatory() {
-        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), activated(), true, value(), isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), activated(), url(), true, value(), isBackgroundTransparent(), isSearchMode());
     }
 
     @NonNull
     @Override
     public FieldViewModel withError(@NonNull String error) {
-        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error, description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), activated(), mandatory(), value(), isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error, description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), activated(), url(), mandatory(), value(), isBackgroundTransparent(), isSearchMode());
     }
 
     @NonNull
     @Override
     public FieldViewModel withWarning(@NonNull String warning) {
-        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), editable(), optionSet(), warning, error(), description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), activated(), mandatory(), value(), isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), editable(), optionSet(), warning, error(), description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), activated(), url(), mandatory(), value(), isBackgroundTransparent(), isSearchMode());
     }
 
     @NonNull
     @Override
     public FieldViewModel withValue(String data) {
-        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), activated(), mandatory(), data, isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), activated(), url(), mandatory(), data, isBackgroundTransparent(), isSearchMode());
     }
 
     @NonNull
     @Override
     public FieldViewModel withEditMode(boolean isEditable) {
-        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), isEditable, optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), activated(), mandatory(), value(), isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), isEditable, optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), activated(), url(), mandatory(), value(), isBackgroundTransparent(), isSearchMode());
     }
 
     @NonNull
     @Override
     public FieldViewModel withFocus(boolean isFocused) {
-        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), isFocused, mandatory(), value(), isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_AgeViewModel(uid(), label(), programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.AGE_VIEW, processor(), style(), isFocused, url(), mandatory(), value(), isBackgroundTransparent(), isSearchMode());
     }
 
     @Override

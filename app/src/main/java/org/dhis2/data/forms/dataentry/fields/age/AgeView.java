@@ -374,7 +374,13 @@ public class AgeView extends FieldLayout implements View.OnClickListener {
             }
         });
 
-        setLabel(viewModel.getFormattedLabel(), viewModel.description());
+        String description = viewModel.description();
+
+        if (viewModel.url() != null){
+            description = description + "\n" + viewModel.url()  ;
+        }
+
+        setLabel(viewModel.getFormattedLabel(), description);
 
         if (!isEmpty(viewModel.value())) {
             setInitialValue(viewModel.value());

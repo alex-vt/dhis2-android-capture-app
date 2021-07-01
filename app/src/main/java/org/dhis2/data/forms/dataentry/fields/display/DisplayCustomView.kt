@@ -44,8 +44,17 @@ class DisplayCustomView @JvmOverloads constructor(
     }
 
     fun showDescription() {
+        var description =  viewModel.description()
+
+        if (viewModel.url() != null) {
+            description = """
+                $description
+                ${viewModel.url()}
+                """.trimIndent()
+        }
+
         val dialog = MaterialAlertDialogBuilder(context, R.style.DhisMaterialDialog)
-            .setMessage(viewModel.description())
+            .setMessage(description)
             .setPositiveButton(R.string.action_close) { _, _ ->
             }
         dialog.show()

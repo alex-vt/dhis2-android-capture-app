@@ -225,7 +225,13 @@ public class OrgUnitView extends FieldLayout implements OrgUnitCascadeDialog.Cas
             setLayoutData(viewModel.isBackgroundTransparent(), viewModel.renderType());
         }
         setLabel(viewModel.getFormattedLabel());
-        setDescription(viewModel.description());
+        String description = viewModel.description();
+
+        if (viewModel.url() != null){
+            description = description + "\n" + viewModel.url()  ;
+        }
+
+        setDescription(description);
         setWarning(viewModel.warning(), viewModel.error());
 
         String uid_value_name = viewModel.value();

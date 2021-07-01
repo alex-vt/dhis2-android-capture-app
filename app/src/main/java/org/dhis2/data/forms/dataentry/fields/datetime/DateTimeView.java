@@ -285,7 +285,13 @@ public class DateTimeView extends FieldLayout implements View.OnClickListener, V
         }
 
         setLabel(viewModel.getFormattedLabel());
-        setDescription(viewModel.description());
+        String description = viewModel.description();
+
+        if (viewModel.url() != null){
+            description = description + "\n" + viewModel.url()  ;
+        }
+
+        setDescription(description);
         initData(viewModel.value());
         setWarningErrorMessage(viewModel.warning(), viewModel.error());
         setAllowFutureDates(viewModel.allowFutureDate());

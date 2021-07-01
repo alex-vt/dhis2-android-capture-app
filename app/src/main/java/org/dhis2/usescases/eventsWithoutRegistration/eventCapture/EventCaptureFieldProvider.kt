@@ -168,7 +168,8 @@ class EventCaptureFieldProvider(
                 de.fieldMask(),
                 getColorByLegend(rawValue, de),
                 actionProcessor,
-                options
+                options,
+                de.url()
             )
 
         return if (error.isNotEmpty()) {

@@ -276,6 +276,12 @@ public class OptionSetSelectionView extends FieldLayout {
         setEditable(viewModel.editable());
         setInitValue(viewModel.value(), viewModel.options(), viewModel.fieldRendering().type());
         setLabel(viewModel.getFormattedLabel());
-        setDescription(viewModel.description());
+        String description = viewModel.description();
+
+        if (viewModel.url() != null){
+            description = description + "\n" + viewModel.url()  ;
+        }
+
+        setDescription(description);
     }
 }

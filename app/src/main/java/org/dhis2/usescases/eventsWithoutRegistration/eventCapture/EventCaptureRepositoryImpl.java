@@ -235,6 +235,7 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
                         boolean allowFutureDates = programStageDataElement.allowFutureDate() != null ? programStageDataElement.allowFutureDate() : false;
                         String formName = de.displayFormName();
                         String description = de.displayDescription();
+                        String url = de.url();
 
                         int optionCount = 0;
                         List<Option> options;
@@ -274,7 +275,7 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
                                         valueType, mandatory, optionSet, dataValue,
                                         programStageSection != null ? programStageSection.uid() : null, allowFutureDates,
                                         isEventEditable,
-                                        renderingType, description, fieldRendering, optionCount, objectStyle, de.fieldMask(), legendValue, processor, options);
+                                        renderingType, description, fieldRendering, optionCount, objectStyle, de.fieldMask(), legendValue, processor, options,url);
 
                         if (!error.isEmpty()) {
                             return fieldViewModel.setError(error);

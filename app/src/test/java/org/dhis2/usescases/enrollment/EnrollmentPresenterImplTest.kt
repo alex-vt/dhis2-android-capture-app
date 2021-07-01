@@ -359,6 +359,7 @@ class EnrollmentPresenterImplTest {
             false,
             false,
             null,
+            null,
             null
         )
 
