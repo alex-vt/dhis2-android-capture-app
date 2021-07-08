@@ -4,9 +4,12 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -23,6 +26,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,6 +43,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.simprints.libsimprints.Identification;
 
 import org.dhis2.App;
 import org.dhis2.Bindings.ExtensionsKt;
@@ -59,6 +64,7 @@ import org.dhis2.uicomponents.map.managers.TeiMapManager;
 import org.dhis2.uicomponents.map.mapper.MapRelationshipToRelationshipMapModel;
 import org.dhis2.uicomponents.map.model.CarouselItemModel;
 import org.dhis2.uicomponents.map.model.MapStyle;
+import org.dhis2.uicomponents.map.views.MapSelectorActivity;
 import org.dhis2.usescases.enrollment.EnrollmentActivity;
 import org.dhis2.usescases.general.ActivityGlobalAbstract;
 import org.dhis2.usescases.orgunitselector.OUTreeFragment;
@@ -69,16 +75,22 @@ import org.dhis2.usescases.teiDashboard.TeiDashboardMobileActivity;
 import org.dhis2.utils.ColorUtils;
 import org.dhis2.utils.Constants;
 import org.dhis2.utils.DateUtils;
+import org.dhis2.utils.DialogClickListener;
+import org.dhis2.utils.FileResourcesUtil;
 import org.dhis2.utils.HelpManager;
 import org.dhis2.utils.NetworkUtils;
 import org.dhis2.utils.customviews.BreakTheGlassBottomDialog;
+import org.dhis2.utils.customviews.CustomDialog;
 import org.dhis2.utils.customviews.ImageDetailBottomDialog;
 import org.dhis2.utils.filters.FilterItem;
 import org.dhis2.utils.filters.FilterManager;
 import org.dhis2.utils.filters.Filters;
 import org.dhis2.utils.filters.FiltersAdapter;
 import org.dhis2.utils.idlingresource.CountingIdlingResourceSingleton;
+import org.dhis2.utils.simprints.SimprintsHelper;
 import org.hisp.dhis.android.core.arch.call.D2Progress;
+import org.hisp.dhis.android.core.arch.helpers.FileResourceDirectoryHelper;
+import org.hisp.dhis.android.core.common.FeatureType;
 import org.hisp.dhis.android.core.program.Program;
 
 import java.io.File;
@@ -96,7 +108,12 @@ import kotlin.Unit;
 import timber.log.Timber;
 
 import static android.view.View.GONE;
+
+import static com.simprints.libsimprints.Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK;
+import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
+
 import static org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialPresenter.ACCESS_LOCATION_PERMISSION_REQUEST;
+import static org.dhis2.utils.Constants.SIMPRINTS_IDENTIFY_REQUEST;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CHANGE_PROGRAM;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CLICK;
 
@@ -144,6 +161,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private String updateEvent;
     private CarouselAdapter carouselAdapter;
     private FormView formView;
+
+    private CustomDialog biometricsErrorDialog;
 
     //---------------------------------------------------------------------------------------------
 
@@ -249,6 +268,22 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         teiMapManager.setTeiFeatureType(presenter.getTrackedEntityType(tEType).featureType());
         teiMapManager.setEnrollmentFeatureType(presenter.getProgram() != null ? presenter.getProgram().featureType() : null);
         teiMapManager.setOnMapClickListener(this);
+
+/*        binding.biometricSearch.setOnClickListener(v -> {
+            //simprints - Identification Workflow
+            launchSimprintsApp();
+        });*/
+    }
+
+    private void launchSimprintsApp() {
+        Intent intent = SimprintsHelper.simHelper.identify("Module ID");
+        PackageManager manager = getContext().getPackageManager();
+        List<ResolveInfo> infos = manager.queryIntentActivities(intent, 0);
+        if (infos.size() > 0) {
+            startActivityForResult(intent, SIMPRINTS_IDENTIFY_REQUEST);
+        } else {
+            Toast.makeText(getContext(), "Please download simprints app!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -361,6 +396,53 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     //endregion
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        switch (requestCode) {
+            case SIMPRINTS_IDENTIFY_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    boolean check = data.getBooleanExtra(SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false);
+                    if (check) {
+                        ArrayList<Identification> identifications = data.getParcelableArrayListExtra(SIMPRINTS_IDENTIFICATIONS);
+                        for (int i = 0; i < identifications.size(); i++) {
+                            identifications.get(i).getGuid();
+                            identifications.get(i).getConfidence();
+                            identifications.get(i).getTier();
+                        }
+                    }else{
+                        showBiometricsErrorDialog();
+                    }
+                }else {
+                    Toast.makeText(getContext(), "Biometrics declined", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void showBiometricsErrorDialog() {
+        String title = getString(R.string.biometrics_error_dialog_title);
+        String desc = getString(R.string.biometrics_error_dialog_desc);
+        String posButton = getString(R.string.try_again);
+        String negButton = getString(R.string.cancel);
+        DialogClickListener dialogClickListener = new DialogClickListener() {
+            @Override
+            public void onPositive() {
+                launchSimprintsApp();
+            }
+
+            @Override
+            public void onNegative() {
+                if(null != biometricsErrorDialog){
+                    biometricsErrorDialog.dismiss();
+                }
+            }
+        };
+        biometricsErrorDialog = new CustomDialog(getContext(), title, desc, posButton, negButton, 0, dialogClickListener);
+        biometricsErrorDialog.show();
+    }
 
     //-----------------------------------------------------------------------
     //region SearchForm
@@ -559,7 +641,9 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void setFiltersVisibility(boolean showFilters) {
         binding.filterCounter.setVisibility(showFilters ? View.VISIBLE : GONE);
-        binding.searchFilterGeneral.setVisibility(showFilters ? View.VISIBLE : GONE);
+        binding.searchFilterGeneral.setVisibility(View.VISIBLE);
+        //simprints - search_filter_general should not be visible.
+        //binding.searchFilterGeneral.setVisibility(View.VISIBLE);
     }
 
     @Override

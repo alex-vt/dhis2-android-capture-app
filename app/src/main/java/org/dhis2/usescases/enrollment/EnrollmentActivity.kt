@@ -13,6 +13,9 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.simprints.libsimprints.Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK
+import com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION
+import com.simprints.libsimprints.Registration
 import java.io.File
 import javax.inject.Inject
 import org.dhis2.App
@@ -36,6 +39,7 @@ import org.dhis2.utils.Constants.CAMERA_REQUEST
 import org.dhis2.utils.Constants.ENROLLMENT_UID
 import org.dhis2.utils.Constants.GALLERY_REQUEST
 import org.dhis2.utils.Constants.PROGRAM_UID
+import org.dhis2.utils.Constants.SIMPRINTS_ENROLL_REQUEST
 import org.dhis2.utils.Constants.TEI_UID
 import org.dhis2.utils.EventMode
 import org.dhis2.utils.FileResourcesUtil
@@ -198,6 +202,22 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                         Toast.makeText(
                             this, getString(R.string.something_wrong), Toast.LENGTH_LONG
                         ).show()
+                    }
+                }
+                SIMPRINTS_ENROLL_REQUEST -> {
+                    if (data != null) {
+                        val check = data.getBooleanExtra(SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false)
+                        if (check) {
+                            //Success!
+                            val registration: Registration? = data.getParcelableExtra(SIMPRINTS_REGISTRATION)
+                            // Now that we have the GUID, find the binding.customEdittext that corresponds to EditTextViewModel with code
+                            // "biometrics" and enter the GUID as the binding.customEdittext.getEditText().setText(GUID);
+                            if(registration == null){
+                                presenter.onSimprintsBiometricsFailure()
+                            }else {
+                                presenter.onSimprintsBiometricsCompleted(registration?.guid)
+                            }
+                        }
                     }
                 }
                 RQ_EVENT -> openDashboard(presenter.getEnrollment()!!.uid()!!)
