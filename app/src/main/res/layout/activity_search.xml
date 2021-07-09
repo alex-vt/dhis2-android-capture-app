@@ -134,11 +134,21 @@
                 style="@style/ActionIcon"
                 android:onClick="@{()->presenter.showFilter()}"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/search_filter_general"
+                app:layout_constraintEnd_toStartOf="@id/biometric_search"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_search_add"
                 app:tint="@color/white"
                 tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:id="@+id/biometric_search"
+                style="@style/ActionIcon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/icons8_facial_recognition_50"
+                tools:ignore="ContentDescription"
+                app:tint="@color/white" />
 
             <Spinner
                 android:id="@+id/program_spinner"

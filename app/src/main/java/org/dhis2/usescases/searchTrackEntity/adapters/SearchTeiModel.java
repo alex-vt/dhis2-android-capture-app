@@ -42,6 +42,8 @@ public class SearchTeiModel implements CarouselItemModel {
     private String enrolledOrgUnit;
     private boolean showNavigationButton = false;
 
+    private boolean biometricsSearchInProgress;
+
     public SearchTeiModel() {
         this.tei = null;
         this.selectedEnrollment = null;
@@ -225,5 +227,13 @@ public class SearchTeiModel implements CarouselItemModel {
     }
     public boolean shouldShowNavigationButton(){
         return showNavigationButton;
+    }
+
+    public void setBiometricsSearchStatus(boolean value) {
+        this.biometricsSearchInProgress = value;
+    }
+
+    public boolean isBiometricsSearchInProgress() {
+        return biometricsSearchInProgress;
     }
 }

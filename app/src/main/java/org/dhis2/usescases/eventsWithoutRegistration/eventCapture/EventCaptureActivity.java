@@ -18,6 +18,7 @@ import androidx.databinding.DataBindingUtil;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
+import com.simprints.libsimprints.Verification;
 
 import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.Bindings.ViewExtensionsKt;
@@ -39,6 +40,7 @@ import org.dhis2.utils.RulesUtilsProviderConfigurationError;
 import org.dhis2.utils.customviews.CustomDialog;
 import org.dhis2.utils.customviews.FormBottomDialog;
 import org.hisp.dhis.android.core.arch.helpers.FileResourceDirectoryHelper;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Calendar;
@@ -52,7 +54,10 @@ import androidx.fragment.app.FragmentManager;
 import io.reactivex.functions.Consumer;
 import timber.log.Timber;
 
+import static org.dhis2.utils.Constants.BIOMETRICS_GUID;
+import static org.dhis2.utils.Constants.BIOMETRICS_VERIFICATION_STATUS;
 import static org.dhis2.utils.Constants.PROGRAM_UID;
+import static org.dhis2.utils.Constants.SIMPRINTS_VERIFY_REQUEST;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CLICK;
 import static org.dhis2.utils.analytics.AnalyticsConstants.DELETE_EVENT;
 import static org.dhis2.utils.analytics.AnalyticsConstants.SHOW_HELP;
@@ -103,11 +108,7 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
 
     private void setUpViewPagerAdapter() {
         binding.eventViewPager.setUserInputEnabled(false);
-        binding.eventViewPager.setAdapter(new EventCapturePagerAdapter(
-                this,
-                getIntent().getStringExtra(PROGRAM_UID),
-                getIntent().getStringExtra(Constants.EVENT_UID)
-        ));
+        binding.eventViewPager.setAdapter(getAdapter(getIntent().getIntExtra(BIOMETRICS_VERIFICATION_STATUS, -1)));
         ViewExtensionsKt.clipWithRoundedCorners(binding.eventViewPager, ExtensionsKt.getDp(16));
     }
 
@@ -223,7 +224,42 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                     }
                 }
                 break;
+            case SIMPRINTS_VERIFY_REQUEST:
+                onSimprintsAppResponse(data);
+                break;
         }
+    }
+
+    private void onSimprintsAppResponse(Intent data) {
+        boolean check = data.getBooleanExtra(com.simprints.libsimprints.Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false);
+        if(check){
+            Verification verification =
+                    data.getParcelableExtra(com.simprints.libsimprints.Constants.SIMPRINTS_VERIFICATION);
+            if(null != verification) {
+                switch (verification.getTier()) {
+                    case TIER_1:
+                    case TIER_2:
+                    case TIER_3:
+                    case TIER_4:
+                        binding.eventViewPager.setAdapter(getAdapter(1));
+                        break;
+                    case TIER_5:
+                        binding.eventViewPager.setAdapter(getAdapter(0));
+                        break;
+                }
+            }
+        }
+    }
+
+    @NotNull
+    private EventCapturePagerAdapter getAdapter(int verificationStatus) {
+        return new EventCapturePagerAdapter(
+                this,
+                getIntent().getStringExtra(PROGRAM_UID),
+                getIntent().getStringExtra(Constants.EVENT_UID),
+                getIntent().getStringExtra(BIOMETRICS_GUID),
+                verificationStatus
+        );
     }
 
     @Override

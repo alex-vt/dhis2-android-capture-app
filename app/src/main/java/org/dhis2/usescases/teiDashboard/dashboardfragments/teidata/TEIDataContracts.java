@@ -84,6 +84,8 @@ public class TEIDataContracts {
         void setEnrollment(Enrollment enrollment);
 
         void showSyncDialog(String uid);
+
+        void launchSimprintsAppForVerification(Intent simIntent);
     }
 
     public interface Presenter extends AbstractActivityContracts.Presenter {
@@ -131,6 +133,8 @@ public class TEIDataContracts {
         boolean enrollmentOrgUnitInCaptureScope(String enrollmentOrgUnit);
 
         void setOpeningFilterToNone();
+
+        void launchEventCapture(String uid, String guid, int status);
     }
 
 }

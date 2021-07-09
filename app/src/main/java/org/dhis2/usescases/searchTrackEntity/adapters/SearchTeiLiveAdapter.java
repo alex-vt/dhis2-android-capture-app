@@ -37,7 +37,8 @@ public class SearchTeiLiveAdapter extends PagedListAdapter<SearchTeiModel, Searc
                         oldItem.isAttributeListOpen() == newItem.isAttributeListOpen() &&
                         Objects.equals(oldItem.getSortingKey(), newItem.getSortingKey()) &&
                         Objects.equals(oldItem.getSortingValue(), newItem.getSortingValue()) &&
-                        Objects.equals(oldItem.getEnrolledOrgUnit(), newItem.getEnrolledOrgUnit());
+                        Objects.equals(oldItem.getEnrolledOrgUnit(), newItem.getEnrolledOrgUnit()) &&
+                        (oldItem.isBiometricsSearchInProgress() == newItem.isBiometricsSearchInProgress());
             } else {
                 return oldItem.getTei().uid().equals(newItem.getTei().uid()) &&
                         Objects.equals(oldItem.getTei().state(), newItem.getTei().state()) &&
@@ -47,7 +48,8 @@ public class SearchTeiLiveAdapter extends PagedListAdapter<SearchTeiModel, Searc
                         oldItem.isAttributeListOpen() == newItem.isAttributeListOpen() &&
                         Objects.equals(oldItem.getSortingKey(), newItem.getSortingKey()) &&
                         Objects.equals(oldItem.getSortingValue(), newItem.getSortingValue()) &&
-                        Objects.equals(oldItem.getEnrolledOrgUnit(), newItem.getEnrolledOrgUnit());
+                        Objects.equals(oldItem.getEnrolledOrgUnit(), newItem.getEnrolledOrgUnit())&&
+                        (oldItem.isBiometricsSearchInProgress() == newItem.isBiometricsSearchInProgress());
             }
         }
     };
