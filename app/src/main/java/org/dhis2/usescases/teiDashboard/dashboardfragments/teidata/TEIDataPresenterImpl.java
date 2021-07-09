@@ -31,6 +31,7 @@ import org.dhis2.utils.EventMode;
 import org.dhis2.utils.Result;
 import org.dhis2.utils.analytics.AnalyticsHelper;
 import org.dhis2.utils.filters.FilterManager;
+import org.dhis2.utils.simprints.SimprintsHelper;
 import org.hisp.dhis.android.core.D2;
 import org.hisp.dhis.android.core.enrollment.Enrollment;
 import org.hisp.dhis.android.core.event.Event;
@@ -392,9 +393,12 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     @Override
     public void onEventSelected(String uid, EventStatus eventStatus, View sharedView) {
         if (eventStatus == EventStatus.ACTIVE || eventStatus == EventStatus.COMPLETED) {
-            Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
+            Intent simIntent = SimprintsHelper.simHelper.verify("", "");
+            view.openEventCapture(simIntent);
+
+/*            Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
             intent.putExtras(EventCaptureActivity.getActivityBundle(uid, programUid, EventMode.CHECK));
-            view.openEventCapture(intent);
+            view.openEventCapture(intent);*/
         } else {
             Event event = d2.eventModule().events().uid(uid).blockingGet();
             Intent intent = new Intent(view.getContext(), EventInitialActivity.class);

@@ -134,6 +134,10 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     private MatomoAnalyticsController matomoAnalyticsController;
     private final FormRepository formRepository;
 
+    private boolean biometricsSearchStatus = false;
+    private String sessionId;
+    private String biometricsSearchGuid = null;
+
     public SearchTEPresenter(SearchTEContractsModule.View view,
                              D2 d2,
                              DhisMapUtils mapUtils,
@@ -546,6 +550,11 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     @Override
+    public void clearQueryData() {
+        queryData.clear();
+    }
+
+    @Override
     public void onBackClick() {
         view.onBackClicked();
     }
@@ -580,7 +589,10 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                 view.setFabIcon(true);
                 queryProcessor.onNext(new HashMap<>());
             }
-            view.closeFilters();
+
+            if(this.getBiometricsSearchStatus()==false){
+                view.closeFilters();
+            }
         }
     }
 
@@ -786,10 +798,23 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
     @Override
     public void onTEIClick(String TEIuid, String enrollmentUid, boolean isOnline) {
+        if(biometricsSearchStatus){
+            sendBiometricsData(biometricsSearchGuid);
+        }
+
         if (!isOnline) {
+            setBiometricsSearchStatus(false);
             openDashboard(TEIuid, enrollmentUid);
-        } else
+        } else {
+            setBiometricsSearchStatus(false);
             downloadTei(TEIuid, enrollmentUid);
+        }
+    }
+
+    private void sendBiometricsData(String guid) {
+        if (sessionId != null) {
+            view.sendBiometricsAppData(sessionId, guid);
+        }
     }
 
     @Override
@@ -1029,6 +1054,41 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
             view.setFabIcon(!list.isEmpty());
         }
         view.setFormData(formRepository.composeList(list));
+    }
+
+    @Override
+    public void searchOnBiometrics(String biometricUid, String guid) {
+        queryData.clear();
+        queryData.put(biometricUid, guid);
+        onFabClick(true);
+//        queryProcessor.onNext(queryData);
+    }
+
+    @Override
+    public void setBiometricsSearchStatus(boolean status) {
+        biometricsSearchStatus = status;
+    }
+
+    @Override
+    public boolean getBiometricsSearchStatus() {
+        return biometricsSearchStatus;
+    }
+
+    @Override
+    public void onNoneOfTheAboveBiometricsMatchButtonClick() {
+        if(biometricsSearchStatus){
+            sendBiometricsData("none_selected");
+        }
+    }
+
+    @Override
+    public void storeBiometricsSessionID(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    @Override
+    public void setBiometricsSearchGuidData(String guid) {
+        this.biometricsSearchGuid = guid;
     }
 
     @Override

@@ -38,6 +38,7 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/rootView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="70dp"
@@ -143,5 +144,44 @@
             app:layout_constraintWidth_max="wrap"
             app:layout_constraintWidth_percent="0.5"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/biometric_button"
+            android:visibility="gone"
+            android:text="GET BIOMETRICS"
+            android:background="@color/gray_979"
+            android:textColor="@color/black_de0"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="40dp"
+            android:padding="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/biometric_status"
+            android:visibility="gone"
+            android:text="Biometrics Completed"
+            android:background="@color/green_7ed"
+            android:textColor="@color/black_de0"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/biometricButton" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 </layout>

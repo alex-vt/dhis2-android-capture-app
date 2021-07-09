@@ -166,7 +166,7 @@ android {
         }
 
         simprints {
-            applicationId "com.eyeseetea.simprints"
+            applicationId "org.simprints.dhis2"
             dimension "default"
             versionCode versions.vCode
             versionName "2.4.1-simprints-fork-1"
@@ -249,6 +249,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${libraries.coroutines}"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${libraries.coroutines}"
     implementation 'com.google.code.findbugs:jsr305:3.0.1'
+    implementation "com.simprints:libsimprints:${libraries.libSimprintsVersion}"
 
     /*
     releaseImplementation("org.hisp.dhis:android-core:${libraries.dhis2sdk}") {

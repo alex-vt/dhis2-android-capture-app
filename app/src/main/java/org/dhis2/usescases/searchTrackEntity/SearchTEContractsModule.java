@@ -94,6 +94,8 @@ public class SearchTEContractsModule {
         void showClearSearch(boolean empty);
 
         void hideFilter();
+
+        void sendBiometricsAppData(String sessionId, String guid);
     }
 
     public interface Presenter {
@@ -107,6 +109,8 @@ public class SearchTEContractsModule {
         void onBackClick();
 
         void onClearClick();
+
+        void clearQueryData();
 
         void onFabClick(boolean needsSearch);
 
@@ -181,5 +185,17 @@ public class SearchTEContractsModule {
         void setOpeningFilterToNone();
 
         void populateList(List<FieldUiModel> list);
+
+        void searchOnBiometrics(String biometricUid, String guid);
+
+        void setBiometricsSearchStatus(boolean status);
+
+        boolean getBiometricsSearchStatus();
+
+        void onNoneOfTheAboveBiometricsMatchButtonClick();
+
+        void storeBiometricsSessionID(String sessionId);
+
+        void setBiometricsSearchGuidData(String guid);
     }
 }

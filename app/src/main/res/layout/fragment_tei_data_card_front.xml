@@ -293,6 +293,18 @@
                     app:layout_constraintTop_toBottomOf="@id/enrollment_date_label" />
 
                 <TextView
+                    android:id="@+id/biometrics_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:fontFamily="@font/rubik_medium"
+                    android:text="@string/biometrics_label"
+                    android:textColor="@color/text_black_4d4d4d"
+                    android:textSize="12sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/org_unit_label" />
+
+                <TextView
                     android:id="@+id/incident_date"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -338,6 +350,18 @@
                     app:layout_constraintStart_toEndOf="@+id/org_unit_label"
                     app:layout_constraintTop_toTopOf="@id/org_unit_label"
                     tools:text="Org Unit Name" />
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="151dp"
+                    android:layout_height="24dp"
+                    android:gravity="end"
+                    android:src="@{dashboardModel.isTrackedBiometricEntityExistAndHasValue()?@drawable/ic_biometrics_available_yes_24dp:@drawable/ic_biometrics_available_no_24dp}"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toEndOf="@id/biometrics_label"
+                    app:layout_constraintTop_toTopOf="@id/biometrics_label" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.flexbox.FlexboxLayout>
 
