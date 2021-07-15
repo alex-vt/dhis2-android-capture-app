@@ -152,6 +152,7 @@ class EventCaptureFieldProvider(
         val fieldViewModel: FieldUiModel =
             fieldFactory.create(
                 de.uid(),
+                de.code() ?: "",
                 de.formName() ?: de.displayName()!!,
                 de.valueType()!!,
                 programStageDataElement.compulsory() == true,

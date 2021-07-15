@@ -1,5 +1,8 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment;
 
+import static org.dhis2.utils.Constants.BIOMETRICS_GUID;
+import static org.dhis2.utils.Constants.BIOMETRICS_VERIFICATION_STATUS;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,6 +19,9 @@ import androidx.fragment.app.FragmentTransaction;
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
 import org.dhis2.data.forms.dataentry.FormView;
+import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel;
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel;
 import org.dhis2.data.location.LocationProvider;
 import org.dhis2.databinding.SectionSelectorFragmentBinding;
 import org.dhis2.form.data.FormRepository;
@@ -47,6 +53,9 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     private SectionSelectorFragmentBinding binding;
     private FormView formView;
 
+    private String biometricsGuid;
+    private int biometricsVerificationStatus;
+
     public static EventCaptureFormFragment newInstance(String eventUid) {
         EventCaptureFormFragment fragment = new EventCaptureFormFragment();
         Bundle args = new Bundle();
@@ -55,10 +64,22 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         return fragment;
     }
 
+    public static EventCaptureFormFragment newInstance(String eventUid, String guid, int status) {
+        EventCaptureFormFragment fragment = new EventCaptureFormFragment();
+        Bundle args = new Bundle();
+        args.putString(Constants.EVENT_UID, eventUid);
+        args.putString(BIOMETRICS_GUID, guid);
+        args.putInt(BIOMETRICS_VERIFICATION_STATUS, status);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public void onAttach(@NotNull Context context) {
         super.onAttach(context);
         this.activity = (EventCaptureActivity) context;
+        this.biometricsGuid = getArguments().getString(BIOMETRICS_GUID);
+        this.biometricsVerificationStatus = getArguments().getInt(BIOMETRICS_VERIFICATION_STATUS);
         activity.eventCaptureComponent.plus(
                 new EventCaptureFormModule(
                         this,
@@ -129,6 +150,23 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
     @Override
     public void showFields(@NonNull List<FieldUiModel> updates) {
+
+       int index = -1;
+
+        for(int i = 0; i< updates.size(); i++){
+            if(updates.get(i).getLabel().equalsIgnoreCase("biometrics verification")){
+                index = i;
+            }
+        }
+
+        if(index > 0 ){
+            BiometricsVerificationViewModel statusViewModel = (BiometricsVerificationViewModel) updates.get(index);
+            BiometricsVerificationView.BiometricsVerificationStatus status = presenter.calculateVerificationStatus(biometricsVerificationStatus);
+            FieldUiModel newStatusViewModel = statusViewModel.withValueAndStatus(biometricsGuid, status);
+            updates.remove(index);
+            updates.add(index, newStatusViewModel);
+        }
+
         formView.render(updates);
     }
 

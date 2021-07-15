@@ -43,6 +43,7 @@ ext {
             indicatordots    : "2.1.2",
             latestSecureStorageVersion    : "1.2.2",
             markwon          : "4.6.0",
+            libSimprintsVersion : "2021.1.0",
 
             paperwork        : "1.2.7",
             rxjava           : "2.1.0",

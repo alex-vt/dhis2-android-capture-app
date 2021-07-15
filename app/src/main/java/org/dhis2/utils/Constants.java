@@ -43,6 +43,14 @@ public class Constants {
     public static final int CAMERA_REQUEST = 108;
     public static final int GALLERY_REQUEST = 143;
 
+    //Biometrics with Simprints App
+    public static final int SIMPRINTS_ENROLL_REQUEST = 99;
+    public static final int SIMPRINTS_IDENTIFY_REQUEST = 199;
+    public static final int SIMPRINTS_VERIFY_REQUEST = 299;
+    public static final String BIOMETRICS_FAILURE_PATTERN = "$$$$BIOMETRICS_FAILED$$$$";
+
+    public static final String BIOMETRICS_GUID = "BIOMETRICS_GUID";
+    public static final String BIOMETRICS_VERIFICATION_STATUS = "BIOMETRICS_VERIFICATION_STATUS";
 
     // LOGIN
     public static final String ACCOUNT_RECOVERY = "/dhis-web-commons/security/recovery.action";

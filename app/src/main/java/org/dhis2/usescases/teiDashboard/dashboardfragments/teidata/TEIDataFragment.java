@@ -4,11 +4,14 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +22,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
+import com.simprints.libsimprints.Verification;
 
 import org.dhis2.App;
 import org.dhis2.R;
@@ -78,6 +82,7 @@ import static org.dhis2.utils.Constants.EVENT_REPEATABLE;
 import static org.dhis2.utils.Constants.EVENT_SCHEDULE_INTERVAL;
 import static org.dhis2.utils.Constants.ORG_UNIT;
 import static org.dhis2.utils.Constants.PROGRAM_UID;
+import static org.dhis2.utils.Constants.SIMPRINTS_VERIFY_REQUEST;
 import static org.dhis2.utils.Constants.TRACKED_ENTITY_INSTANCE;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CREATE_EVENT_TEI;
 import static org.dhis2.utils.analytics.AnalyticsConstants.TYPE_EVENT_TEI;
@@ -216,6 +221,18 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
     }
 
     @Override
+    public void launchSimprintsAppForVerification(Intent simIntent) {
+
+        PackageManager manager = getContext().getPackageManager();
+        List<ResolveInfo> infos = manager.queryIntentActivities(simIntent, 0);
+        if (infos.size() > 0) {
+            startActivityForResult(simIntent, SIMPRINTS_VERIFY_REQUEST);
+        } else {
+            Toast.makeText(getContext(), "Please download simprints app!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         presenter.init();
@@ -291,9 +308,34 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
                             presenter.displayGenerateEvent(lastModifiedEventUid);
                     }
                 }
+            }else if(requestCode == SIMPRINTS_VERIFY_REQUEST){
+                onSimprintsAppResponse(data);
             }
             if (requestCode == REQ_DETAILS) {
                 activity.getPresenter().init();
+            }
+        }
+    }
+
+    private void onSimprintsAppResponse(Intent data) {
+        boolean check = data.getBooleanExtra(com.simprints.libsimprints.Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false);
+        if(check){
+            Verification verification =
+                    data.getParcelableExtra(com.simprints.libsimprints.Constants.SIMPRINTS_VERIFICATION);
+            if(null != verification) {
+                switch (verification.getTier()) {
+                    case TIER_1:
+                    case TIER_2:
+                    case TIER_3:
+                    case TIER_4:
+                        presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 1);
+                        break;
+                    case TIER_5:
+                        presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
+                        break;
+                }
+            }else {
+                presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
             }
         }
     }

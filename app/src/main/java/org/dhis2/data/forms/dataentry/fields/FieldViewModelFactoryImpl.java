@@ -4,6 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.ObservableField;
 import org.dhis2.data.forms.dataentry.fields.age.AgeViewModel;
+import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel;
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel;
 import org.dhis2.data.forms.dataentry.fields.coordinate.CoordinateViewModel;
 import org.dhis2.data.forms.dataentry.fields.datetime.DateTimeViewModel;
 import org.dhis2.data.forms.dataentry.fields.edittext.EditTextViewModel;
@@ -37,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import androidx.lifecycle.ViewModel;
 import autovalue.shaded.org.checkerframework$.checker.nullness.qual.$NonNull;
 import io.reactivex.Flowable;
 import io.reactivex.processors.FlowableProcessor;
@@ -77,6 +81,7 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
                                            @Nullable String value,
                                            boolean editable) {
         return create(trackedEntityAttribute.uid(),
+                trackedEntityAttribute.code(),
                 trackedEntityAttribute.displayFormName(),
                 trackedEntityAttribute.valueType(),
                 programTrackedEntityAttribute != null ? programTrackedEntityAttribute.mandatory() : false,
@@ -99,7 +104,7 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
 
     @NonNull
     @Override
-    public FieldUiModel create(@NonNull String id, @NonNull String label, @NonNull ValueType type,
+    public FieldUiModel create(@NonNull String id, @NonNull String code, @NonNull String label, @NonNull ValueType type,
                                @NonNull Boolean mandatory, @Nullable String optionSet, @Nullable String value,
                                @Nullable String section, @Nullable Boolean allowFutureDates, @NonNull Boolean editable, @Nullable ProgramStageSectionRenderingType renderingType,
                                @Nullable String description, @Nullable ValueTypeDeviceRendering fieldRendering, @Nullable Integer optionCount, ObjectStyle objectStyle,
@@ -123,6 +128,14 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
             }
         }
 
+        if(label.equalsIgnoreCase("biometrics")){
+            return BiometricsViewModel.create(id, label, mandatory, value, section,editable, description, objectStyle,processor, style, url);
+        }
+
+        if(label.equalsIgnoreCase("biometrics verification")){
+            return BiometricsVerificationViewModel.create(id, label, mandatory, value, section,editable, description, objectStyle,processor, style, url, BiometricsVerificationView.BiometricsVerificationStatus.NOT_DONE);
+        }
+
         switch (type) {
             case AGE:
                 FieldUiModel ageViewModel = AgeViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, !searchMode, searchMode, processor, style, url);
@@ -143,7 +156,7 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
                 if (fieldRendering != null && (fieldRendering.type().equals(ValueTypeRenderingType.QR_CODE) || fieldRendering.type().equals(ValueTypeRenderingType.BAR_CODE))) {
                     return ScanTextViewModel.create(id, label, mandatory, value, section, editable, optionSet, description, objectStyle, fieldRendering, valueTypeHintMap.get(type), !searchMode, searchMode, processor, url);
                 } else {
-                    return EditTextViewModel.create(id, label, mandatory, value, valueTypeHintMap.get(type), 1, type, section, editable, description, fieldRendering, objectStyle, fieldMask, ProgramStageSectionRenderingType.LISTING.toString(), !searchMode, searchMode, processor, legendValue, url);
+                    return EditTextViewModel.create(id, code, label, mandatory, value, valueTypeHintMap.get(type), 1, type, section, editable, description, fieldRendering, objectStyle, fieldMask, ProgramStageSectionRenderingType.LISTING.toString(), !searchMode, searchMode, processor, legendValue, url);
                 }
             case IMAGE:
                 return PictureViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, processor, !searchMode, url);
@@ -164,7 +177,7 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
             case USERNAME:
                 return UnsupportedViewModel.create(id, label, mandatory, value, section, editable, description, objectStyle, processor, url);
             default:
-                return EditTextViewModel.create(id, label, mandatory, value, valueTypeHintMap.get(type), 1, type, section, editable, description, fieldRendering, objectStyle, fieldMask, ProgramStageSectionRenderingType.LISTING.toString(), !searchMode, searchMode, processor, legendValue, url);
+                return EditTextViewModel.create(id, code, label, mandatory, value, valueTypeHintMap.get(type), 1, type, section, editable, description, fieldRendering, objectStyle, fieldMask, ProgramStageSectionRenderingType.LISTING.toString(), !searchMode, searchMode, processor, legendValue, url);
         }
     }
 

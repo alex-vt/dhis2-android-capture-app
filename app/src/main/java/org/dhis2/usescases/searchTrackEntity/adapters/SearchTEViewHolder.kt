@@ -39,5 +39,7 @@ class SearchTEViewHolder(
                 teiModel.isOnline
             )
         }
+
+        binding.noneOfTheAboveBiometricsMatchButton.setOnClickListener { view -> presenter.onNoneOfTheAboveBiometricsMatchButtonClick() }
     }
 }

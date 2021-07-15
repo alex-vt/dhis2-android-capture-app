@@ -3,6 +3,7 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureF
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.FlowableProcessor
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView
 import org.dhis2.data.schedulers.SchedulerProvider
 import org.dhis2.form.data.FormRepository
 import org.dhis2.form.model.ActionType
@@ -85,6 +86,16 @@ class EventCaptureFormPresenter(
 
     fun onActionButtonClick() {
         activityPresenter.attempFinish()
+    }
+
+    fun calculateVerificationStatus(biometricsVerificationStatus: Int): BiometricsVerificationView.BiometricsVerificationStatus{
+        if(biometricsVerificationStatus == 0){
+            return BiometricsVerificationView.BiometricsVerificationStatus.FAILURE
+        }else if (biometricsVerificationStatus == 1){
+            return BiometricsVerificationView.BiometricsVerificationStatus.SUCCESS
+        }else {
+            return BiometricsVerificationView.BiometricsVerificationStatus.NOT_DONE
+        }
     }
 
     fun <E> Iterable<E>.updated(index: Int, elem: E): List<E> =
