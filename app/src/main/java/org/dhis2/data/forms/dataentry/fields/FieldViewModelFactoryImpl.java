@@ -83,7 +83,6 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
                                            @Nullable String value,
                                            boolean editable) {
         return create(trackedEntityAttribute.uid(),
-                trackedEntityAttribute.code(),
                 trackedEntityAttribute.displayFormName(),
                 trackedEntityAttribute.valueType(),
                 programTrackedEntityAttribute != null ? programTrackedEntityAttribute.mandatory() : false,
@@ -106,7 +105,7 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
 
     @NonNull
     @Override
-    public FieldUiModel create(@NonNull String id, @NonNull String code, @NonNull String label, @NonNull ValueType type,
+    public FieldUiModel create(@NonNull String id, @NonNull String label, @NonNull ValueType type,
                                @NonNull Boolean mandatory, @Nullable String optionSet, @Nullable String value,
                                @Nullable String section, @Nullable Boolean allowFutureDates, @NonNull Boolean editable, @Nullable ProgramStageSectionRenderingType renderingType,
                                @Nullable String description, @Nullable ValueTypeDeviceRendering fieldRendering, @Nullable Integer optionCount, ObjectStyle objectStyle,

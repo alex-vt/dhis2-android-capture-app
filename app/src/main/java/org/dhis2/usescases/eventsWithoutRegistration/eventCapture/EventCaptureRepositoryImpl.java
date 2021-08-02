@@ -271,7 +271,7 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
                                 programStageSection.renderType().mobile().type() : null;
 
                         FieldUiModel fieldViewModel =
-                                fieldFactory.create(uid, de.code(), formName == null ? displayName : formName,
+                                fieldFactory.create(uid, formName == null ? displayName : formName,
                                         valueType, mandatory, optionSet, dataValue,
                                         programStageSection != null ? programStageSection.uid() : null, allowFutureDates,
                                         isEventEditable,

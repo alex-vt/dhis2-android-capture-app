@@ -25,7 +25,6 @@ public interface FieldViewModelFactory {
 
     @NonNull
     FieldUiModel create(@NonNull String id,
-                          @NonNull String code,
                           @NonNull String label,
                           @NonNull ValueType valueType,
                           @NonNull Boolean mandatory,

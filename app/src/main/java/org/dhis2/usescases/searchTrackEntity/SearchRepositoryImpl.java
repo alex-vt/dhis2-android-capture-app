@@ -132,11 +132,10 @@ public class SearchRepositoryImpl implements SearchRepository {
                             true
                     );
                 })
-                .toList()
-                .map(list ->
+                .toList().map(list ->
                         CollectionsKt.filter(list, item ->
                                 !(item instanceof PictureViewModel) &&
-                                        !(item instanceof CoordinateViewModel) )
+                                        !(item instanceof CoordinateViewModel))
                 ).toObservable();
     }
 
@@ -166,7 +165,7 @@ public class SearchRepositoryImpl implements SearchRepository {
                 }).toList().map(list ->
                         CollectionsKt.filter(list, item ->
                                 !(item instanceof PictureViewModel) &&
-                                        !(item instanceof CoordinateViewModel) )
+                                        !(item instanceof CoordinateViewModel))
                 ).toObservable();
     }
 
