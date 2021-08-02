@@ -1,6 +1,7 @@
 package org.dhis2.usescases.teiDashboard;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricAttribute;
 
 import androidx.databinding.BaseObservable;
 
@@ -168,7 +169,7 @@ public class DashboardProgramModel extends BaseObservable {
         String biometricUid = null;
 
         for(ProgramTrackedEntityAttribute trackedEntityAttribute: trackedEntityAttributes){
-            if(trackedEntityAttribute.name().contains("Biometrics")){
+            if(isBiometricAttribute(trackedEntityAttribute)){
                 biometricUid =  trackedEntityAttribute.trackedEntityAttribute().uid();
                 break;
             }

@@ -14,13 +14,13 @@ import org.dhis2.data.forms.dataentry.EnrollmentRepository
 import org.dhis2.data.forms.dataentry.ValueStore
 import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel
 import org.dhis2.data.forms.dataentry.fields.display.DisplayViewModel
-import org.dhis2.data.forms.dataentry.fields.edittext.EditTextViewModel
 import org.dhis2.data.forms.dataentry.fields.section.SectionViewModel
 import org.dhis2.data.schedulers.SchedulerProvider
 import org.dhis2.form.data.FormRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
 import org.dhis2.form.model.ValueStoreResult
+import org.dhis2.usescases.biometrics.isBiometricModel
 import org.dhis2.utils.Constants
 import org.dhis2.utils.DhisTextUtils
 import org.dhis2.utils.Result
@@ -546,8 +546,7 @@ class EnrollmentPresenterImpl(
             .list()
             .map { fieldViewModels ->
                 val biometricViewModel = fieldViewModels.firstOrNull {
-                    it is BiometricsViewModel && it.label() != null && it.label()
-                        .equals("Biometrics", true)
+                    it.isBiometricModel()
                 }
 
                 if (biometricViewModel == null) {
@@ -571,8 +570,7 @@ class EnrollmentPresenterImpl(
             .list()
             .map { fieldViewModels ->
                 val biometricViewModel = fieldViewModels.firstOrNull {
-                    it is BiometricsViewModel && it.label() != null && it.label()
-                        .equals("Biometrics", true)
+                    it.isBiometricModel()
                 }
 
                 if (biometricViewModel == null) {
@@ -595,8 +593,7 @@ class EnrollmentPresenterImpl(
             .list()
             .map { fieldViewModels ->
                 val biometricViewModel = fieldViewModels.firstOrNull {
-                    it is BiometricsViewModel && it.label() != null && it.label()
-                        .equals("Biometrics", true)
+                    it.isBiometricModel()
                 }
 
                 if (biometricViewModel == null) {

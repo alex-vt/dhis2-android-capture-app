@@ -40,7 +40,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import androidx.lifecycle.ViewModel;
 import autovalue.shaded.org.checkerframework$.checker.nullness.qual.$NonNull;
 import io.reactivex.Flowable;
 import io.reactivex.processors.FlowableProcessor;
@@ -48,6 +47,8 @@ import io.reactivex.processors.PublishProcessor;
 
 import static org.dhis2.data.forms.dataentry.EnrollmentRepository.SINGLE_SECTION_UID;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricsVerificationText;
 import static org.dhis2.utils.Preconditions.isNull;
 
 public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
@@ -130,11 +131,11 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
         }
 
         if (BIOMETRICS_ENABLED){
-            if(label.equalsIgnoreCase("biometrics")){
+            if(isBiometricText(label)){
                 return BiometricsViewModel.create(id, label, mandatory, value, section,editable, description, objectStyle,processor, style, url);
             }
 
-            if(label.equalsIgnoreCase("biometrics verification")){
+            if(isBiometricsVerificationText(label)){
                 return BiometricsVerificationViewModel.create(id, label, mandatory, value, section,editable, description, objectStyle,processor, style, url, BiometricsVerificationView.BiometricsVerificationStatus.NOT_DONE);
             }
         }

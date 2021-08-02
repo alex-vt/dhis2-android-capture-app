@@ -117,6 +117,7 @@ import static com.simprints.libsimprints.Constants.SIMPRINTS_REFUSAL_FORM;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_SESSION_ID;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
 import static org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialPresenter.ACCESS_LOCATION_PERMISSION_REQUEST;
 import static org.dhis2.utils.Constants.SIMPRINTS_IDENTIFY_REQUEST;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CHANGE_PROGRAM;
@@ -602,7 +603,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private void findBiometricUid(List<FieldUiModel> data) {
         for(int i=data.size()-1; i>=0; i--){
             String label = data.get(i).getLabel();
-            if(label != null && label.equalsIgnoreCase("biometrics")){
+            if(isBiometricText( label)){
                 biometricUid = data.get(i).getUid();
                 break;
             }
@@ -614,7 +615,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
         for(int i=data.size()-1; i>=0; i--){
             String label = data.get(i).getLabel();
-            if(!label.equalsIgnoreCase("biometrics")){
+            if(!isBiometricText( label)){
                 finalData.add( data.get(i));
             }
         }
