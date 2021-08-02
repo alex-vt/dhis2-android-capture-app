@@ -31,7 +31,7 @@ import org.dhis2.utils.EventMode;
 import org.dhis2.utils.Result;
 import org.dhis2.utils.analytics.AnalyticsHelper;
 import org.dhis2.utils.filters.FilterManager;
-import org.dhis2.utils.simprints.SimprintsHelper;
+import org.dhis2.data.biometrics.BiometricsClient;
 import org.hisp.dhis.android.core.D2;
 import org.hisp.dhis.android.core.enrollment.Enrollment;
 import org.hisp.dhis.android.core.event.Event;
@@ -438,8 +438,7 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     }
 
     private void launchSimprintsAppForVerification(String guid){
-        Intent simIntent = SimprintsHelper.simHelper.verify("MODULE ID", guid);
-        view.launchSimprintsAppForVerification(simIntent);
+        view.launchBiometricsVerification(guid);
     }
 
     @Override

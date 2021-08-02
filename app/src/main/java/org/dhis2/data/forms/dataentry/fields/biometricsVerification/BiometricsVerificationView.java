@@ -1,28 +1,19 @@
 package org.dhis2.data.forms.dataentry.fields.biometricsVerification;
 
-import static org.dhis2.utils.Constants.SIMPRINTS_VERIFY_REQUEST;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import org.dhis2.R;
 import org.dhis2.databinding.BiometricsVerificationViewBinding;
 import org.dhis2.utils.customviews.FieldLayout;
-import org.dhis2.utils.simprints.SimprintsHelper;
-
-import java.util.List;
+import org.dhis2.data.biometrics.BiometricsClient;
 
 import androidx.appcompat.content.res.AppCompatResources;
-import timber.log.Timber;
 
 public class BiometricsVerificationView extends FieldLayout {
 
@@ -68,7 +59,7 @@ public class BiometricsVerificationView extends FieldLayout {
         tryAgainButton = findViewById(R.id.tryAgainButton);
         statusImageView  = findViewById(R.id.statusImageView);
 
-        tryAgainButton.setOnClickListener(v ->  launchSimprintsForVerification());
+        tryAgainButton.setOnClickListener(v ->  launchBiometricsVerification());
     }
 
     public void setViewModel(BiometricsVerificationViewModel viewModel) {
@@ -93,21 +84,7 @@ public class BiometricsVerificationView extends FieldLayout {
     }
 
 
-    private void launchSimprintsForVerification() {
-        //Launch Simprints App Intent - ProjectId, UserId, ModuleId.
-        if(guid ==  null){
-            Timber.i("Simprints Verification - Guid is Null - Please check again!");
-            return;
-        }
-        Intent simIntent = SimprintsHelper.simHelper.verify("MODULE ID", guid);
-
-        PackageManager manager = this.getContext().getPackageManager();
-        List<ResolveInfo> infos = manager.queryIntentActivities(simIntent, 0);
-        if (infos.size() > 0) {
-            ((Activity)this.getContext()).startActivityForResult(simIntent, SIMPRINTS_VERIFY_REQUEST);
-        } else {
-            Toast.makeText(this.getContext(), "Please download simprints app!", Toast.LENGTH_SHORT).show();
-
-        }
+    private void launchBiometricsVerification() {
+        BiometricsClient.INSTANCE.verify(((Activity) this.getContext()), guid);
     }
 }

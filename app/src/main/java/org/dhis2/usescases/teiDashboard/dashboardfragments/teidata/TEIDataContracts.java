@@ -85,7 +85,7 @@ public class TEIDataContracts {
 
         void showSyncDialog(String uid);
 
-        void launchSimprintsAppForVerification(Intent simIntent);
+        void launchBiometricsVerification(String guid);
     }
 
     public interface Presenter extends AbstractActivityContracts.Presenter {

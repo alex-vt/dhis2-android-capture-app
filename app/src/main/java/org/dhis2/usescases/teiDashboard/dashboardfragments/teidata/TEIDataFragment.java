@@ -26,6 +26,7 @@ import com.simprints.libsimprints.Verification;
 
 import org.dhis2.App;
 import org.dhis2.R;
+import org.dhis2.data.biometrics.BiometricsClient;
 import org.dhis2.databinding.FragmentTeiDataBinding;
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity;
 import org.dhis2.usescases.general.FragmentGlobalAbstract;
@@ -221,15 +222,8 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
     }
 
     @Override
-    public void launchSimprintsAppForVerification(Intent simIntent) {
-
-        PackageManager manager = getContext().getPackageManager();
-        List<ResolveInfo> infos = manager.queryIntentActivities(simIntent, 0);
-        if (infos.size() > 0) {
-            startActivityForResult(simIntent, SIMPRINTS_VERIFY_REQUEST);
-        } else {
-            Toast.makeText(getContext(), "Please download simprints app!", Toast.LENGTH_SHORT).show();
-        }
+    public void launchBiometricsVerification(String guid) {
+       BiometricsClient.INSTANCE.verify(this, guid);
     }
 
     @Override

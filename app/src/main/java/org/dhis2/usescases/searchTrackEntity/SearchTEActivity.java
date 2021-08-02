@@ -4,12 +4,9 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -65,7 +62,6 @@ import org.dhis2.uicomponents.map.managers.TeiMapManager;
 import org.dhis2.uicomponents.map.mapper.MapRelationshipToRelationshipMapModel;
 import org.dhis2.uicomponents.map.model.CarouselItemModel;
 import org.dhis2.uicomponents.map.model.MapStyle;
-import org.dhis2.uicomponents.map.views.MapSelectorActivity;
 import org.dhis2.usescases.enrollment.EnrollmentActivity;
 import org.dhis2.usescases.general.ActivityGlobalAbstract;
 import org.dhis2.usescases.orgunitselector.OUTreeFragment;
@@ -77,7 +73,6 @@ import org.dhis2.utils.ColorUtils;
 import org.dhis2.utils.Constants;
 import org.dhis2.utils.DateUtils;
 import org.dhis2.utils.DialogClickListener;
-import org.dhis2.utils.FileResourcesUtil;
 import org.dhis2.utils.HelpManager;
 import org.dhis2.utils.NetworkUtils;
 import org.dhis2.utils.customviews.BreakTheGlassBottomDialog;
@@ -88,12 +83,9 @@ import org.dhis2.utils.filters.FilterManager;
 import org.dhis2.utils.filters.Filters;
 import org.dhis2.utils.filters.FiltersAdapter;
 import org.dhis2.utils.idlingresource.CountingIdlingResourceSingleton;
-import org.dhis2.utils.simprints.SimprintsHelper;
+import org.dhis2.data.biometrics.BiometricsClient;
 import org.hisp.dhis.android.core.arch.call.D2Progress;
-import org.hisp.dhis.android.core.arch.helpers.FileResourceDirectoryHelper;
-import org.hisp.dhis.android.core.common.FeatureType;
 import org.hisp.dhis.android.core.program.Program;
-import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -277,27 +269,18 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         teiMapManager.setOnMapClickListener(this);
 
         binding.biometricSearch.setOnClickListener(v -> {
-            //simprints - Identification Workflow
-            launchSimprintsApp();
+            searchByBiometrics();
         });
     }
 
-    private void launchSimprintsApp() {
-        Intent intent = SimprintsHelper.simHelper.identify("Module ID");
-        PackageManager manager = getContext().getPackageManager();
-        List<ResolveInfo> infos = manager.queryIntentActivities(intent, 0);
-        if (infos.size() > 0) {
-            initSearchNeeded = false;
-            startActivityForResult(intent, SIMPRINTS_IDENTIFY_REQUEST);
-        } else {
-            Toast.makeText(getContext(), "Please download simprints app!", Toast.LENGTH_SHORT).show();
-        }
+    private void searchByBiometrics() {
+        BiometricsClient.INSTANCE.identify(this);
     }
 
     @Override
     public void sendBiometricsAppData(String sessionId, String guid) {
         if(sessionId != null && guid != null) {
-            SimprintsHelper.simHelper.confirmIdentity(getContext(), sessionId, guid);
+            BiometricsClient.simHelper.confirmIdentity(getContext(), sessionId, guid);
         }
     }
 
@@ -468,7 +451,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         DialogClickListener dialogClickListener = new DialogClickListener() {
             @Override
             public void onPositive() {
-                launchSimprintsApp();
+                searchByBiometrics();
             }
 
             @Override
