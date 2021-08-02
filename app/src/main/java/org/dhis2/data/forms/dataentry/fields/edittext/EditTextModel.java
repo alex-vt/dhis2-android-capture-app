@@ -9,9 +9,6 @@ import org.hisp.dhis.android.core.common.ValueType;
 
 
 public abstract class EditTextModel<T> extends EditableFieldViewModel<T> {
-    @Nullable
-    public abstract String code();
-
     @NonNull
     public abstract String hint();
 
