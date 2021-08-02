@@ -1,8 +1,8 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
-import static org.dhis2.utils.Constants.BIOMETRICS_GUID;
-import static org.dhis2.utils.Constants.BIOMETRICS_VERIFICATION_STATUS;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 
 import android.content.Context;
 import android.content.Intent;
@@ -20,7 +20,6 @@ import androidx.fragment.app.FragmentTransaction;
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
 import org.dhis2.data.forms.dataentry.FormView;
-import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel;
 import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
 import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel;
 import org.dhis2.data.location.LocationProvider;
@@ -37,7 +36,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
 
 public class EventCaptureFormFragment extends FragmentGlobalAbstract implements EventCaptureFormView {
 

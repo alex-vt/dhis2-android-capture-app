@@ -1,5 +1,7 @@
 package org.dhis2.data.forms.dataentry.fields.biometrics;
 
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_FAILURE_PATTERN;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -12,7 +14,6 @@ import android.widget.LinearLayout;
 import org.dhis2.R;
 import org.dhis2.data.biometrics.BiometricsClient;
 import org.dhis2.databinding.BiometricsViewBinding;
-import org.dhis2.utils.Constants;
 import org.dhis2.utils.customviews.FieldLayout;
 
 import timber.log.Timber;
@@ -69,7 +70,7 @@ public class BiometricsView extends FieldLayout {
         Timber.tag("BiometricsView value").d(value);
 
         if(value !=null && value.length() > 0){
-            if(value.equalsIgnoreCase(Constants.BIOMETRICS_FAILURE_PATTERN)){
+            if(value.equalsIgnoreCase(BIOMETRICS_FAILURE_PATTERN)){
                 Timber.tag("BiometricsView").d("onFailure");
                 onFailure();
             }else {

@@ -20,8 +20,8 @@ import org.dhis2.form.data.FormRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
 import org.dhis2.form.model.ValueStoreResult
+import org.dhis2.usescases.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.usescases.biometrics.isBiometricModel
-import org.dhis2.utils.Constants
 import org.dhis2.utils.DhisTextUtils
 import org.dhis2.utils.Result
 import org.dhis2.utils.RulesUtilsProviderConfigurationError
@@ -557,7 +557,7 @@ class EnrollmentPresenterImpl(
             }
             .subscribe(
                 { viewModel ->
-                    if (viewModel.value().equals(Constants.BIOMETRICS_FAILURE_PATTERN)) {
+                    if (viewModel.value().equals(BIOMETRICS_FAILURE_PATTERN)) {
                         valueStore.save(viewModel.uid(), null).blockingFirst()
                     }
                 },
@@ -604,7 +604,7 @@ class EnrollmentPresenterImpl(
             }
             .subscribe(
                 { viewModel ->
-                    valueStore.save(viewModel.uid(), Constants.BIOMETRICS_FAILURE_PATTERN)
+                    valueStore.save(viewModel.uid(), BIOMETRICS_FAILURE_PATTERN)
                         .blockingFirst()
                     updateFields()
                 },

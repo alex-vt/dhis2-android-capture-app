@@ -50,14 +50,11 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import kotlin.Unit;
-import androidx.fragment.app.FragmentManager;
-import io.reactivex.functions.Consumer;
-import timber.log.Timber;
 
-import static org.dhis2.utils.Constants.BIOMETRICS_GUID;
-import static org.dhis2.utils.Constants.BIOMETRICS_VERIFICATION_STATUS;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.SIMPRINTS_VERIFY_REQUEST;
 import static org.dhis2.utils.Constants.PROGRAM_UID;
-import static org.dhis2.utils.Constants.SIMPRINTS_VERIFY_REQUEST;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CLICK;
 import static org.dhis2.utils.analytics.AnalyticsConstants.DELETE_EVENT;
 import static org.dhis2.utils.analytics.AnalyticsConstants.SHOW_HELP;

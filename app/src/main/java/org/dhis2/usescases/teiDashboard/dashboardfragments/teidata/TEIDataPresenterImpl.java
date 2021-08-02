@@ -58,8 +58,8 @@ import timber.log.Timber;
 import static android.text.TextUtils.isEmpty;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
-import static org.dhis2.utils.Constants.BIOMETRICS_GUID;
-import static org.dhis2.utils.Constants.BIOMETRICS_VERIFICATION_STATUS;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ACTIVE_FOLLOW_UP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.FOLLOW_UP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.SHARE_TEI;

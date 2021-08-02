@@ -7,7 +7,9 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.simprints.libsimprints.SimHelper
-import org.dhis2.utils.Constants
+import org.dhis2.usescases.biometrics.SIMPRINTS_ENROLL_REQUEST
+import org.dhis2.usescases.biometrics.SIMPRINTS_IDENTIFY_REQUEST
+import org.dhis2.usescases.biometrics.SIMPRINTS_VERIFY_REQUEST
 import timber.log.Timber
 
 object BiometricsClient {
@@ -22,20 +24,20 @@ object BiometricsClient {
     fun register(activity: Activity) {
         val intent = simHelper.register(MODULE_ID)
 
-        if (checkSimprintsApp(activity, intent )){
-            activity.startActivityForResult(intent, Constants.SIMPRINTS_ENROLL_REQUEST)
+        if (checkSimprintsApp(activity, intent)) {
+            activity.startActivityForResult(intent, SIMPRINTS_ENROLL_REQUEST)
         }
     }
 
-    fun identify(activity: Activity){
+    fun identify(activity: Activity) {
         val intent = simHelper.identify(MODULE_ID)
 
-        if (checkSimprintsApp(activity, intent )){
-            activity.startActivityForResult(intent, Constants.SIMPRINTS_IDENTIFY_REQUEST)
+        if (checkSimprintsApp(activity, intent)) {
+            activity.startActivityForResult(intent, SIMPRINTS_IDENTIFY_REQUEST)
         }
     }
 
-    fun verify(activity: Activity, guid: String ) {
+    fun verify(activity: Activity, guid: String) {
         if (guid == null) {
             Timber.i("Simprints Verification - Guid is Null - Please check again!")
             return
@@ -43,12 +45,12 @@ object BiometricsClient {
 
         val intent = simHelper.verify(MODULE_ID, guid)
 
-        if (checkSimprintsApp(activity, intent )){
-            activity.startActivityForResult(intent, Constants.SIMPRINTS_VERIFY_REQUEST)
+        if (checkSimprintsApp(activity, intent)) {
+            activity.startActivityForResult(intent, SIMPRINTS_VERIFY_REQUEST)
         }
     }
 
-    fun verify(fragment: Fragment, guid: String ) {
+    fun verify(fragment: Fragment, guid: String) {
         if (guid == null) {
             Timber.i("Simprints Verification - Guid is Null - Please check again!")
             return
@@ -56,8 +58,8 @@ object BiometricsClient {
 
         val intent = simHelper.verify(MODULE_ID, guid)
 
-        if (fragment.context!= null && checkSimprintsApp(fragment.requireContext(), intent )){
-            fragment.startActivityForResult(intent, Constants.SIMPRINTS_VERIFY_REQUEST)
+        if (fragment.context != null && checkSimprintsApp(fragment.requireContext(), intent)) {
+            fragment.startActivityForResult(intent, SIMPRINTS_VERIFY_REQUEST)
         }
     }
 
@@ -71,6 +73,4 @@ object BiometricsClient {
             false
         }
     }
-
-
 }

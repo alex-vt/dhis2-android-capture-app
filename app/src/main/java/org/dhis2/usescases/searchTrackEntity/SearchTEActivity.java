@@ -109,9 +109,9 @@ import static com.simprints.libsimprints.Constants.SIMPRINTS_REFUSAL_FORM;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_SESSION_ID;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.SIMPRINTS_IDENTIFY_REQUEST;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
 import static org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialPresenter.ACCESS_LOCATION_PERMISSION_REQUEST;
-import static org.dhis2.utils.Constants.SIMPRINTS_IDENTIFY_REQUEST;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CHANGE_PROGRAM;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CLICK;
 
