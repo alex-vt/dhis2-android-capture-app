@@ -47,6 +47,7 @@ import io.reactivex.processors.FlowableProcessor;
 import io.reactivex.processors.PublishProcessor;
 
 import static org.dhis2.data.forms.dataentry.EnrollmentRepository.SINGLE_SECTION_UID;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
 import static org.dhis2.utils.Preconditions.isNull;
 
 public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
@@ -128,12 +129,14 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
             }
         }
 
-        if(label.equalsIgnoreCase("biometrics")){
-            return BiometricsViewModel.create(id, label, mandatory, value, section,editable, description, objectStyle,processor, style, url);
-        }
+        if (BIOMETRICS_ENABLED){
+            if(label.equalsIgnoreCase("biometrics")){
+                return BiometricsViewModel.create(id, label, mandatory, value, section,editable, description, objectStyle,processor, style, url);
+            }
 
-        if(label.equalsIgnoreCase("biometrics verification")){
-            return BiometricsVerificationViewModel.create(id, label, mandatory, value, section,editable, description, objectStyle,processor, style, url, BiometricsVerificationView.BiometricsVerificationStatus.NOT_DONE);
+            if(label.equalsIgnoreCase("biometrics verification")){
+                return BiometricsVerificationViewModel.create(id, label, mandatory, value, section,editable, description, objectStyle,processor, style, url, BiometricsVerificationView.BiometricsVerificationStatus.NOT_DONE);
+            }
         }
 
         switch (type) {

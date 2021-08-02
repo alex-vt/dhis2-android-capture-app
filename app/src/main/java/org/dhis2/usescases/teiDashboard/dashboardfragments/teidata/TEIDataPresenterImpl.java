@@ -57,6 +57,7 @@ import timber.log.Timber;
 
 import static android.text.TextUtils.isEmpty;
 
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
 import static org.dhis2.utils.Constants.BIOMETRICS_GUID;
 import static org.dhis2.utils.Constants.BIOMETRICS_VERIFICATION_STATUS;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ACTIVE_FOLLOW_UP;
@@ -403,7 +404,7 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
             Event event = d2.eventModule().events().uid(uid).blockingGet();
             ProgramStage stage = d2.programModule().programStages().uid(event.programStage()).blockingGet();
 
-            if(guid!=null && stage.displayName().equalsIgnoreCase("Follow-up")) {
+            if(BIOMETRICS_ENABLED && guid!=null && stage.displayName().equalsIgnoreCase("Follow-up")) {
                 launchSimprintsAppForVerification(guid);
             }else {
                 launchEventCapture(uid, null, -1);

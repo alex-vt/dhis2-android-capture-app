@@ -121,20 +121,19 @@
                 android:id="@+id/search_filter_general"
                 style="@style/ActionIcon"
                 android:onClick="@{()->presenter.showFilterGeneral()}"
-                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_filter"
                 tools:ignore="ContentDescription"
-                tools:visibility="visible" />
+                android:visibility="invisible"/>
 
             <ImageView
                 android:id="@+id/search_filter"
                 style="@style/ActionIcon"
                 android:onClick="@{()->presenter.showFilter()}"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/biometric_search"
+                app:layout_constraintEnd_toStartOf="@id/search_filter_general"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_search_add"
                 app:tint="@color/white"
@@ -143,12 +142,14 @@
             <ImageView
                 android:id="@+id/biometric_search"
                 style="@style/ActionIcon"
+                android:layout_width="40dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/icons8_facial_recognition_50"
                 tools:ignore="ContentDescription"
-                app:tint="@color/white" />
+                app:tint="@color/white"
+                android:visibility="invisible"/>
 
             <Spinner
                 android:id="@+id/program_spinner"

@@ -1,5 +1,6 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment;
 
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
 import static org.dhis2.utils.Constants.BIOMETRICS_GUID;
 import static org.dhis2.utils.Constants.BIOMETRICS_VERIFICATION_STATUS;
 
@@ -151,20 +152,22 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     @Override
     public void showFields(@NonNull List<FieldUiModel> updates) {
 
-       int index = -1;
+        if (BIOMETRICS_ENABLED){
+            int index = -1;
 
-        for(int i = 0; i< updates.size(); i++){
-            if(updates.get(i).getLabel().equalsIgnoreCase("biometrics verification")){
-                index = i;
+            for(int i = 0; i< updates.size(); i++){
+                if(updates.get(i).getLabel().equalsIgnoreCase("biometrics verification")){
+                    index = i;
+                }
             }
-        }
 
-        if(index > 0 ){
-            BiometricsVerificationViewModel statusViewModel = (BiometricsVerificationViewModel) updates.get(index);
-            BiometricsVerificationView.BiometricsVerificationStatus status = presenter.calculateVerificationStatus(biometricsVerificationStatus);
-            FieldUiModel newStatusViewModel = statusViewModel.withValueAndStatus(biometricsGuid, status);
-            updates.remove(index);
-            updates.add(index, newStatusViewModel);
+            if(index > 0 ){
+                BiometricsVerificationViewModel statusViewModel = (BiometricsVerificationViewModel) updates.get(index);
+                BiometricsVerificationView.BiometricsVerificationStatus status = presenter.calculateVerificationStatus(biometricsVerificationStatus);
+                FieldUiModel newStatusViewModel = statusViewModel.withValueAndStatus(biometricsGuid, status);
+                updates.remove(index);
+                updates.add(index, newStatusViewModel);
+            }
         }
 
         formView.render(updates);

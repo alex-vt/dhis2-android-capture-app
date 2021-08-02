@@ -116,6 +116,7 @@ import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_REFUSAL_FORM;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_SESSION_ID;
 
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
 import static org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialPresenter.ACCESS_LOCATION_PERMISSION_REQUEST;
 import static org.dhis2.utils.Constants.SIMPRINTS_IDENTIFY_REQUEST;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CHANGE_PROGRAM;
@@ -719,8 +720,14 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void setFiltersVisibility(boolean showFilters) {
         binding.filterCounter.setVisibility(showFilters ? View.VISIBLE : GONE);
-        //simprints - search_filter_general should not be visible.
-        //binding.searchFilterGeneral.setVisibility(View.VISIBLE);
+
+        if (BIOMETRICS_ENABLED) {
+            binding.searchFilterGeneral.setVisibility(View.INVISIBLE);
+            binding.biometricSearch.setVisibility(View.VISIBLE);
+        } else {
+            binding.searchFilterGeneral.setVisibility(View.VISIBLE);
+            binding.biometricSearch.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override

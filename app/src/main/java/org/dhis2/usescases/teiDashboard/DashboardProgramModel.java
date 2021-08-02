@@ -1,5 +1,7 @@
 package org.dhis2.usescases.teiDashboard;
 
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
+
 import androidx.databinding.BaseObservable;
 
 import org.hisp.dhis.android.core.common.ObjectStyle;
@@ -150,6 +152,10 @@ public class DashboardProgramModel extends BaseObservable {
         if (foundProgram != null && foundProgram.style() != null)
             return foundProgram.style();
         else return null;
+    }
+
+    public boolean isBiometricsEnabled(){
+        return BIOMETRICS_ENABLED;
     }
 
     public boolean isTrackedBiometricEntityExistAndHasValue(){

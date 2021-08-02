@@ -302,7 +302,8 @@
                     android:textColor="@color/text_black_4d4d4d"
                     android:textSize="12sp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/org_unit_label" />
+                    app:layout_constraintTop_toBottomOf="@id/org_unit_label"
+                    android:visibility="@{dashboardModel.isBiometricsEnabled?View.VISIBLE:View.GONE}"/>/>
 
                 <TextView
                     android:id="@+id/incident_date"
@@ -360,7 +361,8 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toEndOf="@id/biometrics_label"
-                    app:layout_constraintTop_toTopOf="@id/biometrics_label" />
+                    app:layout_constraintTop_toTopOf="@id/biometrics_label"
+                    android:visibility="@{dashboardModel.isBiometricsEnabled?View.VISIBLE:View.GONE}"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </com.google.android.flexbox.FlexboxLayout>
