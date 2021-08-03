@@ -24,6 +24,7 @@ import com.simprints.libsimprints.Verification;
 import org.dhis2.App;
 import org.dhis2.R;
 import org.dhis2.data.biometrics.BiometricsClient;
+import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.databinding.FragmentTeiDataBinding;
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity;
 import org.dhis2.usescases.general.FragmentGlobalAbstract;
@@ -74,7 +75,7 @@ import timber.log.Timber;
 import static android.app.Activity.RESULT_OK;
 import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.SIMPRINTS_VERIFY_REQUEST;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
 import static org.dhis2.utils.Constants.ENROLLMENT_UID;
 import static org.dhis2.utils.Constants.EVENT_CREATION_TYPE;
 import static org.dhis2.utils.Constants.EVENT_PERIOD_TYPE;
@@ -300,8 +301,8 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
                             presenter.displayGenerateEvent(lastModifiedEventUid);
                     }
                 }
-            }else if(requestCode == SIMPRINTS_VERIFY_REQUEST){
-                onSimprintsAppResponse(data);
+            }else if(requestCode == BIOMETRICS_VERIFY_REQUEST){
+                onBiometricsAppResponse(data);
             }
             if (requestCode == REQ_DETAILS) {
                 activity.getPresenter().init();
@@ -309,26 +310,15 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
         }
     }
 
-    private void onSimprintsAppResponse(Intent data) {
-        boolean check = data.getBooleanExtra(com.simprints.libsimprints.Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false);
-        if(check){
-            Verification verification =
-                    data.getParcelableExtra(com.simprints.libsimprints.Constants.SIMPRINTS_VERIFICATION);
-            if(null != verification) {
-                switch (verification.getTier()) {
-                    case TIER_1:
-                    case TIER_2:
-                    case TIER_3:
-                    case TIER_4:
-                        presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 1);
-                        break;
-                    case TIER_5:
-                        presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
-                        break;
-                }
-            }else {
-                presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
-            }
+    private void onBiometricsAppResponse(Intent data) {
+        VerifyResult result = BiometricsClient.INSTANCE.handleVerifyResponse(data);
+
+        if (result instanceof VerifyResult.Match){
+            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 1);
+        } else if (result instanceof VerifyResult.NoMatch){
+            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
+        } else if (result instanceof VerifyResult.Failure){
+            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
         }
     }
 

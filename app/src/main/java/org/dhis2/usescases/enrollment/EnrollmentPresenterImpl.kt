@@ -541,32 +541,29 @@ class EnrollmentPresenterImpl(
         showConfigurationError = false
     }
 
+    fun onBiometricsCompleted(guid: String) {
+        saveBiometricValue(guid)
+    }
+
+    fun onBiometricsFailure() {
+        saveBiometricValue(BIOMETRICS_FAILURE_PATTERN)
+    }
+
     private fun checkIfBiometricValueValid() {
-        disposable.add(dataEntryRepository
-            .list()
-            .map { fieldViewModels ->
-                val biometricViewModel = fieldViewModels.firstOrNull {
-                    it.isBiometricModel()
-                }
-
-                if (biometricViewModel == null) {
-                    throw IllegalStateException("Shouldn't have been allowed to start Simprints without Biometrics ViewModel")
-                } else {
-                    return@map biometricViewModel as BiometricsViewModel
-                }
-            }
-            .subscribe(
-                { viewModel ->
-                    if (viewModel.value().equals(BIOMETRICS_FAILURE_PATTERN)) {
-                        valueStore.save(viewModel.uid(), null).blockingFirst()
-                    }
-                },
-                { Timber.tag(TAG).e(it) }
-            ))
+        disposable.add(
+            getBiometricViewModel()
+                .subscribe(
+                    { viewModel ->
+                        if (viewModel.value().equals(BIOMETRICS_FAILURE_PATTERN)) {
+                            valueStore.save(viewModel.uid(), null).blockingFirst()
+                        }
+                    },
+                    { Timber.tag(TAG).e(it) }
+                ))
     }
 
-    fun onSimprintsBiometricsCompleted(guid: String) {
-        disposable.add(dataEntryRepository
+    private fun getBiometricViewModel(): Flowable<BiometricsViewModel>{
+        return dataEntryRepository
             .list()
             .map { fieldViewModels ->
                 val biometricViewModel = fieldViewModels.firstOrNull {
@@ -579,32 +576,14 @@ class EnrollmentPresenterImpl(
                     return@map biometricViewModel as BiometricsViewModel
                 }
             }
-            .subscribe(
-                { viewModel ->
-                    valueStore.save(viewModel.uid(), guid).blockingFirst()
-                    updateFields()
-                },
-                { Timber.tag(TAG).e(it) }
-            ))
     }
 
-    fun onSimprintsBiometricsFailure() {
-        disposable.add(dataEntryRepository
-            .list()
-            .map { fieldViewModels ->
-                val biometricViewModel = fieldViewModels.firstOrNull {
-                    it.isBiometricModel()
-                }
-
-                if (biometricViewModel == null) {
-                    throw IllegalStateException("Shouldn't have been allowed to start Simprints without Biometrics ViewModel")
-                } else {
-                    return@map biometricViewModel as BiometricsViewModel
-                }
-            }
+    private fun saveBiometricValue(value: String) {
+        disposable.add(
+            getBiometricViewModel()
             .subscribe(
                 { viewModel ->
-                    valueStore.save(viewModel.uid(), BIOMETRICS_FAILURE_PATTERN)
+                    valueStore.save(viewModel.uid(), value)
                         .blockingFirst()
                     updateFields()
                 },

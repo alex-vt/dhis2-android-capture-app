@@ -21,6 +21,8 @@ import javax.inject.Inject
 import org.dhis2.App
 import org.dhis2.Bindings.isKeyboardOpened
 import org.dhis2.R
+import org.dhis2.data.biometrics.BiometricsClient
+import org.dhis2.data.biometrics.RegisterResult
 import org.dhis2.data.forms.dataentry.FormView
 import org.dhis2.data.forms.dataentry.fields.display.DisplayViewModel
 import org.dhis2.data.location.LocationProvider
@@ -30,7 +32,7 @@ import org.dhis2.form.data.GeometryController
 import org.dhis2.form.data.GeometryParserImpl
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.uicomponents.map.views.MapSelectorActivity
-import org.dhis2.usescases.biometrics.SIMPRINTS_ENROLL_REQUEST
+import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_REQUEST
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity
 import org.dhis2.usescases.general.ActivityGlobalAbstract
@@ -204,18 +206,14 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                         ).show()
                     }
                 }
-                SIMPRINTS_ENROLL_REQUEST -> {
+                BIOMETRICS_ENROLL_REQUEST -> {
                     if (data != null) {
-                        val check = data.getBooleanExtra(SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false)
-                        if (check) {
-                            //Success!
-                            val registration: Registration? = data.getParcelableExtra(SIMPRINTS_REGISTRATION)
-                            // Now that we have the GUID, find the binding.customEdittext that corresponds to EditTextViewModel with code
-                            // "biometrics" and enter the GUID as the binding.customEdittext.getEditText().setText(GUID);
-                            if(registration == null){
-                                presenter.onSimprintsBiometricsFailure()
-                            }else {
-                                presenter.onSimprintsBiometricsCompleted(registration?.guid)
+                        when (val result = BiometricsClient.handleRegisterResponse(data)) {
+                            is RegisterResult.Completed -> {
+                                presenter.onBiometricsCompleted(result.guid)
+                            }
+                            is RegisterResult.Failure -> {
+                                presenter.onBiometricsFailure()
                             }
                         }
                     }

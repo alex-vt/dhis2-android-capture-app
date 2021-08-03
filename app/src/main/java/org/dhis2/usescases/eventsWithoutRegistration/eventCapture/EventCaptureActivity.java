@@ -23,6 +23,9 @@ import com.simprints.libsimprints.Verification;
 import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
+import org.dhis2.data.biometrics.BiometricsClient;
+import org.dhis2.data.biometrics.IdentifyResult;
+import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.databinding.ActivityEventCaptureBinding;
 import org.dhis2.databinding.WidgetDatepickerBinding;
 import org.dhis2.form.model.FieldUiModel;
@@ -53,7 +56,7 @@ import kotlin.Unit;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.SIMPRINTS_VERIFY_REQUEST;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
 import static org.dhis2.utils.Constants.PROGRAM_UID;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CLICK;
 import static org.dhis2.utils.analytics.AnalyticsConstants.DELETE_EVENT;
@@ -221,30 +224,19 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                     }
                 }
                 break;
-            case SIMPRINTS_VERIFY_REQUEST:
-                onSimprintsAppResponse(data);
-                break;
-        }
-    }
+            case BIOMETRICS_VERIFY_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    VerifyResult result = BiometricsClient.INSTANCE.handleVerifyResponse(data);
 
-    private void onSimprintsAppResponse(Intent data) {
-        boolean check = data.getBooleanExtra(com.simprints.libsimprints.Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false);
-        if(check){
-            Verification verification =
-                    data.getParcelableExtra(com.simprints.libsimprints.Constants.SIMPRINTS_VERIFICATION);
-            if(null != verification) {
-                switch (verification.getTier()) {
-                    case TIER_1:
-                    case TIER_2:
-                    case TIER_3:
-                    case TIER_4:
+                    if (result instanceof VerifyResult.Match){
                         binding.eventViewPager.setAdapter(getAdapter(1));
-                        break;
-                    case TIER_5:
+                    } else if (result instanceof VerifyResult.NoMatch){
                         binding.eventViewPager.setAdapter(getAdapter(0));
-                        break;
+                    } else if (result instanceof VerifyResult.Failure){
+                        binding.eventViewPager.setAdapter(getAdapter(0));
+                    }
                 }
-            }
+                break;
         }
     }
 

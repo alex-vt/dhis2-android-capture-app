@@ -48,6 +48,7 @@ import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
 import org.dhis2.animations.CarouselViewAnimations;
+import org.dhis2.data.biometrics.IdentifyResult;
 import org.dhis2.data.forms.dataentry.FormView;
 import org.dhis2.data.forms.dataentry.ProgramAdapter;
 import org.dhis2.data.forms.dataentry.fields.FieldViewModelFactory;
@@ -109,7 +110,7 @@ import static com.simprints.libsimprints.Constants.SIMPRINTS_REFUSAL_FORM;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_SESSION_ID;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.SIMPRINTS_IDENTIFY_REQUEST;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_IDENTIFY_REQUEST;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
 import static org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialPresenter.ACCESS_LOCATION_PERMISSION_REQUEST;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CHANGE_PROGRAM;
@@ -399,40 +400,27 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode) {
-            case SIMPRINTS_IDENTIFY_REQUEST:
+            case BIOMETRICS_IDENTIFY_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    boolean check = data.getBooleanExtra(SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false);
-                    if (check) {
-                        ArrayList<Identification> identifications = data.getParcelableArrayListExtra(SIMPRINTS_IDENTIFICATIONS);
-                        RefusalForm refusalForm = data.getParcelableExtra(SIMPRINTS_REFUSAL_FORM);
 
-                        //For Testing And Debugging
-//                        bioMetricsGuidList.add("995b1909-2a0c-4204-b0ce-499a3f8111ea");//995b1909-2a0c-4204-b0ce-499a3f8111ea
-//                        bioMetricsGuidList.add("!@#$%^&*()BIOMETRICS_DECLINED"); //!@#$%^&*()BIOMETRICS_DECLINED
+                    IdentifyResult result = BiometricsClient.INSTANCE.handleIdentifyResponse(data);
 
-                        if(identifications == null && refusalForm != null){
-                            Toast.makeText(getContext(), "Biometrics declined", Toast.LENGTH_SHORT).show();
-                            return;
-                        }else if(identifications == null){
-                            Toast.makeText(getContext(), "User can not be identified!", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
+                    if (result instanceof IdentifyResult.Completed){
+                        // TODO: biometrics refactor - simplify presenter
 
-                        ArrayList<String>bioMetricsGuidList = new ArrayList<>();
+                        IdentifyResult.Completed completedResult = (IdentifyResult.Completed)result;
 
-                        for (int i = 0; i < identifications.size(); i++) {
-                            identifications.get(i).getGuid();
-                            identifications.get(i).getConfidence();
-                            identifications.get(i).getTier();
-                            bioMetricsGuidList.add(identifications.get(i).getGuid());
-                        }
-
-                        String sessionId = data.getStringExtra(SIMPRINTS_SESSION_ID);
-                        presenter.storeBiometricsSessionID(sessionId);
-                        presenter.setBiometricsSearchGuidData(bioMetricsGuidList.get(0));
+                        presenter.storeBiometricsSessionID(completedResult.getSessionId());
+                        presenter.setBiometricsSearchGuidData(completedResult.getGuids().get(0));
                         presenter.setBiometricsSearchStatus(true);
-                        presenter.searchOnBiometrics(biometricUid, bioMetricsGuidList.get(0));
-                    }else{
+                        presenter.searchOnBiometrics(biometricUid,completedResult.getGuids().get(0));
+                    } else if (result instanceof IdentifyResult.BiometricsDeclined){
+                        Toast.makeText(getContext(), "Biometrics declined", Toast.LENGTH_SHORT).show();
+
+                    } else if (result instanceof IdentifyResult.UserNotFound){
+                        Toast.makeText(getContext(), "User can not be identified!", Toast.LENGTH_SHORT).show();
+
+                    } else if (result instanceof IdentifyResult.Failure){
                         showBiometricsErrorDialog();
                     }
                 }else {
