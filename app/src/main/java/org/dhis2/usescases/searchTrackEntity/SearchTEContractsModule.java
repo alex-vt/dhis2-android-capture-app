@@ -186,16 +186,12 @@ public class SearchTEContractsModule {
 
         void populateList(List<FieldUiModel> list);
 
-        void searchOnBiometrics(String biometricUid, String guid);
+        void searchOnBiometrics(List<String> guids, String sessionId);
 
         void setBiometricsSearchStatus(boolean status);
 
         boolean getBiometricsSearchStatus();
 
         void onNoneOfTheAboveBiometricsMatchButtonClick();
-
-        void storeBiometricsSessionID(String sessionId);
-
-        void setBiometricsSearchGuidData(String guid);
     }
 }

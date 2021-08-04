@@ -83,6 +83,8 @@ import io.reactivex.subjects.BehaviorSubject;
 import timber.log.Timber;
 
 import static android.app.Activity.RESULT_OK;
+
+import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
 import static org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipFragment.TEI_A_UID;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ADD_RELATIONSHIP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CREATE_ENROLL;
@@ -137,6 +139,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     private boolean biometricsSearchStatus = false;
     private String sessionId;
     private String biometricsSearchGuid = null;
+    private String biometricUid;
 
     public SearchTEPresenter(SearchTEContractsModule.View view,
                              D2 d2,
@@ -1054,12 +1057,18 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
             view.setFabIcon(!list.isEmpty());
         }
         view.setFormData(formRepository.composeList(list));
+        findBiometricUid(list);
     }
 
     @Override
-    public void searchOnBiometrics(String biometricUid, String guid) {
+    public void searchOnBiometrics(List<String> guids, String sessionId) {
+        this.sessionId = sessionId;
+        this.biometricsSearchGuid =  guids.get(0);
+        setBiometricsSearchStatus(true);
+
         queryData.clear();
-        queryData.put(biometricUid, guid);
+        queryData.put(biometricUid, biometricsSearchGuid);
+
         onFabClick(true);
 //        queryProcessor.onNext(queryData);
     }
@@ -1079,16 +1088,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         if(biometricsSearchStatus){
             sendBiometricsData("none_selected");
         }
-    }
-
-    @Override
-    public void storeBiometricsSessionID(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    @Override
-    public void setBiometricsSearchGuidData(String guid) {
-        this.biometricsSearchGuid = guid;
     }
 
     @Override
@@ -1136,5 +1135,15 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     @Override
     public void setOpeningFilterToNone(){
         filterRepository.collapseAllFilters();
+    }
+
+    private void findBiometricUid(List<FieldUiModel> data) {
+        for(int i=data.size()-1; i>=0; i--){
+            String label = data.get(i).getLabel();
+            if(isBiometricText( label)){
+                biometricUid = data.get(i).getUid();
+                break;
+            }
+        }
     }
 }

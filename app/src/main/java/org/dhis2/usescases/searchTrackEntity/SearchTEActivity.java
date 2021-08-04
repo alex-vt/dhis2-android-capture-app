@@ -162,7 +162,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private FormView formView;
 
     private CustomDialog biometricsErrorDialog;
-    private String biometricUid;
 
     //---------------------------------------------------------------------------------------------
 
@@ -410,10 +409,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
                         IdentifyResult.Completed completedResult = (IdentifyResult.Completed)result;
 
-                        presenter.storeBiometricsSessionID(completedResult.getSessionId());
-                        presenter.setBiometricsSearchGuidData(completedResult.getGuids().get(0));
-                        presenter.setBiometricsSearchStatus(true);
-                        presenter.searchOnBiometrics(biometricUid,completedResult.getGuids().get(0));
+                        presenter.searchOnBiometrics( completedResult.getGuids(),completedResult.getSessionId());
                     } else if (result instanceof IdentifyResult.BiometricsDeclined){
                         Toast.makeText(getContext(), R.string.biometrics_declined, Toast.LENGTH_SHORT).show();
 
@@ -564,21 +560,10 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     @Override
     public void setFormData(List<FieldUiModel> data) {
-        findBiometricUid(data);
         data = removeBiometricsAttribute(data);
 
         formView.render(data);
         updateFiltersSearch(presenter.getQueryData().size());
-    }
-
-    private void findBiometricUid(List<FieldUiModel> data) {
-        for(int i=data.size()-1; i>=0; i--){
-            String label = data.get(i).getLabel();
-            if(isBiometricText( label)){
-                biometricUid = data.get(i).getUid();
-                break;
-            }
-        }
     }
 
     private List<FieldUiModel>  removeBiometricsAttribute(List<FieldUiModel> data) {
