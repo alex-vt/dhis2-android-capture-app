@@ -3,6 +3,7 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureF
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricsVerificationText;
 
 import android.content.Context;
 import android.content.Intent;
@@ -154,7 +155,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
             int index = -1;
 
             for(int i = 0; i< updates.size(); i++){
-                if(updates.get(i).getLabel().equalsIgnoreCase("biometrics verification")){
+                if(isBiometricsVerificationText(updates.get(i).getLabel())){
                     index = i;
                 }
             }

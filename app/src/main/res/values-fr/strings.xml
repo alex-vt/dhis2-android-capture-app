@@ -500,4 +500,18 @@
     <string name="filter_period_this_month">Ce mois-ci</string>
     <string name="filter_period_last_month">Le mois dernier</string>
     <string name="filter_period_other">Autre</string>
+
+
+    <!--region face Biometrics -->
+    <string name="biometrics_app">"Veuillez télécharger l'application Simprints ID"</string>
+
+    <string name="biometrics_get">Obtenir la biométrie</string>
+    <string name="biometrics_completed">Biométrie terminée</string>
+    <string name="biometrics_declined">Biométrie refusée</string>
+    <string name="biometrics_user_not_found">"L'utilisateur ne peut pas être identifié"</string>
+    <string name="biometrics_label">Biométrie :</string>
+    <string name="biometrics_error_dialog_title">Erreur inattendue</string>
+    <string name="biometrics_error_dialog_desc">"Une erreur inattendue s'est produite.\nVeuillez réessayer."</string>
+    <string name="biometrics_try_again">Réessayez</string>
+    <!--endregion-->
     </resources>

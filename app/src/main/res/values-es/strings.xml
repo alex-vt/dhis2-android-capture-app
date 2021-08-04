@@ -773,4 +773,17 @@
     <string name="show_line_graph">Ver como líneas</string>
     <string name="show_table_graph">Ver como tabla</string>
     <string name="show_table_value">Ver como valor único</string>
+
+    <!--region face Biometrics -->
+    <string name="biometrics_app">Por favor descarga la aplicación Simprints ID</string>
+
+    <string name="biometrics_get">Capturar biometría</string>
+    <string name="biometrics_completed">Biometría completada</string>
+    <string name="biometrics_declined">Biometría declinada</string>
+    <string name="biometrics_user_not_found">el usuario no puede ser identificado</string>
+    <string name="biometrics_label">Biometría:</string>
+    <string name="biometrics_error_dialog_title">Error inesperado</string>
+    <string name="biometrics_error_dialog_desc">Ocurrió un error inesperado.\nPor favor intente otra vez.</string>
+    <string name="biometrics_try_again">Intente otra vez</string>
+    <!--endregion-->
     </resources>

@@ -13,6 +13,7 @@ import com.simprints.libsimprints.Registration
 import com.simprints.libsimprints.SimHelper
 import com.simprints.libsimprints.Tier
 import com.simprints.libsimprints.Verification
+import org.dhis2.R
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_IDENTIFY_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_VERIFY_REQUEST
@@ -158,7 +159,7 @@ object BiometricsClient {
         return if (info.size > 0) {
             true
         } else {
-            Toast.makeText(context, "Please download simprints app!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.biometrics_download_app, Toast.LENGTH_SHORT).show()
             false
         }
     }

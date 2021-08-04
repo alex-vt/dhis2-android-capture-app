@@ -415,7 +415,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         presenter.setBiometricsSearchStatus(true);
                         presenter.searchOnBiometrics(biometricUid,completedResult.getGuids().get(0));
                     } else if (result instanceof IdentifyResult.BiometricsDeclined){
-                        Toast.makeText(getContext(), "Biometrics declined", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), R.string.biometrics_declined, Toast.LENGTH_SHORT).show();
 
                     } else if (result instanceof IdentifyResult.UserNotFound){
                         Toast.makeText(getContext(), "User can not be identified!", Toast.LENGTH_SHORT).show();
@@ -434,7 +434,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private void showBiometricsErrorDialog() {
         String title = getString(R.string.biometrics_error_dialog_title);
         String desc = getString(R.string.biometrics_error_dialog_desc);
-        String posButton = getString(R.string.try_again);
+        String posButton = getString(R.string.biometrics_try_again);
         String negButton = getString(R.string.cancel);
         DialogClickListener dialogClickListener = new DialogClickListener() {
             @Override

@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/biometricsButton"
             android:visibility="visible"
-            android:text="GET BIOMETRICS"
+            android:text="@string/biometrics_get"
             android:background="@color/gray_979"
             android:textColor="@color/black_de0"
             android:gravity="center"

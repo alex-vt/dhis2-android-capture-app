@@ -91,7 +91,7 @@ public class BiometricsView extends FieldLayout {
 
     void onSuccess(){
         biometricsStatus.setBackgroundColor(rootView.getContext().getResources().getColor(R.color.green_7ed));
-        biometricsStatus.setText("BIOMETRICS COMPLETED");
+        biometricsStatus.setText(R.string.biometrics_completed);
         biometricsStatus.setVisibility(VISIBLE);
 
         biometricsButton.setVisibility(View.GONE);
@@ -99,10 +99,10 @@ public class BiometricsView extends FieldLayout {
 
     void onFailure(){
         biometricsStatus.setBackgroundColor(rootView.getContext().getResources().getColor(R.color.red_060));
-        biometricsStatus.setText("BIOMETRICS DECLINED");
+        biometricsStatus.setText(R.string.biometrics_declined);
         biometricsStatus.setVisibility(VISIBLE);
 
-        biometricsButton.setText("TRY AGAIN");
+        biometricsButton.setText(R.string.biometrics_try_again);
         biometricsButton.setBackgroundColor(rootView.getContext().getResources().getColor(R.color.gray_979));
     }
 
