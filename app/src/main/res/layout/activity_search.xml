@@ -118,15 +118,26 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <ImageView
+                android:id="@+id/biometric_search"
+                style="@style/ActionIcon"
+                android:layout_width="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/icons8_facial_recognition_50"
+                tools:ignore="ContentDescription"
+                app:tint="@color/white"
+                android:visibility="invisible"/>
+
+            <ImageView
                 android:id="@+id/search_filter_general"
                 style="@style/ActionIcon"
                 android:onClick="@{()->presenter.showFilterGeneral()}"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/biometric_search"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_filter"
-                tools:ignore="ContentDescription"
-                android:visibility="invisible"/>
+                tools:ignore="ContentDescription"/>
 
             <ImageView
                 android:id="@+id/search_filter"
@@ -138,18 +149,6 @@
                 app:srcCompat="@drawable/ic_search_add"
                 app:tint="@color/white"
                 tools:ignore="ContentDescription" />
-
-            <ImageView
-                android:id="@+id/biometric_search"
-                style="@style/ActionIcon"
-                android:layout_width="40dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/icons8_facial_recognition_50"
-                tools:ignore="ContentDescription"
-                app:tint="@color/white"
-                android:visibility="invisible"/>
 
             <Spinner
                 android:id="@+id/program_spinner"
