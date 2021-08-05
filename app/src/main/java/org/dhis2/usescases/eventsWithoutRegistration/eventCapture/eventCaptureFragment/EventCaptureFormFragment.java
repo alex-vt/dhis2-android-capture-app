@@ -1,9 +1,7 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricsVerificationText;
 
 import android.content.Context;
 import android.content.Intent;
@@ -21,8 +19,6 @@ import androidx.fragment.app.FragmentTransaction;
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
 import org.dhis2.data.forms.dataentry.FormView;
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel;
 import org.dhis2.data.location.LocationProvider;
 import org.dhis2.databinding.SectionSelectorFragmentBinding;
 import org.dhis2.form.data.FormRepository;
@@ -82,7 +78,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         this.biometricsGuid = getArguments().getString(BIOMETRICS_GUID);
         this.biometricsVerificationStatus = getArguments().getInt(BIOMETRICS_VERIFICATION_STATUS);
 
-        activity.eventCaptureComponent.plus(
+          activity.eventCaptureComponent.plus(
                 new EventCaptureFormModule(
                         this,
                         getArguments().getString(Constants.EVENT_UID))
@@ -100,9 +96,9 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
             performSaveClick();
         });
 
-        presenter.init();
+        presenter.initBiometricsValues(biometricsGuid,biometricsVerificationStatus);
 
-        presenter.setBiometricsValues(biometricsGuid,biometricsVerificationStatus);
+        presenter.init();
 
         return binding.getRoot();
     }

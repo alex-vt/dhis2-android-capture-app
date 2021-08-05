@@ -72,9 +72,7 @@ class EventCaptureFormPresenter(
         val fields = formRepository.composeList(items).toMutableList()
 
         val updatedFields =
-            if (BIOMETRICS_ENABLED && biometricsVerificationStatus != -1 &&
-                biometricsGuid.isNullOrBlank()
-            ) updateBiometricsField(fields)
+            if (BIOMETRICS_ENABLED) updateBiometricsField(fields)
             else fields
 
         view.showFields(updatedFields)
@@ -141,7 +139,7 @@ class EventCaptureFormPresenter(
         )
     }
 
-    fun setBiometricsValues(biometricsGuid: String, biometricsVerificationStatus: Int) {
+    fun initBiometricsValues(biometricsGuid: String?, biometricsVerificationStatus: Int) {
         this.biometricsGuid = biometricsGuid
         this.biometricsVerificationStatus = biometricsVerificationStatus
     }
