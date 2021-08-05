@@ -53,9 +53,6 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     private SectionSelectorFragmentBinding binding;
     private FormView formView;
 
-    private String biometricsGuid;
-    private int biometricsVerificationStatus;
-
     public static EventCaptureFormFragment newInstance(String eventUid) {
         EventCaptureFormFragment fragment = new EventCaptureFormFragment();
         Bundle args = new Bundle();
@@ -78,8 +75,11 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     public void onAttach(@NotNull Context context) {
         super.onAttach(context);
         this.activity = (EventCaptureActivity) context;
-        this.biometricsGuid = getArguments().getString(BIOMETRICS_GUID);
-        this.biometricsVerificationStatus = getArguments().getInt(BIOMETRICS_VERIFICATION_STATUS);
+        String biometricsGuid = getArguments().getString(BIOMETRICS_GUID);
+        int biometricsVerificationStatus = getArguments().getInt(BIOMETRICS_VERIFICATION_STATUS);
+
+        presenter.setBiometricsValues(biometricsGuid,biometricsVerificationStatus);
+
         activity.eventCaptureComponent.plus(
                 new EventCaptureFormModule(
                         this,
@@ -150,25 +150,6 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
     @Override
     public void showFields(@NonNull List<FieldUiModel> updates) {
-
-        if (BIOMETRICS_ENABLED){
-            int index = -1;
-
-            for(int i = 0; i< updates.size(); i++){
-                if(isBiometricsVerificationText(updates.get(i).getLabel())){
-                    index = i;
-                }
-            }
-
-            if(index > 0 ){
-                BiometricsVerificationViewModel statusViewModel = (BiometricsVerificationViewModel) updates.get(index);
-                BiometricsVerificationView.BiometricsVerificationStatus status = presenter.calculateVerificationStatus(biometricsVerificationStatus);
-                FieldUiModel newStatusViewModel = statusViewModel.withValueAndStatus(biometricsGuid, status);
-                updates.remove(index);
-                updates.add(index, newStatusViewModel);
-            }
-        }
-
         formView.render(updates);
     }
 
