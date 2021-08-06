@@ -141,17 +141,31 @@
                     tools:text="1" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+
+            <ImageView
+                android:id="@+id/biometric_search"
+                style="@style/ActionIcon"
+                android:layout_width="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/icons8_facial_recognition_50"
+                tools:ignore="ContentDescription"
+                app:tint="@color/white"
+                android:visibility="invisible"/>
+
             <ImageView
                 android:id="@+id/search_filter_general"
                 style="@style/ActionIcon"
                 android:onClick="@{()->presenter.showFilterGeneral()}"
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/biometric_search"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_filter"
                 tools:ignore="ContentDescription"
                 tools:visibility="visible" />
+
 
             <ImageView
                 android:id="@+id/search_filter"
