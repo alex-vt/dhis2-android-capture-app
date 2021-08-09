@@ -13,12 +13,15 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.simprints.libsimprints.Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK
+import com.simprints.libsimprints.Constants.SIMPRINTS_REGISTRATION
+import com.simprints.libsimprints.Registration
 import java.io.File
 import javax.inject.Inject
 import org.dhis2.App
 import org.dhis2.Bindings.isKeyboardOpened
 import org.dhis2.R
-import org.dhis2.data.biometrics.BiometricsClientFactory
+import org.dhis2.data.biometrics.BiometricsClient
 import org.dhis2.data.biometrics.RegisterResult
 import org.dhis2.data.forms.dataentry.FormView
 import org.dhis2.data.forms.dataentry.fields.display.DisplayViewModel
@@ -205,7 +208,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                 }
                 BIOMETRICS_ENROLL_REQUEST -> {
                     if (data != null) {
-                        when (val result = BiometricsClientFactory.get(this).handleRegisterResponse(data)) {
+                        when (val result = BiometricsClient.handleRegisterResponse(data)) {
                             is RegisterResult.Completed -> {
                                 presenter.onBiometricsCompleted(result.guid)
                             }

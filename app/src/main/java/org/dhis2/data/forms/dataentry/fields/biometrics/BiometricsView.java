@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import org.dhis2.R;
-import org.dhis2.data.biometrics.BiometricsClientFactory;
+import org.dhis2.data.biometrics.BiometricsClient;
 import org.dhis2.databinding.BiometricsViewBinding;
 import org.dhis2.utils.customviews.FieldLayout;
 
@@ -107,6 +107,6 @@ public class BiometricsView extends FieldLayout {
     }
 
     private void registerBiometrics() {
-        BiometricsClientFactory.INSTANCE.get(rootView.getContext()).register((Activity)rootView.getContext());
+        BiometricsClient.INSTANCE.register((Activity)rootView.getContext());
     }
 }

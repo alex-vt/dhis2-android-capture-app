@@ -18,11 +18,13 @@ import androidx.databinding.DataBindingUtil;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
+import com.simprints.libsimprints.Verification;
 
 import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
-import org.dhis2.data.biometrics.BiometricsClientFactory;
+import org.dhis2.data.biometrics.BiometricsClient;
+import org.dhis2.data.biometrics.IdentifyResult;
 import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.databinding.ActivityEventCaptureBinding;
 import org.dhis2.databinding.WidgetDatepickerBinding;
@@ -224,7 +226,7 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                 break;
             case BIOMETRICS_VERIFY_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    VerifyResult result = BiometricsClientFactory.INSTANCE.get(this).handleVerifyResponse(data);
+                    VerifyResult result = BiometricsClient.INSTANCE.handleVerifyResponse(data);
 
                     if (result instanceof VerifyResult.Match){
                         binding.eventViewPager.setAdapter(getAdapter(1));

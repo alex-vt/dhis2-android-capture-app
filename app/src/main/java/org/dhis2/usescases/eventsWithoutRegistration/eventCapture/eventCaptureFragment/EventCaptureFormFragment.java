@@ -11,6 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.FragmentTransaction;
+
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
 import org.dhis2.data.forms.dataentry.FormView;
@@ -27,10 +32,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.FragmentTransaction;
 import kotlin.Unit;
 
 public class EventCaptureFormFragment extends FragmentGlobalAbstract implements EventCaptureFormView {
@@ -74,10 +75,10 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         super.onAttach(context);
         this.activity = (EventCaptureActivity) context;
 
-        biometricsGuid = getArguments().getString(BIOMETRICS_GUID);
-        biometricsVerificationStatus = getArguments().getInt(BIOMETRICS_VERIFICATION_STATUS);
+        this.biometricsGuid = getArguments().getString(BIOMETRICS_GUID);
+        this.biometricsVerificationStatus = getArguments().getInt(BIOMETRICS_VERIFICATION_STATUS);
 
-        activity.eventCaptureComponent.plus(
+          activity.eventCaptureComponent.plus(
                 new EventCaptureFormModule(
                         this,
                         getArguments().getString(Constants.EVENT_UID))

@@ -40,13 +40,14 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mapbox.geojson.Feature;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
+import com.simprints.libsimprints.Identification;
+import com.simprints.libsimprints.RefusalForm;
 
 import org.dhis2.App;
 import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
 import org.dhis2.animations.CarouselViewAnimations;
-import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.data.biometrics.IdentifyResult;
 import org.dhis2.data.forms.dataentry.FormView;
 import org.dhis2.data.forms.dataentry.ProgramAdapter;
@@ -83,6 +84,7 @@ import org.dhis2.utils.filters.FilterManager;
 import org.dhis2.utils.filters.Filters;
 import org.dhis2.utils.filters.FiltersAdapter;
 import org.dhis2.utils.idlingresource.CountingIdlingResourceSingleton;
+import org.dhis2.data.biometrics.BiometricsClient;
 import org.hisp.dhis.android.core.arch.call.D2Progress;
 import org.hisp.dhis.android.core.program.Program;
 
@@ -272,13 +274,13 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     private void searchByBiometrics() {
-        BiometricsClientFactory.INSTANCE.get(this).identify(this);
+        BiometricsClient.INSTANCE.identify(this);
     }
 
     @Override
     public void sendBiometricsAppData(String sessionId, String guid) {
         if(sessionId != null && guid != null) {
-            BiometricsClientFactory.INSTANCE.get(this).getSimHelper().confirmIdentity(getContext(), sessionId, guid);
+            BiometricsClient.simHelper.confirmIdentity(getContext(), sessionId, guid);
         }
     }
 
@@ -400,7 +402,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             case BIOMETRICS_IDENTIFY_REQUEST:
                 if (resultCode == RESULT_OK) {
 
-                    IdentifyResult result = BiometricsClientFactory.INSTANCE.get(this).handleIdentifyResponse(data);
+                    IdentifyResult result = BiometricsClient.INSTANCE.handleIdentifyResponse(data);
 
                     if (result instanceof IdentifyResult.Completed){
                         // TODO: biometrics refactor - simplify presenter
