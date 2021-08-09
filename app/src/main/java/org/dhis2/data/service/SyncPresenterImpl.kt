@@ -9,6 +9,10 @@ import io.reactivex.Observable
 import java.util.Calendar
 import kotlin.math.ceil
 import org.dhis2.Bindings.toSeconds
+import org.dhis2.data.biometrics.BiometricsConfigApi
+import org.dhis2.data.biometrics.BiometricsPreference.Companion.MODULE_ID
+import org.dhis2.data.biometrics.BiometricsPreference.Companion.PROJECT_ID
+import org.dhis2.data.biometrics.BiometricsPreference.Companion.USER_ID
 import org.dhis2.data.prefs.Preference.Companion.DATA
 import org.dhis2.data.prefs.Preference.Companion.EVENT_MAX
 import org.dhis2.data.prefs.Preference.Companion.EVENT_MAX_DEFAULT
@@ -24,6 +28,7 @@ import org.dhis2.data.prefs.PreferenceProvider
 import org.dhis2.data.service.workManager.WorkManagerController
 import org.dhis2.data.service.workManager.WorkerItem
 import org.dhis2.data.service.workManager.WorkerType
+import org.dhis2.utils.Constants
 import org.dhis2.utils.DateUtils
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.dhis2.utils.analytics.matomo.DEFAULT_EXTERNAL_TRACKER_NAME
@@ -37,6 +42,7 @@ import org.hisp.dhis.android.core.settings.LimitScope
 import org.hisp.dhis.android.core.settings.ProgramSettings
 import org.hisp.dhis.android.core.systeminfo.DHISVersion
 import timber.log.Timber
+import java.lang.Exception
 
 class SyncPresenterImpl(
     private val d2: D2,
@@ -142,6 +148,7 @@ class SyncPresenterImpl(
                 .doOnComplete {
                     updateProyectAnalytics()
                     setUpSMS()
+                    downloadBiometricsConfig()
                 }
 
         ).blockingAwait()
@@ -467,5 +474,32 @@ class SyncPresenterImpl(
                 )
             }
         } ?: analyticsHelper.clearMatomoSecondaryTracker()
+    }
+
+    private fun downloadBiometricsConfig() {
+        try {
+            val biometricsConfigApi = d2.retrofit().create(BiometricsConfigApi::class.java)
+
+            val response = biometricsConfigApi.getData().execute()
+
+            if (response.isSuccessful && response.body() != null) {
+                val config = response.body()
+
+                preferences.setValue(MODULE_ID, config?.moduleId)
+                preferences.setValue(USER_ID, config?.userId)
+                preferences.setValue(PROJECT_ID, config?.projectId)
+
+                Timber.d("downloadBiometricsConfig!")
+                Timber.d("ModuleId: ${config?.moduleId}")
+                Timber.d("UserId: ${config?.userId}")
+                Timber.d("ProjectId: ${config?.projectId}")
+            } else {
+                Timber.e(response.errorBody()?.string())
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+
+
     }
 }
