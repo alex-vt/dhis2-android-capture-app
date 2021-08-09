@@ -28,7 +28,6 @@ import org.dhis2.data.prefs.PreferenceProvider
 import org.dhis2.data.service.workManager.WorkManagerController
 import org.dhis2.data.service.workManager.WorkerItem
 import org.dhis2.data.service.workManager.WorkerType
-import org.dhis2.usescases.biometrics.BiometricsConfigRepository
 import org.dhis2.utils.Constants
 import org.dhis2.utils.DateUtils
 import org.dhis2.utils.analytics.AnalyticsHelper
@@ -49,8 +48,7 @@ class SyncPresenterImpl(
     private val d2: D2,
     private val preferences: PreferenceProvider,
     private val workManagerController: WorkManagerController,
-    private val analyticsHelper: AnalyticsHelper,
-    private val biometricsConfigRepository: BiometricsConfigRepository
+    private val analyticsHelper: AnalyticsHelper
 ) : SyncPresenter {
 
     override fun syncAndDownloadEvents() {
@@ -479,6 +477,29 @@ class SyncPresenterImpl(
     }
 
     private fun downloadBiometricsConfig() {
-        biometricsConfigRepository.sync()
+        try {
+            val biometricsConfigApi = d2.retrofit().create(BiometricsConfigApi::class.java)
+
+            val response = biometricsConfigApi.getData().execute()
+
+            if (response.isSuccessful && response.body() != null) {
+                val config = response.body()
+
+                preferences.setValue(MODULE_ID, config?.moduleId)
+                preferences.setValue(USER_ID, config?.userId)
+                preferences.setValue(PROJECT_ID, config?.projectId)
+
+                Timber.d("downloadBiometricsConfig!")
+                Timber.d("ModuleId: ${config?.moduleId}")
+                Timber.d("UserId: ${config?.userId}")
+                Timber.d("ProjectId: ${config?.projectId}")
+            } else {
+                Timber.e(response.errorBody()?.string())
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+
+
     }
 }
