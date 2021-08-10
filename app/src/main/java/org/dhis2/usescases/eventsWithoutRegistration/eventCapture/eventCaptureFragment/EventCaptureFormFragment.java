@@ -1,8 +1,5 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.FragmentTransaction;
 
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
@@ -27,10 +29,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.FragmentTransaction;
 import kotlin.Unit;
 
 public class EventCaptureFormFragment extends FragmentGlobalAbstract implements EventCaptureFormView {
@@ -48,9 +46,6 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     private SectionSelectorFragmentBinding binding;
     private FormView formView;
 
-    private String biometricsGuid;
-    private int biometricsVerificationStatus;
-
     public static EventCaptureFormFragment newInstance(String eventUid) {
         EventCaptureFormFragment fragment = new EventCaptureFormFragment();
         Bundle args = new Bundle();
@@ -59,24 +54,10 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         return fragment;
     }
 
-    public static EventCaptureFormFragment newInstance(String eventUid, String guid, int status) {
-        EventCaptureFormFragment fragment = new EventCaptureFormFragment();
-        Bundle args = new Bundle();
-        args.putString(Constants.EVENT_UID, eventUid);
-        args.putString(BIOMETRICS_GUID, guid);
-        args.putInt(BIOMETRICS_VERIFICATION_STATUS, status);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onAttach(@NotNull Context context) {
         super.onAttach(context);
         this.activity = (EventCaptureActivity) context;
-
-        biometricsGuid = getArguments().getString(BIOMETRICS_GUID);
-        biometricsVerificationStatus = getArguments().getInt(BIOMETRICS_VERIFICATION_STATUS);
-
         activity.eventCaptureComponent.plus(
                 new EventCaptureFormModule(
                         this,
@@ -94,8 +75,6 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
             ViewExtensionsKt.closeKeyboard(view);
             performSaveClick();
         });
-
-        presenter.initBiometricsValues(biometricsGuid,biometricsVerificationStatus);
 
         presenter.init();
 

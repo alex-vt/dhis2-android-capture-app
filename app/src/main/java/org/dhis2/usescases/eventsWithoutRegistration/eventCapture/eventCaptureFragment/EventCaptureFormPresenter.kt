@@ -3,16 +3,12 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureF
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.FlowableProcessor
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel
 import org.dhis2.data.schedulers.SchedulerProvider
 import org.dhis2.form.data.FormRepository
 import org.dhis2.form.model.ActionType
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
 import org.dhis2.form.model.ValueStoreResult
-import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
-import org.dhis2.usescases.biometrics.isBiometricsVerificationText
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract
 import timber.log.Timber
 
@@ -27,9 +23,6 @@ class EventCaptureFormPresenter(
     private var selectedSection: String? = null
 
     var disposable: CompositeDisposable = CompositeDisposable()
-
-    private var biometricsVerificationStatus: Int = -1
-    private var biometricsGuid: String? = null
 
     fun init() {
         disposable.add(
@@ -69,13 +62,7 @@ class EventCaptureFormPresenter(
     }
 
     private fun populateList(items: List<FieldUiModel>? = null) {
-        val fields = formRepository.composeList(items).toMutableList()
-
-        val updatedFields =
-            if (BIOMETRICS_ENABLED) updateBiometricsField(fields)
-            else fields
-
-        view.showFields(updatedFields)
+        view.showFields(formRepository.composeList(items).toMutableList())
         checkFinishing(true)
         activityPresenter.hideProgress()
         if (items != null) {
@@ -84,19 +71,6 @@ class EventCaptureFormPresenter(
                 .firstOrNull()
                 .let { selectedSection = it }
         }
-    }
-
-    private fun updateBiometricsField(fields: List<FieldUiModel>): MutableList<FieldUiModel> {
-        return fields.map {
-            if (it.label.isBiometricsVerificationText()
-            ) {
-                val biometricsViewModel = it as BiometricsVerificationViewModel
-                val status = mapVerificationStatus(biometricsVerificationStatus)
-                biometricsViewModel.withValueAndStatus(biometricsGuid, status)
-            } else {
-                it
-            }
-        } as MutableList<FieldUiModel>
     }
 
     private fun checkFinishing(canFinish: Boolean) {
@@ -114,14 +88,6 @@ class EventCaptureFormPresenter(
         activityPresenter.attempFinish()
     }
 
-    fun mapVerificationStatus(biometricsVerificationStatus: Int): BiometricsVerificationView.BiometricsVerificationStatus {
-        return when (biometricsVerificationStatus) {
-            0 -> BiometricsVerificationView.BiometricsVerificationStatus.FAILURE
-            1 -> BiometricsVerificationView.BiometricsVerificationStatus.SUCCESS
-            else -> BiometricsVerificationView.BiometricsVerificationStatus.NOT_DONE
-        }
-    }
-
     fun <E> Iterable<E>.updated(index: Int, elem: E): List<E> =
         mapIndexed { i, existing -> if (i == index) elem else existing }
 
@@ -137,10 +103,5 @@ class EventCaptureFormPresenter(
                 type = ActionType.ON_SAVE
             )
         )
-    }
-
-    fun initBiometricsValues(biometricsGuid: String?, biometricsVerificationStatus: Int) {
-        this.biometricsGuid = biometricsGuid
-        this.biometricsVerificationStatus = biometricsVerificationStatus
     }
 }

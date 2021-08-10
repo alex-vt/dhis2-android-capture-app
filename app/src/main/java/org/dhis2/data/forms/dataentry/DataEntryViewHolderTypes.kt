@@ -19,6 +19,5 @@ enum class DataEntryViewHolderTypes {
     SECTION,
     OPTION_SET_SPINNER,
     UNSUPPORTED,
-    BIOMETRICS,
-    BIOMETRICS_VERIFICATION,
+    BIOMETRICS
 }

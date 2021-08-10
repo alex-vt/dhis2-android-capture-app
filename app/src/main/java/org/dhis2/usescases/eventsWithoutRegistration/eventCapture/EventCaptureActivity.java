@@ -22,8 +22,6 @@ import com.google.android.material.snackbar.Snackbar;
 import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
-import org.dhis2.data.biometrics.BiometricsClientFactory;
-import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.databinding.ActivityEventCaptureBinding;
 import org.dhis2.databinding.WidgetDatepickerBinding;
 import org.dhis2.form.model.FieldUiModel;
@@ -41,7 +39,6 @@ import org.dhis2.utils.RulesUtilsProviderConfigurationError;
 import org.dhis2.utils.customviews.CustomDialog;
 import org.dhis2.utils.customviews.FormBottomDialog;
 import org.hisp.dhis.android.core.arch.helpers.FileResourceDirectoryHelper;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.Calendar;
@@ -52,9 +49,6 @@ import javax.inject.Inject;
 
 import kotlin.Unit;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
 import static org.dhis2.utils.Constants.PROGRAM_UID;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CLICK;
 import static org.dhis2.utils.analytics.AnalyticsConstants.DELETE_EVENT;
@@ -106,7 +100,12 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
 
     private void setUpViewPagerAdapter() {
         binding.eventViewPager.setUserInputEnabled(false);
-        binding.eventViewPager.setAdapter(getAdapter(getIntent().getIntExtra(BIOMETRICS_VERIFICATION_STATUS, -1)));
+        binding.eventViewPager.setAdapter(new EventCapturePagerAdapter(
+                this,
+                getIntent().getStringExtra(PROGRAM_UID),
+                getIntent().getStringExtra(Constants.EVENT_UID)
+        ));
+
         ViewExtensionsKt.clipWithRoundedCorners(binding.eventViewPager, ExtensionsKt.getDp(16));
     }
 
@@ -222,31 +221,7 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                     }
                 }
                 break;
-            case BIOMETRICS_VERIFY_REQUEST:
-                if (resultCode == RESULT_OK) {
-                    VerifyResult result = BiometricsClientFactory.INSTANCE.get(this).handleVerifyResponse(data);
-
-                    if (result instanceof VerifyResult.Match){
-                        binding.eventViewPager.setAdapter(getAdapter(1));
-                    } else if (result instanceof VerifyResult.NoMatch){
-                        binding.eventViewPager.setAdapter(getAdapter(0));
-                    } else if (result instanceof VerifyResult.Failure){
-                        binding.eventViewPager.setAdapter(getAdapter(0));
-                    }
-                }
-                break;
         }
-    }
-
-    @NotNull
-    private EventCapturePagerAdapter getAdapter(int verificationStatus) {
-        return new EventCapturePagerAdapter(
-                this,
-                getIntent().getStringExtra(PROGRAM_UID),
-                getIntent().getStringExtra(Constants.EVENT_UID),
-                getIntent().getStringExtra(BIOMETRICS_GUID),
-                verificationStatus
-        );
     }
 
     @Override

@@ -13,7 +13,6 @@ import org.dhis2.R;
 import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.data.filter.FilterRepository;
 import org.dhis2.data.forms.dataentry.RuleEngineRepository;
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
 import org.dhis2.data.prefs.Preference;
 import org.dhis2.data.prefs.PreferenceProvider;
 import org.dhis2.data.schedulers.SchedulerProvider;
@@ -58,9 +57,6 @@ import timber.log.Timber;
 
 import static android.text.TextUtils.isEmpty;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ACTIVE_FOLLOW_UP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.FOLLOW_UP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.SHARE_TEI;
@@ -87,8 +83,6 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     private String programUid;
     private DashboardProgramModel dashboardModel;
     private String currentStage = null;
-
-    private String uidForEvent;
 
     public TEIDataPresenterImpl(TEIDataContracts.View view, D2 d2,
                                 DashboardRepository dashboardRepository,
@@ -400,23 +394,9 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     @Override
     public void onEventSelected(String uid, EventStatus eventStatus, View sharedView) {
         if (eventStatus == EventStatus.ACTIVE || eventStatus == EventStatus.COMPLETED) {
-            uidForEvent = uid;
-           /* String guid = dashboardModel.getTrackedBiometricEntityValue();
-            Event event = d2.eventModule().events().uid(uid).blockingGet();
-            ProgramStage stage = d2.programModule().programStages().uid(event.programStage()).blockingGet();
-
-            if(BIOMETRICS_ENABLED && guid!=null && stage.displayName().equalsIgnoreCase("Follow-up")) {
-                launchSimprintsAppForVerification(guid);
-            }else {
-                launchEventCapture(uid, null, -1);
-
-            }*/
-
-            launchEventCapture(uid, null, -1);
-
-/*            Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
+            Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
             intent.putExtras(EventCaptureActivity.getActivityBundle(uid, programUid, EventMode.CHECK));
-            view.openEventCapture(intent);*/
+            view.openEventCapture(intent);
         } else {
             Event event = d2.eventModule().events().uid(uid).blockingGet();
             Intent intent = new Intent(view.getContext(), EventInitialActivity.class);
@@ -425,19 +405,6 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
             ));
             view.openEventInitial(intent);
         }
-    }
-
-    @Override
-    public void launchEventCapture(String uid, String guid, int status) {
-        if(uid == null){
-            uid = uidForEvent;
-        }
-
-        Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
-        intent.putExtras(EventCaptureActivity.getActivityBundle(uid, programUid, EventMode.CHECK));
-        intent.putExtra(BIOMETRICS_GUID, guid);
-        intent.putExtra(BIOMETRICS_VERIFICATION_STATUS, status);
-        view.openEventCapture(intent);
     }
 
     @Override
@@ -454,10 +421,6 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
         } else {
             view.verificationStatusFailed();
         }
-    }
-
-    private void launchSimprintsAppForVerification(String guid){
-        view.launchBiometricsVerification(guid);
     }
 
     @Override
