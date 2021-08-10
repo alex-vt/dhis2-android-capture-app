@@ -72,13 +72,13 @@ public class BiometricsVerificationView extends FieldLayout {
         guid = viewModel.value();
 
         if(viewModel.status().equals(BiometricsVerificationStatus.SUCCESS)){
-            statusImageView.setImageDrawable(AppCompatResources.getDrawable(getContext(), R.drawable.ic_biometrics_available_yes_24dp));
+            statusImageView.setImageDrawable(AppCompatResources.getDrawable(getContext(), R.drawable.ic_bio_available_yes));
             tryAgainButton.setVisibility(GONE);
         }else if(viewModel.status().equals(BiometricsVerificationStatus.FAILURE)){
-            statusImageView.setImageDrawable(AppCompatResources.getDrawable(getContext(), R.drawable.ic_biometrics_available_no_24dp));
+            statusImageView.setImageDrawable(AppCompatResources.getDrawable(getContext(), R.drawable.ic_bio_available_no));
             tryAgainButton.setVisibility(VISIBLE);
         }else{
-            statusImageView.setImageDrawable(AppCompatResources.getDrawable(getContext(), R.drawable.ic_biometrics_available_no_24dp));
+            statusImageView.setImageDrawable(AppCompatResources.getDrawable(getContext(), R.drawable.ic_bio_available_no));
             tryAgainButton.setVisibility(GONE);
         }
     }
