@@ -10,8 +10,10 @@ import com.google.gson.reflect.TypeToken;
 
 import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.R;
+import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.data.filter.FilterRepository;
 import org.dhis2.data.forms.dataentry.RuleEngineRepository;
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
 import org.dhis2.data.prefs.Preference;
 import org.dhis2.data.prefs.PreferenceProvider;
 import org.dhis2.data.schedulers.SchedulerProvider;
@@ -399,7 +401,7 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     public void onEventSelected(String uid, EventStatus eventStatus, View sharedView) {
         if (eventStatus == EventStatus.ACTIVE || eventStatus == EventStatus.COMPLETED) {
             uidForEvent = uid;
-            String guid = dashboardModel.getTrackedBiometricEntityValue();
+           /* String guid = dashboardModel.getTrackedBiometricEntityValue();
             Event event = d2.eventModule().events().uid(uid).blockingGet();
             ProgramStage stage = d2.programModule().programStages().uid(event.programStage()).blockingGet();
 
@@ -408,7 +410,9 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
             }else {
                 launchEventCapture(uid, null, -1);
 
-            }
+            }*/
+
+            launchEventCapture(uid, null, -1);
 
 /*            Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
             intent.putExtras(EventCaptureActivity.getActivityBundle(uid, programUid, EventMode.CHECK));
@@ -434,6 +438,22 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
         intent.putExtra(BIOMETRICS_GUID, guid);
         intent.putExtra(BIOMETRICS_VERIFICATION_STATUS, status);
         view.openEventCapture(intent);
+    }
+
+    @Override
+    public void verifyBiometrics() {
+        view.launchBiometricsVerification(this.dashboardModel.getTrackedBiometricEntityValue());
+    }
+
+    @Override
+    public void handleVerifyResponse(VerifyResult result) {
+        if (result instanceof VerifyResult.Match){
+            view.verificationStatusMatch();
+        } else if (result instanceof VerifyResult.NoMatch){
+            view.verificationStatusNoMatch();
+        } else {
+            view.verificationStatusFailed();
+        }
     }
 
     private void launchSimprintsAppForVerification(String guid){

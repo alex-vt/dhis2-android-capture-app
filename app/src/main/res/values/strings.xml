@@ -860,5 +860,9 @@
     <string name="biometrics_error_dialog_title">Unexpected error</string>
     <string name="biometrics_error_dialog_desc">An unexpected error occurred.\nPlease try again.</string>
     <string name="biometrics_try_again">Try again</string>
+    <string name="biometrics_verification_not_done">Verify</string>
+    <string name="biometrics_verification_match">Success</string>
+    <string name="biometrics_verification_no_match">Failed</string>
+    <string name="biometrics_verification_failed">Declined</string>
     <!--endregion-->
 </resources>

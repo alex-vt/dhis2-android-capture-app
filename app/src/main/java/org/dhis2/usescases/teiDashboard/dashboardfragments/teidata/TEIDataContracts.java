@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
+import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.usescases.general.AbstractActivityContracts;
 import org.dhis2.usescases.teiDashboard.DashboardProgramModel;
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.teievents.EventViewModel;
@@ -86,6 +87,14 @@ public class TEIDataContracts {
         void showSyncDialog(String uid);
 
         void launchBiometricsVerification(String guid);
+
+        void verificationStatusMatch();
+
+        void verificationStatusNoMatch();
+
+        void verificationStatusFailed();
+
+
     }
 
     public interface Presenter extends AbstractActivityContracts.Presenter {
@@ -135,6 +144,10 @@ public class TEIDataContracts {
         void setOpeningFilterToNone();
 
         void launchEventCapture(String uid, String guid, int status);
+
+        void verifyBiometrics();
+
+        void handleVerifyResponse(VerifyResult result);
     }
 
 }
