@@ -50,7 +50,7 @@ public class BiometricsView extends FieldLayout {
 
     @SuppressLint("ClickableViewAccessibility")
     private void setLayout() {
-        binding.inflate(inflater, this, true);
+        binding = BiometricsViewBinding.inflate(inflater, this, true);
 
         biometricsButton = findViewById(R.id.biometricsButton);
         biometricsStatus = findViewById(R.id.biometricsStatus);
