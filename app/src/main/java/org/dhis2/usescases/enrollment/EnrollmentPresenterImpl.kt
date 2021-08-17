@@ -20,6 +20,7 @@ import org.dhis2.form.data.FormRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
 import org.dhis2.form.model.ValueStoreResult
+import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.usescases.biometrics.isBiometricModel
 import org.dhis2.utils.DhisTextUtils
@@ -498,7 +499,9 @@ class EnrollmentPresenterImpl(
     }
 
     fun dataIntegrityCheck(): Boolean {
-        checkIfBiometricValueValid();
+        if (BIOMETRICS_ENABLED && dataEntryRepository.list() != null){
+            checkIfBiometricValueValid()
+        }
 
         return when {
             uniqueFields.isNotEmpty() -> {
