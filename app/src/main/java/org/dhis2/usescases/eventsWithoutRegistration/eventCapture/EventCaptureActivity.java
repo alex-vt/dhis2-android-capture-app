@@ -66,8 +66,8 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
     private Boolean isEventCompleted = false;
     private EventMode eventMode;
     public EventCaptureComponent eventCaptureComponent;
-
-    private String eventUid;
+    public String programUid;
+    public String eventUid;
 
     public static Bundle getActivityBundle(@NonNull String eventUid, @NonNull String programUid, @NonNull EventMode eventMode) {
         Bundle bundle = new Bundle();
@@ -79,14 +79,11 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        eventUid = getIntent().getStringExtra(Constants.EVENT_UID);
-
         eventCaptureComponent = (ExtensionsKt.app(this)).userComponent().plus(
                 new EventCaptureModule(
                         this,
-                        eventUid,
+                        getIntent().getStringExtra(Constants.EVENT_UID),
                         getContext()));
-
         eventCaptureComponent.inject(this);
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_event_capture);
@@ -430,7 +427,6 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
     public void showMoreOptions(View view) {
         new AppMenuHelper.Builder().menu(this, R.menu.event_menu).anchor(view)
                 .onMenuInflated(popupMenu -> {
-
                     popupMenu.getMenu().getItem(0).setVisible(presenter.canWrite() && presenter.isEnrollmentOpen());
                     return Unit.INSTANCE;
                 })

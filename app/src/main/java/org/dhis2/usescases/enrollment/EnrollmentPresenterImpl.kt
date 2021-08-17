@@ -410,7 +410,7 @@ class EnrollmentPresenterImpl(
         val stage = d2.programModule().programStages().uid(event.programStage()).blockingGet()
         val needsCatCombo = programRepository.blockingGet().categoryComboUid() != null &&
             d2.categoryModule().categoryCombos().uid(catComboUid)
-                .blockingGet().isDefault == false
+            .blockingGet().isDefault == false
         val needsCoordinates =
             stage.featureType() != null && stage.featureType() != FeatureType.NONE
 
@@ -540,6 +540,9 @@ class EnrollmentPresenterImpl(
     fun disableConfErrorMessage() {
         showConfigurationError = false
     }
+
+    fun getEventStage(eventUid: String) =
+        enrollmentFormRepository.getProgramStageUidFromEvent(eventUid)
 
     fun onBiometricsCompleted(guid: String) {
         saveBiometricValue(guid)
