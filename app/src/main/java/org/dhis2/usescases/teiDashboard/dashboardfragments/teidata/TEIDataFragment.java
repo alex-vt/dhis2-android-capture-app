@@ -222,8 +222,8 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
     }
 
     @Override
-    public void launchBiometricsVerification(String guid) {
-        BiometricsClientFactory.INSTANCE.get(context).verify(this, guid);
+    public void launchBiometricsVerification(String guid, String orgUnitUid) {
+        BiometricsClientFactory.INSTANCE.get(context).verify(this, guid, orgUnitUid);
     }
 
     @Override

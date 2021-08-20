@@ -409,7 +409,8 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
 
     @Override
     public void verifyBiometrics() {
-        view.launchBiometricsVerification(this.dashboardModel.getTrackedBiometricEntityValue());
+        view.launchBiometricsVerification(this.dashboardModel.getTrackedBiometricEntityValue(),
+                this.dashboardModel.getCurrentOrgUnit().uid());
     }
 
     @Override
