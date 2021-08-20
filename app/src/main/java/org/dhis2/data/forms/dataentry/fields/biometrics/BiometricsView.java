@@ -62,7 +62,11 @@ public class BiometricsView extends FieldLayout {
         biometricsButtonText= findViewById(R.id.biometrics_button_text);
         biometricsButtonIcon= findViewById(R.id.biometrics_button_icon);
 
-        biometricsButton.setOnClickListener(v -> registerBiometrics());
+        biometricsButton.setOnClickListener(v -> {
+            if (viewModel != null) {
+                viewModel.onItemClick();
+            }
+        });
     }
 
     public void setViewModel(BiometricsViewModel viewModel) {
@@ -110,9 +114,5 @@ public class BiometricsView extends FieldLayout {
 
         biometricsButtonIcon.setImageDrawable(
                 AppCompatResources.getDrawable(rootView.getContext(), R.drawable.ic_biometrics_warning));
-    }
-
-    private void registerBiometrics() {
-        BiometricsClientFactory.INSTANCE.get(rootView.getContext()).register((Activity)rootView.getContext());
     }
 }

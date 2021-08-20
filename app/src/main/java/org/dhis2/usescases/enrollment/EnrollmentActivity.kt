@@ -489,4 +489,8 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
             .setCancelable(false)
             .show()
     }
+
+    override fun registerBiometrics(orgUnit: String) {
+        BiometricsClientFactory.get(this).register(this,orgUnit)
+    }
 }

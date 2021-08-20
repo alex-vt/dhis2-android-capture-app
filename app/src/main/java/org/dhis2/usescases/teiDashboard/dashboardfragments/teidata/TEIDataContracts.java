@@ -86,7 +86,7 @@ public class TEIDataContracts {
 
         void showSyncDialog(String uid);
 
-        void launchBiometricsVerification(String guid);
+        void launchBiometricsVerification(String guid, String orgUnitUid);
 
         void verificationStatusMatch();
 

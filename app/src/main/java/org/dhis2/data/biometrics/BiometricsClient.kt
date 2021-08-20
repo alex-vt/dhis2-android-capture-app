@@ -40,20 +40,22 @@ sealed class VerifyResult {
 
 class BiometricsClient(
     projectId: String,
-    userId: String,
-    private val moduleId: String
+    userId: String
 ) {
 
     init {
         Timber.d("BiometricsClient!")
-        Timber.d("ModuleId: $moduleId")
         Timber.d("UserId: $userId")
         Timber.d("ProjectId: $projectId")
     }
 
     val simHelper = SimHelper(projectId, userId)
+    private val defaultModuleId = "NA"
 
-    fun register(activity: Activity) {
+    fun register(activity: Activity, moduleId: String) {
+        Timber.d("Biometrics register!")
+        Timber.d("ModuleId: $moduleId")
+
         val intent = simHelper.register(moduleId)
 
         if (checkSimprintsApp(activity, intent)) {
@@ -62,31 +64,24 @@ class BiometricsClient(
     }
 
     fun identify(activity: Activity) {
-        val intent = simHelper.identify(moduleId)
+        Timber.d("Biometrics identify!")
+        Timber.d("ModuleId: $defaultModuleId")
+
+        val intent = simHelper.identify(defaultModuleId)
 
         if (checkSimprintsApp(activity, intent)) {
             activity.startActivityForResult(intent, BIOMETRICS_IDENTIFY_REQUEST)
         }
     }
 
-    fun verify(activity: Activity, guid: String) {
+    fun verify(fragment: Fragment, guid: String, moduleId: String) {
         if (guid == null) {
             Timber.i("Simprints Verification - Guid is Null - Please check again!")
             return
         }
 
-        val intent = simHelper.verify(moduleId, guid)
-
-        if (checkSimprintsApp(activity, intent)) {
-            activity.startActivityForResult(intent, BIOMETRICS_VERIFY_REQUEST)
-        }
-    }
-
-    fun verify(fragment: Fragment, guid: String) {
-        if (guid == null) {
-            Timber.i("Simprints Verification - Guid is Null - Please check again!")
-            return
-        }
+        Timber.d("Biometrics verify!")
+        Timber.d("ModuleId: $moduleId")
 
         val intent = simHelper.verify(moduleId, guid)
 
