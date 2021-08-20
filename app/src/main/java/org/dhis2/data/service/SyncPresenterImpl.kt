@@ -9,10 +9,6 @@ import io.reactivex.Observable
 import java.util.Calendar
 import kotlin.math.ceil
 import org.dhis2.Bindings.toSeconds
-import org.dhis2.data.biometrics.BiometricsConfigApi
-import org.dhis2.data.biometrics.BiometricsPreference.Companion.MODULE_ID
-import org.dhis2.data.biometrics.BiometricsPreference.Companion.PROJECT_ID
-import org.dhis2.data.biometrics.BiometricsPreference.Companion.USER_ID
 import org.dhis2.data.prefs.Preference.Companion.DATA
 import org.dhis2.data.prefs.Preference.Companion.EVENT_MAX
 import org.dhis2.data.prefs.Preference.Companion.EVENT_MAX_DEFAULT
@@ -43,7 +39,6 @@ import org.hisp.dhis.android.core.settings.LimitScope
 import org.hisp.dhis.android.core.settings.ProgramSettings
 import org.hisp.dhis.android.core.systeminfo.DHISVersion
 import timber.log.Timber
-import java.lang.Exception
 
 class SyncPresenterImpl(
     private val d2: D2,

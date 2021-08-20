@@ -46,6 +46,7 @@ import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstanceObjectRepository
 import org.hisp.dhis.rules.models.RuleEffect
 import timber.log.Timber
+import java.util.Timer
 
 private const val TAG = "EnrollmentPresenter"
 
@@ -209,9 +210,15 @@ class EnrollmentPresenterImpl(
                                     checkFinishing(true)
                                 }
                                 ValueStoreResult.VALUE_HAS_NOT_CHANGED -> {
-                                    populateList()
-                                    view.hideProgress()
-                                    checkFinishing(true)
+                                    if (result.uid == getBiometricViewModel().blockingSingle().uid){
+                                        val orgUnit = enrollmentObjectRepository.get().blockingGet().organisationUnit()!!
+                                        view.registerBiometrics(orgUnit)
+                                    } else {
+                                        populateList()
+                                        view.hideProgress()
+                                        checkFinishing(true)
+                                    }
+
                                 }
                                 ValueStoreResult.VALUE_NOT_UNIQUE -> {
                                     uniqueFields.add(result.uid)

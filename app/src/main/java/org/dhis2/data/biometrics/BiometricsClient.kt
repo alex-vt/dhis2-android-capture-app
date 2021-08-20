@@ -40,20 +40,22 @@ sealed class VerifyResult {
 
 class BiometricsClient(
     projectId: String,
-    userId: String,
-    private val moduleId: String
+    userId: String
 ) {
 
     init {
         Timber.d("BiometricsClient!")
-        Timber.d("ModuleId: $moduleId")
         Timber.d("UserId: $userId")
         Timber.d("ProjectId: $projectId")
     }
 
     val simHelper = SimHelper(projectId, userId)
+    private val moduleId = "NA"
 
-    fun register(activity: Activity) {
+    fun register(activity: Activity, moduleId: String) {
+        Timber.d("Biometrics register!")
+        Timber.d("ModuleId: $moduleId")
+
         val intent = simHelper.register(moduleId)
 
         if (checkSimprintsApp(activity, intent)) {
@@ -62,6 +64,9 @@ class BiometricsClient(
     }
 
     fun identify(activity: Activity) {
+        Timber.d("Biometrics identify!")
+        Timber.d("ModuleId: $moduleId")
+
         val intent = simHelper.identify(moduleId)
 
         if (checkSimprintsApp(activity, intent)) {
@@ -75,6 +80,9 @@ class BiometricsClient(
             return
         }
 
+        Timber.d("Biometrics verify!")
+        Timber.d("ModuleId: $moduleId")
+
         val intent = simHelper.verify(moduleId, guid)
 
         if (checkSimprintsApp(activity, intent)) {
@@ -87,6 +95,9 @@ class BiometricsClient(
             Timber.i("Simprints Verification - Guid is Null - Please check again!")
             return
         }
+
+        Timber.d("Biometrics verify!")
+        Timber.d("ModuleId: $moduleId")
 
         val intent = simHelper.verify(moduleId, guid)
 

@@ -56,7 +56,11 @@ public class BiometricsView extends FieldLayout {
         biometricsStatus = findViewById(R.id.biometricsStatus);
         rootView = findViewById(R.id.rootView);
 
-        biometricsButton.setOnClickListener(v -> registerBiometrics());
+        biometricsButton.setOnClickListener(v -> {
+            if (viewModel != null) {
+                viewModel.onItemClick();
+            }
+        });
     }
 
     public void setViewModel(BiometricsViewModel viewModel) {
@@ -104,9 +108,5 @@ public class BiometricsView extends FieldLayout {
 
         biometricsButton.setText(R.string.biometrics_try_again);
         biometricsButton.setBackgroundColor(rootView.getContext().getResources().getColor(R.color.gray_979));
-    }
-
-    private void registerBiometrics() {
-        BiometricsClientFactory.INSTANCE.get(rootView.getContext()).register((Activity)rootView.getContext());
     }
 }
