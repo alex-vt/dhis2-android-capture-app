@@ -89,6 +89,8 @@ import org.hisp.dhis.android.core.program.Program;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -110,6 +112,7 @@ import static com.simprints.libsimprints.Constants.SIMPRINTS_SESSION_ID;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_IDENTIFY_REQUEST;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_USER_NOT_FOUND;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
 import static org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialPresenter.ACCESS_LOCATION_PERMISSION_REQUEST;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CHANGE_PROGRAM;
@@ -419,8 +422,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                     IdentifyResult result = BiometricsClientFactory.INSTANCE.get(this).handleIdentifyResponse(data);
 
                     if (result instanceof IdentifyResult.Completed){
-                        // TODO: biometrics refactor - simplify presenter
-
                         IdentifyResult.Completed completedResult = (IdentifyResult.Completed)result;
 
                         presenter.searchOnBiometrics( completedResult.getGuids(),completedResult.getSessionId());
@@ -428,13 +429,13 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         Toast.makeText(getContext(), R.string.biometrics_declined, Toast.LENGTH_SHORT).show();
 
                     } else if (result instanceof IdentifyResult.UserNotFound){
-                        Toast.makeText(getContext(), "User can not be identified!", Toast.LENGTH_SHORT).show();
-
+                        Toast.makeText(getContext(), R.string.biometrics_user_not_found, Toast.LENGTH_SHORT).show();
+                        presenter.searchOnBiometrics(Collections.singletonList(BIOMETRICS_USER_NOT_FOUND),"");
                     } else if (result instanceof IdentifyResult.Failure){
                         showBiometricsErrorDialog();
                     }
                 }else {
-                    Toast.makeText(getContext(), "Biometrics declined", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), R.string.biometrics_declined, Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
@@ -632,8 +633,13 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         if (!fromRelationship) {
             liveData.observe(this, searchTeiModels -> {
                 if(presenter.getBiometricsSearchStatus()){
-                    binding.noneOfTheAboveButton.setVisibility(VISIBLE);
                     presenter.clearQueryData();
+
+                    if (searchTeiModels.size() > 0){
+                        showNoneOfTheAboveButton();
+                    } else {
+                        hideNoneOfTheAboveButton();
+                    }
 
                     for(int i = 0; i < searchTeiModels.size(); i++){
                         searchTeiModels.get(i).setBiometricsSearchStatus(true);

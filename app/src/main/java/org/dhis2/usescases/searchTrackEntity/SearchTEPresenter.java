@@ -83,6 +83,7 @@ import timber.log.Timber;
 
 import static android.app.Activity.RESULT_OK;
 
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_USER_NOT_FOUND;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
 import static org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipFragment.TEI_A_UID;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ADD_RELATIONSHIP;
@@ -310,10 +311,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                         .observeOn(schedulerProvider.ui())
                         .subscribe( data ->{
                             view.setLiveData(data);
-
-                            if (biometricsSearchStatus){
-                                view.showNoneOfTheAboveButton();
-                            }
                         }, Timber::d)
         );
 

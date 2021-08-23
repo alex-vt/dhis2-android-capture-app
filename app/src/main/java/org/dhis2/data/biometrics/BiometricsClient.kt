@@ -42,21 +42,23 @@ sealed class VerifyResult {
 
 class BiometricsClient(
     projectId: String,
-    userId: String
+    userId: String,
+    private val confidenceScoreFilter: Int
 ) {
 
     init {
         Timber.d("BiometricsClient!")
-        Timber.d("UserId: $userId")
-        Timber.d("ProjectId: $projectId")
+        Timber.d("userId: $userId")
+        Timber.d("projectId: $projectId")
+        Timber.d("confidenceScoreFilter: $confidenceScoreFilter")
     }
 
-    val simHelper = SimHelper(projectId, userId)
+    private val simHelper = SimHelper(projectId, userId)
     private val defaultModuleId = "NA"
 
     fun register(activity: Activity, moduleId: String) {
         Timber.d("Biometrics register!")
-        Timber.d("ModuleId: $moduleId")
+        Timber.d("moduleId: $moduleId")
 
         val intent = simHelper.register(moduleId)
 
@@ -67,7 +69,7 @@ class BiometricsClient(
 
     fun identify(activity: Activity) {
         Timber.d("Biometrics identify!")
-        Timber.d("ModuleId: $defaultModuleId")
+        Timber.d("moduleId: $defaultModuleId")
 
         val intent = simHelper.identify(defaultModuleId)
 
@@ -83,7 +85,7 @@ class BiometricsClient(
         }
 
         Timber.d("Biometrics verify!")
-        Timber.d("ModuleId: $moduleId")
+        Timber.d("moduleId: $moduleId")
 
         val intent = simHelper.verify(moduleId, guid)
 
@@ -126,7 +128,14 @@ class BiometricsClient(
             } else {
                 val sessionId: String = data.getStringExtra(Constants.SIMPRINTS_SESSION_ID)
 
-                IdentifyResult.Completed(identifications.map { it.guid }, sessionId)
+                val finalIdentifications =
+                    identifications.filter { it.confidence >= confidenceScoreFilter }
+
+                if (finalIdentifications.isEmpty()) {
+                    IdentifyResult.UserNotFound
+                } else {
+                    IdentifyResult.Completed(finalIdentifications.map { it.guid }, sessionId)
+                }
             }
         } else {
             return IdentifyResult.Failure
@@ -142,7 +151,13 @@ class BiometricsClient(
 
             if (verification != null) {
                 when (verification.tier) {
-                    Tier.TIER_1, Tier.TIER_2, Tier.TIER_3, Tier.TIER_4 -> VerifyResult.Match
+                    Tier.TIER_1, Tier.TIER_2, Tier.TIER_3, Tier.TIER_4 -> {
+                        if (verification.confidence >= confidenceScoreFilter) {
+                            VerifyResult.Match
+                        } else {
+                            VerifyResult.NoMatch
+                        }
+                    }
                     Tier.TIER_5 -> VerifyResult.NoMatch
                 }
             } else {
@@ -155,8 +170,8 @@ class BiometricsClient(
 
     fun confirmIdentify(activity: Activity, sessionId: String, guid: String) {
         Timber.d("Biometrics confirmIdentify!")
-        Timber.d("ModuleId: $defaultModuleId")
-        Timber.d("Guid: $guid")
+        Timber.d("moduleId: $defaultModuleId")
+        Timber.d("guid: $guid")
 
         val intent = simHelper.confirmIdentity(activity, sessionId, guid)
 
@@ -167,8 +182,8 @@ class BiometricsClient(
 
     fun noneSelected(activity: Activity, sessionId: String) {
         Timber.d("Biometrics confirmIdentify!")
-        Timber.d("ModuleId: $defaultModuleId")
-        Timber.d("Guid: none_selected")
+        Timber.d("moduleId: $defaultModuleId")
+        Timber.d("guid: none_selected")
 
         val intent = simHelper.confirmIdentity(activity, sessionId, "none_selected")
 

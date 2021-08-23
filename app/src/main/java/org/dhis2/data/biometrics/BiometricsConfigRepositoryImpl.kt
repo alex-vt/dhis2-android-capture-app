@@ -20,9 +20,11 @@ class BiometricsConfigRepositoryImpl(
                 val config = response.body()
 
                 preferenceProvider.setValue(BiometricsPreference.PROJECT_ID, config?.projectId)
+                preferenceProvider.setValue(BiometricsPreference.CONFIDENCE_SCORE_FILTER, config?.confidenceScoreFilter)
 
                 Timber.d("downloadBiometricsConfig!")
-                Timber.d("ProjectId: ${config?.projectId}")
+                Timber.d("projectId: ${config?.projectId}")
+                Timber.d("confidenceScoreFilter: ${config?.confidenceScoreFilter}")
             } else {
                 Timber.e(response.errorBody()?.string())
             }

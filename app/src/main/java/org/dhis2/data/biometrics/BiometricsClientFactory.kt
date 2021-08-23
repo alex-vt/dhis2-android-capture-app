@@ -1,6 +1,7 @@
 package org.dhis2.data.biometrics
 
 import android.content.Context
+import org.dhis2.data.biometrics.BiometricsPreference.Companion.CONFIDENCE_SCORE_FILTER
 import org.dhis2.data.biometrics.BiometricsPreference.Companion.PROJECT_ID
 import org.dhis2.data.prefs.PreferenceProviderImpl
 import org.dhis2.utils.Constants
@@ -11,7 +12,8 @@ object BiometricsClientFactory {
 
         val projectId = preferences.getString(PROJECT_ID,"Ma9wi0IBdo215PKRXOf5")!!
         val userId = preferences.getString(Constants.SECURE_USER_NAME,"")!!
+        val confidenceScoreFilter = preferences.getInt(CONFIDENCE_SCORE_FILTER,0)
 
-        return BiometricsClient(projectId, userId)
+        return BiometricsClient(projectId, userId, confidenceScoreFilter)
     }
 }
