@@ -132,6 +132,7 @@ class BiometricsClient(
                     identifications.filter { it.confidence >= confidenceScoreFilter }
 
                 if (finalIdentifications.isEmpty()) {
+                    Timber.w("Identify returns data but no match with confidence score filter")
                     IdentifyResult.UserNotFound
                 } else {
                     IdentifyResult.Completed(finalIdentifications.map { it.guid }, sessionId)
@@ -155,6 +156,7 @@ class BiometricsClient(
                         if (verification.confidence >= confidenceScoreFilter) {
                             VerifyResult.Match
                         } else {
+                            Timber.w("Verify returns data but no match with confidence score filter")
                             VerifyResult.NoMatch
                         }
                     }
