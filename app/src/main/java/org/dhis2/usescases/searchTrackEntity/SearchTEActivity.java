@@ -101,6 +101,7 @@ import kotlin.Unit;
 import timber.log.Timber;
 
 import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 
 import static com.simprints.libsimprints.Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
@@ -278,10 +279,23 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     @Override
-    public void sendBiometricsAppData(String sessionId, String guid) {
-        if(sessionId != null && guid != null) {
-            BiometricsClientFactory.INSTANCE.get(this).getSimHelper().confirmIdentity(getContext(), sessionId, guid);
-        }
+    public void sendBiometricsConfirmIdentity(String sessionId, String guid) {
+        BiometricsClientFactory.INSTANCE.get(this).confirmIdentify(this, sessionId, guid);
+    }
+
+    @Override
+    public void sendBiometricsNoneSelected(String sessionId) {
+        BiometricsClientFactory.INSTANCE.get(this).noneSelected(this, sessionId);
+    }
+
+    @Override
+    public void showNoneOfTheAboveButton() {
+        binding.noneOfTheAboveButton.setVisibility(VISIBLE);
+    }
+
+    @Override
+    public void hideNoneOfTheAboveButton() {
+        binding.noneOfTheAboveButton.setVisibility(GONE);
     }
 
     @Override
@@ -454,13 +468,13 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     private void showMap(boolean showMap) {
         if (binding.messageContainer.getVisibility() == GONE) {
-            binding.scrollView.setVisibility(showMap ? GONE : View.VISIBLE);
-            binding.mapView.setVisibility(showMap ? View.VISIBLE : GONE);
-            binding.mapCarousel.setVisibility(showMap ? View.VISIBLE : GONE);
+            binding.scrollView.setVisibility(showMap ? GONE : VISIBLE);
+            binding.mapView.setVisibility(showMap ? VISIBLE : GONE);
+            binding.mapCarousel.setVisibility(showMap ? VISIBLE : GONE);
 
             if (showMap) {
                 initializeCarousel();
-                binding.toolbarProgress.setVisibility(View.VISIBLE);
+                binding.toolbarProgress.setVisibility(VISIBLE);
                 binding.toolbarProgress.show();
                 teiMapManager.init(() -> {
                     presenter.getMapData();
@@ -582,7 +596,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void clearData() {
         if (!isMapVisible()) {
-            binding.progressLayout.setVisibility(View.VISIBLE);
+            binding.progressLayout.setVisibility(VISIBLE);
         }
         binding.scrollView.setVisibility(GONE);
     }
@@ -591,10 +605,10 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     public void showFilterProgress() {
         runOnUiThread(() -> {
             if (isMapVisible()) {
-                binding.toolbarProgress.setVisibility(View.VISIBLE);
+                binding.toolbarProgress.setVisibility(VISIBLE);
                 binding.toolbarProgress.show();
             } else {
-                binding.progressLayout.setVisibility(View.VISIBLE);
+                binding.progressLayout.setVisibility(VISIBLE);
             }
         });
     }
@@ -618,6 +632,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         if (!fromRelationship) {
             liveData.observe(this, searchTeiModels -> {
                 if(presenter.getBiometricsSearchStatus()){
+                    binding.noneOfTheAboveButton.setVisibility(VISIBLE);
                     presenter.clearQueryData();
 
                     for(int i = 0; i < searchTeiModels.size(); i++){
@@ -635,13 +650,13 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
                 if (data.val0().isEmpty()) {
                     binding.messageContainer.setVisibility(GONE);
-                    binding.scrollView.setVisibility(View.VISIBLE);
+                    binding.scrollView.setVisibility(VISIBLE);
                     liveAdapter.submitList(searchTeiModels);
                     binding.progressLayout.setVisibility(GONE);
                     CountingIdlingResourceSingleton.INSTANCE.decrement();
                 } else {
                     binding.progressLayout.setVisibility(GONE);
-                    binding.messageContainer.setVisibility(View.VISIBLE);
+                    binding.messageContainer.setVisibility(VISIBLE);
                     binding.message.setText(data.val0());
                     binding.scrollView.setVisibility(GONE);
                     CountingIdlingResourceSingleton.INSTANCE.decrement();
@@ -649,20 +664,18 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 if (!searchTeiModels.isEmpty() && !data.val1() && !presenter.getBiometricsSearchStatus()) {
                     showHideFilter();
                 }
-
-                presenter.setBiometricsSearchStatus(false);
             });
         } else {
             liveData.observeForever(searchTeiModels -> {
                 org.dhis2.data.tuples.Pair<String, Boolean> data = presenter.getMessage(searchTeiModels);
                 if (data.val0().isEmpty()) {
                     binding.messageContainer.setVisibility(GONE);
-                    binding.scrollView.setVisibility(View.VISIBLE);
+                    binding.scrollView.setVisibility(VISIBLE);
                     relationshipLiveAdapter.submitList(searchTeiModels);
                     binding.progressLayout.setVisibility(GONE);
                 } else {
                     binding.progressLayout.setVisibility(GONE);
-                    binding.messageContainer.setVisibility(View.VISIBLE);
+                    binding.messageContainer.setVisibility(VISIBLE);
                     binding.message.setText(data.val0());
                     binding.scrollView.setVisibility(GONE);
                 }
@@ -676,9 +689,9 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     @Override
     public void setFiltersVisibility(boolean showFilters) {
-        binding.filterCounter.setVisibility(showFilters ? View.VISIBLE : GONE);
-        binding.searchFilterGeneral.setVisibility(View.VISIBLE);
-        binding.biometricSearch.setVisibility(BIOMETRICS_ENABLED ? View.VISIBLE: View.GONE);
+        binding.filterCounter.setVisibility(showFilters ? VISIBLE : GONE);
+        binding.searchFilterGeneral.setVisibility(VISIBLE);
+        binding.biometricSearch.setVisibility(BIOMETRICS_ENABLED ? VISIBLE: View.GONE);
     }
 
     @Override
@@ -866,14 +879,14 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void showHideFilter() {
         binding.filterRecyclerLayout.setVisibility(GONE);
-        binding.formViewContainer.setVisibility(View.VISIBLE);
+        binding.formViewContainer.setVisibility(VISIBLE);
 
         swipeFilters(false);
     }
 
     @Override
     public void showHideFilterGeneral() {
-        binding.filterRecyclerLayout.setVisibility(View.VISIBLE);
+        binding.filterRecyclerLayout.setVisibility(VISIBLE);
         binding.formViewContainer.setVisibility(GONE);
 
         swipeFilters(true);
@@ -891,14 +904,14 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             switchOpenClose = general ? 0 : 1;
             backDropActive = !backDropActive;
         }
-        binding.filterOpen.setVisibility(backDropActive ? View.VISIBLE : View.GONE);
+        binding.filterOpen.setVisibility(backDropActive ? VISIBLE : View.GONE);
         ViewCompat.setElevation(binding.mainLayout, backDropActive ? 20 : 0);
         ViewCompat.setElevation(binding.mapView, backDropActive ? 20 : 0);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             activeFilter(general);
         } else {
-            binding.enrollmentButton.setVisibility(general ? View.GONE : View.VISIBLE);
+            binding.enrollmentButton.setVisibility(general ? View.GONE : VISIBLE);
         }
     }
 
@@ -1040,16 +1053,16 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void setMap(TrackerMapData trackerMapData) {
         binding.progressLayout.setVisibility(GONE);
-        if (binding.messageContainer.getVisibility() == View.VISIBLE) {
+        if (binding.messageContainer.getVisibility() == VISIBLE) {
             binding.messageContainer.setVisibility(GONE);
             showMap(true);
         } else {
             org.dhis2.data.tuples.Pair<String, Boolean> data = presenter.getMessage(trackerMapData.getTeiModels());
             if (data.val0().isEmpty()) {
                 binding.messageContainer.setVisibility(GONE);
-                binding.mapView.setVisibility(View.VISIBLE);
-                binding.mapCarousel.setVisibility(View.VISIBLE);
-                binding.mapLayerButton.setVisibility(View.VISIBLE);
+                binding.mapView.setVisibility(VISIBLE);
+                binding.mapCarousel.setVisibility(VISIBLE);
+                binding.mapLayerButton.setVisibility(VISIBLE);
 
                 List<CarouselItemModel> allItems = new ArrayList<>();
                 allItems.addAll(trackerMapData.getTeiModels());
@@ -1065,11 +1078,11 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         trackerMapData.getTeiBoundingBox()
                 );
                 updateCarousel(allItems);
-                binding.mapLayerButton.setVisibility(View.VISIBLE);
+                binding.mapLayerButton.setVisibility(VISIBLE);
                 animations.endMapLoading(binding.mapCarousel);
 
             } else {
-                binding.messageContainer.setVisibility(View.VISIBLE);
+                binding.messageContainer.setVisibility(VISIBLE);
                 binding.message.setText(data.val0());
                 binding.mapView.setVisibility(View.GONE);
                 binding.mapCarousel.setVisibility(View.GONE);
@@ -1099,7 +1112,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     @Override
     public boolean isMapVisible() {
-        return binding.mapView.getVisibility() == View.VISIBLE ||
+        return binding.mapView.getVisibility() == VISIBLE ||
                 binding.navigationBar.getSelectedItemId() == R.id.navigation_map_view;
     }
 

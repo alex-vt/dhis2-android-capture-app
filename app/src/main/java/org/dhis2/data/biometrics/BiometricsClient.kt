@@ -14,6 +14,8 @@ import com.simprints.libsimprints.SimHelper
 import com.simprints.libsimprints.Tier
 import com.simprints.libsimprints.Verification
 import org.dhis2.R
+import org.dhis2.data.biometrics.BiometricsClientFactory.get
+import org.dhis2.usescases.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_IDENTIFY_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_VERIFY_REQUEST
@@ -148,6 +150,30 @@ class BiometricsClient(
             }
         } else {
             VerifyResult.Failure
+        }
+    }
+
+    fun confirmIdentify(activity: Activity, sessionId: String, guid: String) {
+        Timber.d("Biometrics confirmIdentify!")
+        Timber.d("ModuleId: $defaultModuleId")
+        Timber.d("Guid: $guid")
+
+        val intent = simHelper.confirmIdentity(activity, sessionId, guid)
+
+        if (checkSimprintsApp(activity, intent)) {
+            activity.startActivityForResult(intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
+        }
+    }
+
+    fun noneSelected(activity: Activity, sessionId: String) {
+        Timber.d("Biometrics confirmIdentify!")
+        Timber.d("ModuleId: $defaultModuleId")
+        Timber.d("Guid: none_selected")
+
+        val intent = simHelper.confirmIdentity(activity, sessionId, "none_selected")
+
+        if (checkSimprintsApp(activity, intent)) {
+            activity.startActivityForResult(intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
         }
     }
 

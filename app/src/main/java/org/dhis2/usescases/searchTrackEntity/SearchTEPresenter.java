@@ -70,7 +70,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
@@ -309,7 +308,13 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                         .doOnError(this::handleError)
                         .subscribeOn(schedulerProvider.io())
                         .observeOn(schedulerProvider.ui())
-                        .subscribe(view::setLiveData, Timber::d)
+                        .subscribe( data ->{
+                            view.setLiveData(data);
+
+                            if (biometricsSearchStatus){
+                                view.showNoneOfTheAboveButton();
+                            }
+                        }, Timber::d)
         );
 
         compositeDisposable.add(
@@ -802,21 +807,22 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     @Override
     public void onTEIClick(String TEIuid, String enrollmentUid, boolean isOnline) {
         if(biometricsSearchStatus){
-            sendBiometricsData(biometricsSearchGuid);
+            view.hideNoneOfTheAboveButton();
+            sendBiometricsConfirmIdentity(biometricsSearchGuid);
         }
 
         if (!isOnline) {
-            setBiometricsSearchStatus(false);
+            biometricsSearchStatus = false;
             openDashboard(TEIuid, enrollmentUid);
         } else {
-            setBiometricsSearchStatus(false);
+            biometricsSearchStatus = false;
             downloadTei(TEIuid, enrollmentUid);
         }
     }
 
-    private void sendBiometricsData(String guid) {
+    private void sendBiometricsConfirmIdentity(String guid) {
         if (sessionId != null) {
-            view.sendBiometricsAppData(sessionId, guid);
+            view.sendBiometricsConfirmIdentity(sessionId, guid);
         }
     }
 
@@ -1064,7 +1070,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     public void searchOnBiometrics(List<String> guids, String sessionId) {
         this.sessionId = sessionId;
         this.biometricsSearchGuid =  guids.get(0);
-        setBiometricsSearchStatus(true);
+        biometricsSearchStatus = true;
 
         queryData.clear();
         queryData.put(biometricUid, biometricsSearchGuid);
@@ -1074,19 +1080,16 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     @Override
-    public void setBiometricsSearchStatus(boolean status) {
-        biometricsSearchStatus = status;
-    }
-
-    @Override
     public boolean getBiometricsSearchStatus() {
         return biometricsSearchStatus;
     }
 
     @Override
-    public void onNoneOfTheAboveBiometricsMatchButtonClick() {
+    public void onBiometricsNoneOfTheAboveClick() {
         if(biometricsSearchStatus){
-            sendBiometricsData("none_selected");
+            view.hideNoneOfTheAboveButton();
+            biometricsSearchStatus = false;
+            view.sendBiometricsNoneSelected(sessionId);
         }
     }
 
