@@ -86,7 +86,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
         biometricsGuid = getArguments().getString(BIOMETRICS_GUID);
         biometricsVerificationStatus = getArguments().getInt(BIOMETRICS_VERIFICATION_STATUS);
-        teiOrgUnit = BIOMETRICS_TEI_ORGANISATION_UNIT;
+        teiOrgUnit = getArguments().getString(BIOMETRICS_TEI_ORGANISATION_UNIT);
 
         activity.eventCaptureComponent.plus(
                 new EventCaptureFormModule(
