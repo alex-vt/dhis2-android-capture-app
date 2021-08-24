@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 
 import org.dhis2.R;
 import org.dhis2.data.biometrics.BiometricsClientFactory;
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
 import org.dhis2.databinding.BiometricsViewBinding;
 import org.dhis2.utils.customviews.FieldLayout;
 
@@ -50,7 +51,7 @@ public class BiometricsView extends FieldLayout {
 
     @SuppressLint("ClickableViewAccessibility")
     private void setLayout() {
-        binding.inflate(inflater, this, true);
+        binding = BiometricsViewBinding.inflate(inflater, this, true);
 
         biometricsButton = findViewById(R.id.biometricsButton);
         biometricsStatus = findViewById(R.id.biometricsStatus);
