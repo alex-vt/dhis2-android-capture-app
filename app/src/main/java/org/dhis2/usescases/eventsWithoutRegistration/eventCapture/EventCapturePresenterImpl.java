@@ -18,6 +18,7 @@ import org.dhis2.data.tuples.Quartet;
 import org.dhis2.form.model.ActionType;
 import org.dhis2.form.model.FieldUiModel;
 import org.dhis2.form.model.RowAction;
+import org.dhis2.form.model.ValueStoreResult;
 import org.dhis2.utils.AuthorityException;
 import org.dhis2.utils.DhisTextUtils;
 import org.dhis2.utils.Result;
@@ -263,13 +264,14 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
                 onFieldActionProcessor.subscribe(
                         rowAction -> {
                             if (rowAction.getType() == ActionType.ON_FOCUS) {
-                                view.hideNavigationBar();
+                                    view.hideNavigationBar();
                             }
                         },
                         Timber::e
                 )
         );
     }
+
 
     @VisibleForTesting
     public String getFieldSection(FieldUiModel fieldViewModel) {
@@ -617,5 +619,10 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
     @Override
     public void disableConfErrorMessage() {
         showConfigurationError = false;
+    }
+
+    @Override
+    public void refreshByBiometricsVerification(int status) {
+        view.refreshByBiometricsVerification(status);
     }
 }

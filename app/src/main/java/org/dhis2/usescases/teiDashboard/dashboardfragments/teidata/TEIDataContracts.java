@@ -143,8 +143,11 @@ public class TEIDataContracts {
 
         void setOpeningFilterToNone();
 
+        void launchEventCapture(String uid, String guid, int status);
+
         void verifyBiometrics();
 
         void handleVerifyResponse(VerifyResult result);
     }
+
 }

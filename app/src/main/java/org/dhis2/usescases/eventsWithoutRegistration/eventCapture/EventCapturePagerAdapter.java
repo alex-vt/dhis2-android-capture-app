@@ -19,11 +19,26 @@ public class EventCapturePagerAdapter extends FragmentStateAdapter {
 
     private final String programUid;
     private final String eventUid;
+    private final String biometricsGuid;
+    private final int biometricsVerificationStatus;
+    private final String teiOrgUnitUid;
 
     public EventCapturePagerAdapter(FragmentActivity fragmentActivity, String programUid, String eventUid) {
         super(fragmentActivity);
         this.programUid = programUid;
         this.eventUid = eventUid;
+        biometricsGuid = null;
+        biometricsVerificationStatus = -1;
+        teiOrgUnitUid = null;
+    }
+
+    public EventCapturePagerAdapter(FragmentActivity fragmentActivity, String programUid, String eventUid, String guid, int status, String teiOrgUnit) {
+        super(fragmentActivity);
+        this.programUid = programUid;
+        this.eventUid = eventUid;
+        this.biometricsGuid = guid;
+        this.biometricsVerificationStatus = status;
+        this.teiOrgUnitUid = teiOrgUnit;
     }
 
     @NonNull
@@ -31,7 +46,7 @@ public class EventCapturePagerAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         switch (position) {
             default:
-                return EventCaptureFormFragment.newInstance(eventUid);
+                return EventCaptureFormFragment.newInstance(eventUid, biometricsGuid, biometricsVerificationStatus,teiOrgUnitUid);
             case 1:
                 Fragment indicatorFragment = new IndicatorsFragment();
                 Bundle arguments = new Bundle();

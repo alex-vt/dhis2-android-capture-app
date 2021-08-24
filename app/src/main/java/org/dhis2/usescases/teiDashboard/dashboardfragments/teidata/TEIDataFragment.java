@@ -354,14 +354,6 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
         VerifyResult result = BiometricsClientFactory.INSTANCE.get(context).handleVerifyResponse(data);
 
         presenter.handleVerifyResponse(result);
-
- /*       if (result instanceof VerifyResult.Match){
-            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 1);
-        } else if (result instanceof VerifyResult.NoMatch){
-            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
-        } else if (result instanceof VerifyResult.Failure){
-            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
-        }*/
     }
 
     @Override
