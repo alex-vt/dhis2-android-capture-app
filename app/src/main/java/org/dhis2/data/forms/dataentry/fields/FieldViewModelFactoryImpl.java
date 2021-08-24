@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 import androidx.databinding.ObservableField;
 import org.dhis2.data.forms.dataentry.fields.age.AgeViewModel;
 import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel;
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel;
 import org.dhis2.data.forms.dataentry.fields.coordinate.CoordinateViewModel;
 import org.dhis2.data.forms.dataentry.fields.datetime.DateTimeViewModel;
 import org.dhis2.data.forms.dataentry.fields.edittext.EditTextViewModel;
@@ -46,6 +48,7 @@ import io.reactivex.processors.PublishProcessor;
 import static org.dhis2.data.forms.dataentry.EnrollmentRepository.SINGLE_SECTION_UID;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricsVerificationText;
 import static org.dhis2.utils.Preconditions.isNull;
 
 public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
@@ -129,6 +132,10 @@ public final class FieldViewModelFactoryImpl implements FieldViewModelFactory {
         if (BIOMETRICS_ENABLED){
             if(isBiometricText(label)){
                 return BiometricsViewModel.create(id, label, mandatory, value, section,editable, description, objectStyle,processor, style, url);
+            }
+
+            if(isBiometricsVerificationText(label)){
+                return BiometricsVerificationViewModel.create(id, label, mandatory, value, section,editable, description, objectStyle,processor, style, url, BiometricsVerificationView.BiometricsVerificationStatus.NOT_DONE);
             }
         }
 

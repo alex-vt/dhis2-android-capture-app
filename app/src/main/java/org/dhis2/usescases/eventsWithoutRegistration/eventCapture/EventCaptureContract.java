@@ -76,6 +76,8 @@ public class EventCaptureContract {
         void hideNavigationBar();
 
         void displayConfigurationErrors(List<RulesUtilsProviderConfigurationError> configurationError);
+
+        void refreshByBiometricsVerification(int status);
     }
 
     public interface Presenter extends AbstractActivityContracts.Presenter {
@@ -123,6 +125,8 @@ public class EventCaptureContract {
         void setValueChanged(@NotNull String uid);
 
         void disableConfErrorMessage();
+        
+        void refreshByBiometricsVerification(int status);
     }
 
     public interface EventCaptureRepository {
