@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import org.dhis2.R;
 import org.dhis2.data.biometrics.BiometricsClientFactory;
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
 import org.dhis2.databinding.BiometricsViewBinding;
 import org.dhis2.utils.customviews.FieldLayout;
 
