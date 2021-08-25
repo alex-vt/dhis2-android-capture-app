@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import org.dhis2.R;
-import org.dhis2.data.biometrics.BiometricsClient;
+import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.databinding.BiometricsViewBinding;
 import org.dhis2.utils.customviews.FieldLayout;
 
@@ -56,7 +56,11 @@ public class BiometricsView extends FieldLayout {
         biometricsStatus = findViewById(R.id.biometricsStatus);
         rootView = findViewById(R.id.rootView);
 
-        biometricsButton.setOnClickListener(v -> registerBiometrics());
+        biometricsButton.setOnClickListener(v -> {
+            if (viewModel != null) {
+                viewModel.onItemClick();
+            }
+        });
     }
 
     public void setViewModel(BiometricsViewModel viewModel) {
@@ -104,9 +108,5 @@ public class BiometricsView extends FieldLayout {
 
         biometricsButton.setText(R.string.biometrics_try_again);
         biometricsButton.setBackgroundColor(rootView.getContext().getResources().getColor(R.color.gray_979));
-    }
-
-    private void registerBiometrics() {
-        BiometricsClient.INSTANCE.register((Activity)rootView.getContext());
     }
 }

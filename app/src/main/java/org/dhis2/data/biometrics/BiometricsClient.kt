@@ -38,17 +38,25 @@ sealed class VerifyResult {
     object Failure : VerifyResult()
 }
 
-object BiometricsClient {
+class BiometricsClient(
+    projectId: String,
+    userId: String
+) {
 
-    private const val PROJECT_ID = "Ma9wi0IBdo215PKRXOf5"
-    private const val USER_ID = "android"
-    private const val MODULE_ID = "MODULE ID"
+    init {
+        Timber.d("BiometricsClient!")
+        Timber.d("UserId: $userId")
+        Timber.d("ProjectId: $projectId")
+    }
 
-    @JvmField
-    val simHelper = SimHelper(PROJECT_ID, USER_ID)
+    val simHelper = SimHelper(projectId, userId)
+    private val moduleId = "NA"
 
-    fun register(activity: Activity) {
-        val intent = simHelper.register(MODULE_ID)
+    fun register(activity: Activity, moduleId: String) {
+        Timber.d("Biometrics register!")
+        Timber.d("ModuleId: $moduleId")
+
+        val intent = simHelper.register(moduleId)
 
         if (checkSimprintsApp(activity, intent)) {
             activity.startActivityForResult(intent, BIOMETRICS_ENROLL_REQUEST)
@@ -56,7 +64,10 @@ object BiometricsClient {
     }
 
     fun identify(activity: Activity) {
-        val intent = simHelper.identify(MODULE_ID)
+        Timber.d("Biometrics identify!")
+        Timber.d("ModuleId: $moduleId")
+
+        val intent = simHelper.identify(moduleId)
 
         if (checkSimprintsApp(activity, intent)) {
             activity.startActivityForResult(intent, BIOMETRICS_IDENTIFY_REQUEST)
@@ -69,7 +80,10 @@ object BiometricsClient {
             return
         }
 
-        val intent = simHelper.verify(MODULE_ID, guid)
+        Timber.d("Biometrics verify!")
+        Timber.d("ModuleId: $moduleId")
+
+        val intent = simHelper.verify(moduleId, guid)
 
         if (checkSimprintsApp(activity, intent)) {
             activity.startActivityForResult(intent, BIOMETRICS_VERIFY_REQUEST)
@@ -82,7 +96,10 @@ object BiometricsClient {
             return
         }
 
-        val intent = simHelper.verify(MODULE_ID, guid)
+        Timber.d("Biometrics verify!")
+        Timber.d("ModuleId: $moduleId")
+
+        val intent = simHelper.verify(moduleId, guid)
 
         if (fragment.context != null && checkSimprintsApp(fragment.requireContext(), intent)) {
             fragment.startActivityForResult(intent, BIOMETRICS_VERIFY_REQUEST)

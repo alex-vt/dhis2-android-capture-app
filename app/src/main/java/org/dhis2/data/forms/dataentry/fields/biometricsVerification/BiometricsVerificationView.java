@@ -9,9 +9,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import org.dhis2.R;
+import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.databinding.BiometricsVerificationViewBinding;
 import org.dhis2.utils.customviews.FieldLayout;
-import org.dhis2.data.biometrics.BiometricsClient;
 
 import androidx.appcompat.content.res.AppCompatResources;
 
@@ -85,6 +85,6 @@ public class BiometricsVerificationView extends FieldLayout {
 
 
     private void launchBiometricsVerification() {
-        BiometricsClient.INSTANCE.verify(((Activity) this.getContext()), guid);
+        BiometricsClientFactory.INSTANCE.get(this.getContext()).verify(((Activity) this.getContext()), guid);
     }
 }

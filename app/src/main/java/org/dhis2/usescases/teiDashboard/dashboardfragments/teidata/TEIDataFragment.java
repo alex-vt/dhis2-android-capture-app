@@ -19,11 +19,10 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
-import com.simprints.libsimprints.Verification;
 
 import org.dhis2.App;
 import org.dhis2.R;
-import org.dhis2.data.biometrics.BiometricsClient;
+import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.databinding.FragmentTeiDataBinding;
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity;
@@ -222,7 +221,7 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
 
     @Override
     public void launchBiometricsVerification(String guid) {
-       BiometricsClient.INSTANCE.verify(this, guid);
+        BiometricsClientFactory.INSTANCE.get(context).verify(this, guid);
     }
 
     @Override
@@ -311,7 +310,7 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
     }
 
     private void onBiometricsAppResponse(Intent data) {
-        VerifyResult result = BiometricsClient.INSTANCE.handleVerifyResponse(data);
+        VerifyResult result = BiometricsClientFactory.INSTANCE.get(context).handleVerifyResponse(data);
 
         if (result instanceof VerifyResult.Match){
             presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 1);

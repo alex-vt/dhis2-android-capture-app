@@ -24,6 +24,8 @@ import org.dhis2.data.prefs.PreferenceProvider
 import org.dhis2.data.service.workManager.WorkManagerController
 import org.dhis2.data.service.workManager.WorkerItem
 import org.dhis2.data.service.workManager.WorkerType
+import org.dhis2.usescases.biometrics.BiometricsConfigRepository
+import org.dhis2.utils.Constants
 import org.dhis2.utils.DateUtils
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.dhis2.utils.analytics.matomo.DEFAULT_EXTERNAL_TRACKER_NAME
@@ -42,7 +44,8 @@ class SyncPresenterImpl(
     private val d2: D2,
     private val preferences: PreferenceProvider,
     private val workManagerController: WorkManagerController,
-    private val analyticsHelper: AnalyticsHelper
+    private val analyticsHelper: AnalyticsHelper,
+    private val biometricsConfigRepository: BiometricsConfigRepository
 ) : SyncPresenter {
 
     override fun syncAndDownloadEvents() {
@@ -142,6 +145,7 @@ class SyncPresenterImpl(
                 .doOnComplete {
                     updateProyectAnalytics()
                     setUpSMS()
+                    downloadBiometricsConfig()
                 }
 
         ).blockingAwait()
@@ -467,5 +471,9 @@ class SyncPresenterImpl(
                 )
             }
         } ?: analyticsHelper.clearMatomoSecondaryTracker()
+    }
+
+    private fun downloadBiometricsConfig() {
+        biometricsConfigRepository.sync()
     }
 }
