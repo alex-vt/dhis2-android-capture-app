@@ -1,5 +1,8 @@
 package org.dhis2.usescases.teiDashboard;
 
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricAttribute;
+
 import androidx.databinding.BaseObservable;
 
 import org.hisp.dhis.android.core.common.ObjectStyle;
@@ -150,5 +153,40 @@ public class DashboardProgramModel extends BaseObservable {
         if (foundProgram != null && foundProgram.style() != null)
             return foundProgram.style();
         else return null;
+    }
+
+    public boolean isBiometricsEnabled(){
+        return BIOMETRICS_ENABLED;
+    }
+
+    public boolean isTrackedBiometricEntityExistAndHasValue(){
+        String biometricValue = this.getTrackedBiometricEntityValue();
+
+        return biometricValue != null && !biometricValue.isEmpty();
+    }
+
+    public String getTrackedBiometricEntityValue(){
+        String biometricUid = null;
+
+        for(ProgramTrackedEntityAttribute trackedEntityAttribute: trackedEntityAttributes){
+            if(isBiometricAttribute(trackedEntityAttribute)){
+                biometricUid =  trackedEntityAttribute.trackedEntityAttribute().uid();
+                break;
+            }
+        }
+
+        if(null != biometricUid){
+            for(TrackedEntityAttributeValue value: trackedEntityAttributeValues){
+                if(biometricUid.equalsIgnoreCase(value.trackedEntityAttribute())){
+                    if(value==null || value.value().isEmpty()){
+                        return null;
+                    }else{
+                        return value.value();
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

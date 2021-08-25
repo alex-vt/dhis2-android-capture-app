@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken;
 
 import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.R;
+import org.dhis2.data.filter.FilterRepository;
 import org.dhis2.data.forms.dataentry.RuleEngineRepository;
 import org.dhis2.data.prefs.Preference;
 import org.dhis2.data.prefs.PreferenceProvider;
@@ -30,6 +31,7 @@ import org.dhis2.utils.EventMode;
 import org.dhis2.utils.Result;
 import org.dhis2.utils.analytics.AnalyticsHelper;
 import org.dhis2.utils.filters.FilterManager;
+import org.dhis2.data.biometrics.BiometricsClient;
 import org.hisp.dhis.android.core.D2;
 import org.hisp.dhis.android.core.enrollment.Enrollment;
 import org.hisp.dhis.android.core.event.Event;
@@ -54,15 +56,16 @@ import io.reactivex.processors.BehaviorProcessor;
 import timber.log.Timber;
 
 import static android.text.TextUtils.isEmpty;
+
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ACTIVE_FOLLOW_UP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.FOLLOW_UP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.SHARE_TEI;
 import static org.dhis2.utils.analytics.AnalyticsConstants.TYPE_QR;
 import static org.dhis2.utils.analytics.AnalyticsConstants.TYPE_SHARE;
 
-/**
- * QUADRAM. Created by ppajuelo on 09/04/2019.
- */
 public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
 
     private final D2 d2;
@@ -75,12 +78,16 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     private final String enrollmentUid;
     private final RuleEngineRepository ruleEngineRepository;
     private final FilterManager filterManager;
-    private String programUid;
     private final String teiUid;
-    private TEIDataContracts.View view;
-    private CompositeDisposable compositeDisposable;
+    private final TEIDataContracts.View view;
+    private final CompositeDisposable compositeDisposable;
+    private final FilterRepository filterRepository;
+
+    private String programUid;
     private DashboardProgramModel dashboardModel;
     private String currentStage = null;
+
+    private String uidForEvent;
 
     public TEIDataPresenterImpl(TEIDataContracts.View view, D2 d2,
                                 DashboardRepository dashboardRepository,
@@ -90,7 +97,8 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
                                 SchedulerProvider schedulerProvider,
                                 PreferenceProvider preferenceProvider,
                                 AnalyticsHelper analyticsHelper,
-                                FilterManager filterManager) {
+                                FilterManager filterManager,
+                                FilterRepository filterRepository) {
         this.view = view;
         this.d2 = d2;
         this.dashboardRepository = dashboardRepository;
@@ -105,10 +113,26 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
         this.filterManager = filterManager;
         this.compositeDisposable = new CompositeDisposable();
         this.groupingProcessor = BehaviorProcessor.create();
+        this.filterRepository = filterRepository;
     }
 
     @Override
     public void init() {
+        compositeDisposable.add(
+                filterManager.asFlowable().startWith(filterManager)
+                        .flatMap(fManager -> Flowable.just(filterRepository.dashboardFilters(programUid)))
+                        .subscribeOn(schedulerProvider.io())
+                        .observeOn(schedulerProvider.ui())
+                        .subscribe(filters -> {
+                                    if (filters.isEmpty()) {
+                                        view.hideFilters();
+                                    } else {
+                                        view.setFilters(filters);
+                                    }
+                                },
+                                Timber::e
+                        )
+        );
         compositeDisposable.add(
                 d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).get()
                         .map(tei -> {
@@ -267,20 +291,18 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
 
     @Override
     public void getCatComboOptions(Event event) {
-        compositeDisposable.add(
-                dashboardRepository.catComboForProgram(event.program())
-                        .flatMap(categoryCombo -> dashboardRepository.catOptionCombos(categoryCombo.uid()),
-                                Pair::create
-                        )
-                        .subscribeOn(schedulerProvider.io())
-                        .observeOn(schedulerProvider.ui())
-                        .subscribe(categoryComboListPair -> {
-                                    for (ProgramStage programStage : dashboardModel.getProgramStages()) {
-                                        if (event.programStage().equals(programStage.uid()))
-                                            view.showCatComboDialog(event.uid(), categoryComboListPair.val0(), categoryComboListPair.val1());
-                                    }
-                                },
-                                Timber::e));
+        if (dashboardRepository.isStageFromProgram(event.programStage())) {
+            compositeDisposable.add(
+                    dashboardRepository.catComboForProgram(event.program())
+                            .filter(categoryCombo -> categoryCombo.isDefault() != Boolean.TRUE && !categoryCombo.name().equals("default"))
+                            .subscribeOn(schedulerProvider.io())
+                            .observeOn(schedulerProvider.ui())
+                            .subscribe(categoryCombo ->
+                                            view.showCatComboDialog(event.uid(),
+                                                    event.eventDate() == null ? event.dueDate() : event.eventDate(),
+                                                    categoryCombo.uid()),
+                                    Timber::e));
+        }
     }
 
     @Override
@@ -377,9 +399,21 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     @Override
     public void onEventSelected(String uid, EventStatus eventStatus, View sharedView) {
         if (eventStatus == EventStatus.ACTIVE || eventStatus == EventStatus.COMPLETED) {
-            Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
+            uidForEvent = uid;
+            String guid = dashboardModel.getTrackedBiometricEntityValue();
+            Event event = d2.eventModule().events().uid(uid).blockingGet();
+            ProgramStage stage = d2.programModule().programStages().uid(event.programStage()).blockingGet();
+
+            if(BIOMETRICS_ENABLED && guid!=null && stage.displayName().equalsIgnoreCase("Follow-up")) {
+                launchSimprintsAppForVerification(guid);
+            }else {
+                launchEventCapture(uid, null, -1);
+
+            }
+
+/*            Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
             intent.putExtras(EventCaptureActivity.getActivityBundle(uid, programUid, EventMode.CHECK));
-            view.openEventCapture(intent);
+            view.openEventCapture(intent);*/
         } else {
             Event event = d2.eventModule().events().uid(uid).blockingGet();
             Intent intent = new Intent(view.getContext(), EventInitialActivity.class);
@@ -388,6 +422,23 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
             ));
             view.openEventInitial(intent);
         }
+    }
+
+    @Override
+    public void launchEventCapture(String uid, String guid, int status) {
+        if(uid == null){
+            uid = uidForEvent;
+        }
+
+        Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
+        intent.putExtras(EventCaptureActivity.getActivityBundle(uid, programUid, EventMode.CHECK));
+        intent.putExtra(BIOMETRICS_GUID, guid);
+        intent.putExtra(BIOMETRICS_VERIFICATION_STATUS, status);
+        view.openEventCapture(intent);
+    }
+
+    private void launchSimprintsAppForVerification(String guid){
+        view.launchBiometricsVerification(guid);
     }
 
     @Override
@@ -480,9 +531,14 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
 
     @Override
     public boolean enrollmentOrgUnitInCaptureScope(String enrollmentOrgUnit) {
-        return  !d2.organisationUnitModule().organisationUnits()
+        return !d2.organisationUnitModule().organisationUnits()
                 .byOrganisationUnitScope(OrganisationUnit.Scope.SCOPE_DATA_CAPTURE)
                 .byUid().eq(enrollmentOrgUnit)
                 .blockingIsEmpty();
+    }
+
+    @Override
+    public void setOpeningFilterToNone(){
+        filterRepository.collapseAllFilters();
     }
 }
