@@ -126,7 +126,7 @@ class BiometricsClient(
 
             return if (identifications == null && refusalForm != null) {
                 IdentifyResult.BiometricsDeclined
-            } else if (identifications == null) {
+            } else if (identifications == null || identifications.size == 0) {
                 IdentifyResult.UserNotFound(sessionId)
             } else {
                 val finalIdentifications =
