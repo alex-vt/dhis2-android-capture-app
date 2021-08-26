@@ -79,7 +79,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:fontFamily="@font/rubik_medium"
-                android:text="@string/biometrics_enrollment_last_biometrics"
+                android:text="@string/biometrics_enroll_last_biometrics"
                 android:textAllCaps="true"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
