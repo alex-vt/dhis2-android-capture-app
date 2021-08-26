@@ -228,9 +228,8 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
 
     @Override
     public void verificationStatusMatch() {
-        binding.cardFront.verificationButton.setBackgroundColor(ContextCompat.getColor(
-                context,
-                R.color.green_success
+        binding.cardFront.verificationButton.setBackground(ContextCompat.getDrawable(context,
+                R.drawable.button_round_success
         ));
 
         binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_match);
@@ -241,9 +240,8 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
 
     @Override
     public void verificationStatusNoMatch() {
-        binding.cardFront.verificationButton.setBackgroundColor(ContextCompat.getColor(
-                context,
-                R.color.red_failed
+        binding.cardFront.verificationButton.setBackground(ContextCompat.getDrawable(context,
+                R.drawable.button_round_fail
         ));
 
         binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_no_match);
@@ -254,9 +252,8 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
 
     @Override
     public void verificationStatusFailed() {
-        binding.cardFront.verificationButton.setBackgroundColor(ContextCompat.getColor(
-                context,
-                R.color.warning_dark_color
+        binding.cardFront.verificationButton.setBackground(ContextCompat.getDrawable(context,
+                R.drawable.button_round_warning
         ));
 
         binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_failed);
