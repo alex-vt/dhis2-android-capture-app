@@ -236,7 +236,7 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
         binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_match);
 
         binding.cardFront.verificationButtonIcon.setImageDrawable(
-                AppCompatResources.getDrawable(context, R.drawable.ic_bio_verification_match));
+                AppCompatResources.getDrawable(context, R.drawable.ic_biometrics_success));
     }
 
     @Override
@@ -249,7 +249,7 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
         binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_no_match);
 
         binding.cardFront.verificationButtonIcon.setImageDrawable(
-                AppCompatResources.getDrawable(context, R.drawable.ic_bio_verification_no_match));
+                AppCompatResources.getDrawable(context, R.drawable.ic_biometrics_failed));
     }
 
     @Override
@@ -262,7 +262,7 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
         binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_failed);
 
         binding.cardFront.verificationButtonIcon.setImageDrawable(
-                AppCompatResources.getDrawable(context, R.drawable.ic_bio_verification_warning));
+                AppCompatResources.getDrawable(context, R.drawable.ic_biometrics_warning));
     }
 
     @Override

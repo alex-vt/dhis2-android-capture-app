@@ -124,7 +124,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/icons8_facial_recognition_50"
+                app:srcCompat="@drawable/ic_biometrics"
                 tools:ignore="ContentDescription"
                 app:tint="@color/white"
                 android:visibility="invisible"/>

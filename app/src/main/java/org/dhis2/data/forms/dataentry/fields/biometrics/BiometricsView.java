@@ -9,7 +9,9 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.dhis2.R;
 import org.dhis2.data.biometrics.BiometricsClientFactory;
@@ -17,6 +19,8 @@ import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVe
 import org.dhis2.databinding.BiometricsViewBinding;
 import org.dhis2.utils.customviews.FieldLayout;
 
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.ContextCompat;
 import timber.log.Timber;
 
 public class BiometricsView extends FieldLayout {
@@ -25,8 +29,9 @@ public class BiometricsView extends FieldLayout {
 
     private BiometricsViewModel viewModel;
 
-    Button biometricsButton;
-    Button biometricsStatus;
+    LinearLayout biometricsButton;
+    TextView biometricsButtonText;
+    ImageView biometricsButtonIcon;
     LinearLayout rootView;
 
     public BiometricsView(Context context) {
@@ -53,9 +58,10 @@ public class BiometricsView extends FieldLayout {
     private void setLayout() {
         binding = BiometricsViewBinding.inflate(inflater, this, true);
 
-        biometricsButton = findViewById(R.id.biometricsButton);
-        biometricsStatus = findViewById(R.id.biometricsStatus);
         rootView = findViewById(R.id.rootView);
+        biometricsButton = findViewById(R.id.biometrics_button);
+        biometricsButtonText= findViewById(R.id.biometrics_button_text);
+        biometricsButtonIcon= findViewById(R.id.biometrics_button_icon);
 
         biometricsButton.setOnClickListener(v -> {
             if (viewModel != null) {
@@ -84,30 +90,30 @@ public class BiometricsView extends FieldLayout {
             }
         }else {
             Timber.tag("BiometricsView").d("onInitial");
-            onInitial();
         }
     }
 
-    void onInitial(){
-        biometricsStatus.setVisibility(View.GONE);
-
-        biometricsButton.setVisibility(VISIBLE);
-    }
-
     void onSuccess(){
-        biometricsStatus.setBackgroundColor(rootView.getContext().getResources().getColor(R.color.green_7ed));
-        biometricsStatus.setText(R.string.biometrics_completed);
-        biometricsStatus.setVisibility(VISIBLE);
+        biometricsButton.setBackgroundColor(ContextCompat.getColor(
+                rootView.getContext(),
+                R.color.green_success
+        ));
 
-        biometricsButton.setVisibility(View.GONE);
+        biometricsButtonText.setText(R.string.biometrics_completed);
+
+        biometricsButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(rootView.getContext(), R.drawable.ic_biometrics_success));
     }
 
     void onFailure(){
-        biometricsStatus.setBackgroundColor(rootView.getContext().getResources().getColor(R.color.red_060));
-        biometricsStatus.setText(R.string.biometrics_declined);
-        biometricsStatus.setVisibility(VISIBLE);
+                biometricsButton.setBackgroundColor(ContextCompat.getColor(
+                        rootView.getContext(),
+                R.color.warning_dark_color
+        ));
 
-        biometricsButton.setText(R.string.biometrics_try_again);
-        biometricsButton.setBackgroundColor(rootView.getContext().getResources().getColor(R.color.gray_979));
+        biometricsButtonText.setText(R.string.biometrics_declined);
+
+        biometricsButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(rootView.getContext(), R.drawable.ic_biometrics_warning));
     }
 }
