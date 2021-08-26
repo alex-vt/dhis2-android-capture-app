@@ -102,7 +102,6 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
     /*region LIFECYCLE*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         (applicationContext as App).userComponent()!!.plus(
             EnrollmentModule(
                 this,
@@ -112,18 +111,6 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                 context
             )
         ).inject(this)
-
-        if (presenter.getEnrollment() == null ||
-            presenter.getEnrollment()?.trackedEntityInstance() == null
-        ) {
-            finish()
-        }
-
-        forRelationship = intent.getBooleanExtra(FOR_RELATIONSHIP, false)
-        binding = DataBindingUtil.setContentView(this, R.layout.enrollment_activity)
-        binding.view = this
-
-        mode = EnrollmentMode.valueOf(intent.getStringExtra(MODE_EXTRA))
 
         formView = FormView.Builder()
             .persistence(formRepository)
@@ -136,7 +123,22 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                     hideProgress()
                 }
             }
+            .factory(supportFragmentManager)
             .build()
+
+        super.onCreate(savedInstanceState)
+
+        if (presenter.getEnrollment() == null ||
+            presenter.getEnrollment()?.trackedEntityInstance() == null
+        ) {
+            finish()
+        }
+
+        forRelationship = intent.getBooleanExtra(FOR_RELATIONSHIP, false)
+        binding = DataBindingUtil.setContentView(this, R.layout.enrollment_activity)
+        binding.view = this
+
+        mode = EnrollmentMode.valueOf(intent.getStringExtra(MODE_EXTRA))
 
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.formViewContainer, formView)
@@ -230,7 +232,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                 presenter.getEnrollment()!!.trackedEntityInstance(),
                 null,
                 presenter.getEnrollment()!!.organisationUnit(),
-                null,
+                presenter.getEventStage(eventUid),
                 presenter.getEnrollment()!!.uid(),
                 0,
                 presenter.getEnrollment()!!.status()

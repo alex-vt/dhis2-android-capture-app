@@ -20,6 +20,7 @@ import org.dhis2.form.data.FormRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
 import org.dhis2.form.model.ValueStoreResult
+import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.usescases.biometrics.isBiometricModel
 import org.dhis2.utils.DhisTextUtils
@@ -417,7 +418,7 @@ class EnrollmentPresenterImpl(
         val stage = d2.programModule().programStages().uid(event.programStage()).blockingGet()
         val needsCatCombo = programRepository.blockingGet().categoryComboUid() != null &&
             d2.categoryModule().categoryCombos().uid(catComboUid)
-                .blockingGet().isDefault == false
+            .blockingGet().isDefault == false
         val needsCoordinates =
             stage.featureType() != null && stage.featureType() != FeatureType.NONE
 
@@ -505,7 +506,9 @@ class EnrollmentPresenterImpl(
     }
 
     fun dataIntegrityCheck(): Boolean {
-        checkIfBiometricValueValid();
+        if (BIOMETRICS_ENABLED && dataEntryRepository.list() != null){
+            checkIfBiometricValueValid()
+        }
 
         return when {
             uniqueFields.isNotEmpty() -> {
@@ -547,6 +550,9 @@ class EnrollmentPresenterImpl(
     fun disableConfErrorMessage() {
         showConfigurationError = false
     }
+
+    fun getEventStage(eventUid: String) =
+        enrollmentFormRepository.getProgramStageUidFromEvent(eventUid)
 
     fun onBiometricsCompleted(guid: String) {
         saveBiometricValue(guid)

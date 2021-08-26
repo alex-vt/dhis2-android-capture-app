@@ -1138,6 +1138,8 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     private void findBiometricUid(List<FieldUiModel> data) {
+        if (data == null) return;
+
         for(int i=data.size()-1; i>=0; i--){
             String label = data.get(i).getLabel();
             if(isBiometricText( label)){

@@ -13,6 +13,7 @@ import junit.framework.Assert.assertTrue
 import org.dhis2.data.prefs.PreferenceProvider
 import org.dhis2.data.service.SyncPresenterImpl
 import org.dhis2.data.service.workManager.WorkManagerController
+import org.dhis2.usescases.biometrics.BiometricsConfigRepository
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.call.D2Progress
@@ -32,10 +33,11 @@ class SyncPresenterTest {
     private val preferences: PreferenceProvider = mock()
     private val workManagerController: WorkManagerController = mock()
     private val analyticsHelper: AnalyticsHelper = mock()
+    private val biometricsConfigRepository: BiometricsConfigRepository = mock()
 
     @Before
     fun setUp() {
-        presenter = SyncPresenterImpl(d2, preferences, workManagerController, analyticsHelper)
+        presenter = SyncPresenterImpl(d2, preferences, workManagerController, analyticsHelper,biometricsConfigRepository)
     }
 
     @Test

@@ -86,7 +86,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
         biometricsGuid = getArguments().getString(BIOMETRICS_GUID);
         biometricsVerificationStatus = getArguments().getInt(BIOMETRICS_VERIFICATION_STATUS);
-        teiOrgUnit = BIOMETRICS_TEI_ORGANISATION_UNIT;
+        teiOrgUnit = getArguments().getString(BIOMETRICS_TEI_ORGANISATION_UNIT);
 
         activity.eventCaptureComponent.plus(
                 new EventCaptureFormModule(
@@ -94,6 +94,29 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                         getArguments().getString(Constants.EVENT_UID))
         ).inject(this);
         setRetainInstance(true);
+    }
+
+    @Override
+    public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        formView = new FormView.Builder()
+                .persistence(formRepository)
+                .locationProvider(locationProvider)
+                .onItemChangeListener(action -> {
+                    activity.getPresenter().setValueChanged(action.getId());
+                    activity.getPresenter().nextCalculation(true);
+                    return Unit.INSTANCE;
+                })
+                .onLoadingListener(loading -> {
+                    if(loading){
+                        activity.showProgress();
+                    } else{
+                        activity.hideProgress();
+                    }
+                    return Unit.INSTANCE;
+                })
+                .factory(activity.getSupportFragmentManager())
+                .build();
+        super.onCreate(savedInstanceState);
     }
 
     @Nullable
@@ -116,24 +139,6 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        formView = new FormView.Builder()
-                .persistence(formRepository)
-                .locationProvider(locationProvider)
-                .onItemChangeListener(action -> {
-                    activity.getPresenter().setValueChanged(action.getId());
-                    activity.getPresenter().nextCalculation(true);
-                    return Unit.INSTANCE;
-                })
-                .onLoadingListener(loading -> {
-                    if(loading){
-                        activity.showProgress();
-                    }else{
-                        activity.hideProgress();
-                    }
-                    return Unit.INSTANCE;
-                })
-                .build();
-
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
         transaction.replace(R.id.formViewContainer, formView).commit();
         formView.setScrollCallback(isSectionVisible -> {
