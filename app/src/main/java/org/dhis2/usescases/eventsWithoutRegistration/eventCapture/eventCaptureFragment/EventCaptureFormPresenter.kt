@@ -163,7 +163,7 @@ class EventCaptureFormPresenter(
     fun initBiometricsValues(
         biometricsGuid: @Nullable String?,
         biometricsVerificationStatus: Int,
-        teiOrgUnit: String
+        teiOrgUnit: @Nullable String?
     ) {
         this.biometricsGuid = biometricsGuid
         this.biometricsVerificationStatus = biometricsVerificationStatus
