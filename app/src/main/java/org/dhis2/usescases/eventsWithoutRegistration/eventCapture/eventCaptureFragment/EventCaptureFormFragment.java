@@ -1,8 +1,13 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
+import static android.app.Activity.RESULT_OK;
 
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
+
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,7 +18,10 @@ import android.widget.EditText;
 
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
+import org.dhis2.data.biometrics.BiometricsClientFactory;
+import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.data.forms.dataentry.FormView;
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
 import org.dhis2.data.location.LocationProvider;
 import org.dhis2.databinding.SectionSelectorFragmentBinding;
 import org.dhis2.form.data.FormRepository;
@@ -50,6 +58,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
     private String biometricsGuid;
     private int biometricsVerificationStatus;
+    private String teiOrgUnit;
 
     public static EventCaptureFormFragment newInstance(String eventUid) {
         EventCaptureFormFragment fragment = new EventCaptureFormFragment();
@@ -59,12 +68,13 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         return fragment;
     }
 
-    public static EventCaptureFormFragment newInstance(String eventUid, String guid, int status) {
+    public static EventCaptureFormFragment newInstance(String eventUid, String guid, int status, String teiOrgUnit) {
         EventCaptureFormFragment fragment = new EventCaptureFormFragment();
         Bundle args = new Bundle();
         args.putString(Constants.EVENT_UID, eventUid);
         args.putString(BIOMETRICS_GUID, guid);
         args.putInt(BIOMETRICS_VERIFICATION_STATUS, status);
+        args.putString(BIOMETRICS_TEI_ORGANISATION_UNIT, teiOrgUnit);
         fragment.setArguments(args);
         return fragment;
     }
@@ -76,6 +86,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
         biometricsGuid = getArguments().getString(BIOMETRICS_GUID);
         biometricsVerificationStatus = getArguments().getInt(BIOMETRICS_VERIFICATION_STATUS);
+        teiOrgUnit = BIOMETRICS_TEI_ORGANISATION_UNIT;
 
         activity.eventCaptureComponent.plus(
                 new EventCaptureFormModule(
@@ -95,7 +106,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
             performSaveClick();
         });
 
-        presenter.initBiometricsValues(biometricsGuid,biometricsVerificationStatus);
+        presenter.initBiometricsValues(biometricsGuid, biometricsVerificationStatus, teiOrgUnit);
 
         presenter.init();
 
@@ -144,6 +155,22 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        switch (requestCode) {
+            case BIOMETRICS_VERIFY_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    VerifyResult result = BiometricsClientFactory.INSTANCE.get(
+                            this.getContext()).handleVerifyResponse(data);
+
+                    if (result instanceof VerifyResult.Match) {
+                        presenter.refreshBiometricsVerificationStatus(1);
+                    } else if (result instanceof VerifyResult.NoMatch) {
+                        presenter.refreshBiometricsVerificationStatus(0);
+                    } else if (result instanceof VerifyResult.Failure) {
+                        presenter.refreshBiometricsVerificationStatus(0);
+                    }
+                }
+                break;
+        }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -167,5 +194,11 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         } else {
             presenter.onActionButtonClick();
         }
+    }
+
+    @Override
+    public void verifyBiometrics(@Nullable String biometricsGuid, @Nullable String teiOrgUnit) {
+
+        BiometricsClientFactory.INSTANCE.get(this.getContext()).verify(this, biometricsGuid, teiOrgUnit);
     }
 }

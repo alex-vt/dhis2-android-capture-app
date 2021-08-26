@@ -12,6 +12,8 @@ import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ObservableBoolean;
 import androidx.lifecycle.ViewModelProviders;
@@ -220,8 +222,47 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
     }
 
     @Override
-    public void launchBiometricsVerification(String guid) {
-        BiometricsClientFactory.INSTANCE.get(context).verify(this, guid);
+    public void launchBiometricsVerification(String guid, String orgUnitUid) {
+        BiometricsClientFactory.INSTANCE.get(context).verify(this, guid, orgUnitUid);
+    }
+
+    @Override
+    public void verificationStatusMatch() {
+        binding.cardFront.verificationButton.setBackgroundColor(ContextCompat.getColor(
+                context,
+                R.color.green_success
+        ));
+
+        binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_match);
+
+        binding.cardFront.verificationButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(context, R.drawable.ic_bio_verification_match));
+    }
+
+    @Override
+    public void verificationStatusNoMatch() {
+        binding.cardFront.verificationButton.setBackgroundColor(ContextCompat.getColor(
+                context,
+                R.color.red_failed
+        ));
+
+        binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_no_match);
+
+        binding.cardFront.verificationButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(context, R.drawable.ic_bio_verification_no_match));
+    }
+
+    @Override
+    public void verificationStatusFailed() {
+        binding.cardFront.verificationButton.setBackgroundColor(ContextCompat.getColor(
+                context,
+                R.color.warning_dark_color
+        ));
+
+        binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_failed);
+
+        binding.cardFront.verificationButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(context, R.drawable.ic_bio_verification_warning));
     }
 
     @Override
@@ -312,13 +353,7 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
     private void onBiometricsAppResponse(Intent data) {
         VerifyResult result = BiometricsClientFactory.INSTANCE.get(context).handleVerifyResponse(data);
 
-        if (result instanceof VerifyResult.Match){
-            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 1);
-        } else if (result instanceof VerifyResult.NoMatch){
-            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
-        } else if (result instanceof VerifyResult.Failure){
-            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
-        }
+        presenter.handleVerifyResponse(result);
     }
 
     @Override

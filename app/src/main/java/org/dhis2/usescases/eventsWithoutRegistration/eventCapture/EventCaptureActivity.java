@@ -53,6 +53,7 @@ import javax.inject.Inject;
 import kotlin.Unit;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
 import static org.dhis2.utils.Constants.PROGRAM_UID;
@@ -222,19 +223,6 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                     }
                 }
                 break;
-            case BIOMETRICS_VERIFY_REQUEST:
-                if (resultCode == RESULT_OK) {
-                    VerifyResult result = BiometricsClientFactory.INSTANCE.get(this).handleVerifyResponse(data);
-
-                    if (result instanceof VerifyResult.Match){
-                        binding.eventViewPager.setAdapter(getAdapter(1));
-                    } else if (result instanceof VerifyResult.NoMatch){
-                        binding.eventViewPager.setAdapter(getAdapter(0));
-                    } else if (result instanceof VerifyResult.Failure){
-                        binding.eventViewPager.setAdapter(getAdapter(0));
-                    }
-                }
-                break;
         }
     }
 
@@ -245,7 +233,8 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                 getIntent().getStringExtra(PROGRAM_UID),
                 getIntent().getStringExtra(Constants.EVENT_UID),
                 getIntent().getStringExtra(BIOMETRICS_GUID),
-                verificationStatus
+                verificationStatus,
+                getIntent().getStringExtra(BIOMETRICS_TEI_ORGANISATION_UNIT)
         );
     }
 
@@ -581,5 +570,10 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                 })
                 .setCancelable(false)
                 .show();
+    }
+
+    @Override
+    public void refreshByBiometricsVerification(int status) {
+        binding.eventViewPager.setAdapter(getAdapter(status));
     }
 }

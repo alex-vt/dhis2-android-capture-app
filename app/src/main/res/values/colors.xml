@@ -346,8 +346,10 @@
     <color name="gray_990">#99000000</color>
     <color name="green_7ed">#7ed321</color>
     <color name="green_transparent">#A47ED321</color>
+    <color name="green_success">#FF35835D</color>
     <color name="red_060">#e06060</color>
     <color name="red_a14">#a14545</color>
+    <color name="red_failed">#a14545</color>
     <color name="gray_f6f">#f6f6f6</color>
     <color name="white_apha">#64ffffff</color>
     <color name="gray_e7e">#e7e7e7</color>
@@ -380,6 +382,7 @@
     <color name="error_color">#F11E1E</color>
     <color name="section_error_color">#E91E63</color>
     <color name="section_warning_color">#FF9800</color>
+    <color name="warning_dark_color">#C57704</color>
     <color name="dots_error_selected">#E91E63</color>
     <color name="dots_error_unselected">#F8BBD0</color>
 

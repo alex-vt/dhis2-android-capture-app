@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken;
 
 import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.R;
+import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.data.filter.FilterRepository;
 import org.dhis2.data.forms.dataentry.RuleEngineRepository;
 import org.dhis2.data.prefs.Preference;
@@ -58,6 +59,7 @@ import static android.text.TextUtils.isEmpty;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ACTIVE_FOLLOW_UP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.FOLLOW_UP;
@@ -87,6 +89,8 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     private String currentStage = null;
 
     private String uidForEvent;
+    private boolean verifyingBeforeEnterEvent;
+    private String orgUnitUid;
 
     public TEIDataPresenterImpl(TEIDataContracts.View view, D2 d2,
                                 DashboardRepository dashboardRepository,
@@ -399,12 +403,13 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     public void onEventSelected(String uid, EventStatus eventStatus, View sharedView) {
         if (eventStatus == EventStatus.ACTIVE || eventStatus == EventStatus.COMPLETED) {
             uidForEvent = uid;
-            String guid = dashboardModel.getTrackedBiometricEntityValue();
+           String guid = dashboardModel.getTrackedBiometricEntityValue();
             Event event = d2.eventModule().events().uid(uid).blockingGet();
             ProgramStage stage = d2.programModule().programStages().uid(event.programStage()).blockingGet();
 
             if(BIOMETRICS_ENABLED && guid!=null && stage.displayName().equalsIgnoreCase("Follow-up")) {
-                launchSimprintsAppForVerification(guid);
+                verifyingBeforeEnterEvent = true;
+                verifyBiometrics();
             }else {
                 launchEventCapture(uid, null, -1);
 
@@ -433,17 +438,43 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
         intent.putExtras(EventCaptureActivity.getActivityBundle(uid, programUid, EventMode.CHECK));
         intent.putExtra(BIOMETRICS_GUID, guid);
         intent.putExtra(BIOMETRICS_VERIFICATION_STATUS, status);
+        intent.putExtra(BIOMETRICS_TEI_ORGANISATION_UNIT, orgUnitUid);
         view.openEventCapture(intent);
     }
 
-    private void launchSimprintsAppForVerification(String guid){
-        view.launchBiometricsVerification(guid);
+    @Override
+    public void verifyBiometrics() {
+        view.launchBiometricsVerification(this.dashboardModel.getTrackedBiometricEntityValue(),
+                this.dashboardModel.getCurrentOrgUnit().uid());
+    }
+
+    @Override
+    public void handleVerifyResponse(VerifyResult result) {
+        if (verifyingBeforeEnterEvent){
+            verifyingBeforeEnterEvent = false;
+            if (result instanceof VerifyResult.Match){
+                launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 1);
+            } else if (result instanceof VerifyResult.NoMatch){
+                launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
+            } else if (result instanceof VerifyResult.Failure){
+                launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
+            }
+        } else{
+            if (result instanceof VerifyResult.Match){
+                view.verificationStatusMatch();
+            } else if (result instanceof VerifyResult.NoMatch){
+                view.verificationStatusNoMatch();
+            } else {
+                view.verificationStatusFailed();
+            }
+        }
     }
 
     @Override
     public void setDashboardProgram(DashboardProgramModel dashboardModel) {
         this.dashboardModel = dashboardModel;
         this.programUid = dashboardModel.getCurrentProgram().uid();
+        this.orgUnitUid = dashboardModel.getCurrentOrgUnit().uid();
     }
 
     @Override

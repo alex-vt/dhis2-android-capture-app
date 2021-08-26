@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -13,7 +14,8 @@
         android:id="@+id/rootView"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp">
 
 
         <LinearLayout
@@ -38,19 +40,48 @@
                 android:layout_height="24dp"
                 android:layout_margin="5dp"
                 android:layout_gravity="center"
-                app:srcCompat="@drawable/ic_biometrics_available_no_24dp"
+                android:padding="4dp"
+                app:srcCompat="@drawable/ic_bio_available_no"
                 android:contentDescription="" />
 
         </LinearLayout>
 
-        <Button
+        <LinearLayout
             android:id="@+id/tryAgainButton"
+            style="@style/ButtonRoundedGrey"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:paddingVertical="4dp"
             android:layout_margin="5dp"
-            android:text="TRY AGAIN"
-            android:textSize="20sp" />
+            android:gravity="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:id="@+id/verification_button_icon"
+                android:layout_width="27dp"
+                android:layout_height="27dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_bio_retry"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/verification_button_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:fontFamily="@font/rubik_medium"
+                android:text="@string/biometrics_try_again"
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/viewMoreIcon"
+                app:layout_constraintTop_toTopOf="parent" />
+        </LinearLayout>
+
 
 
     </LinearLayout>
