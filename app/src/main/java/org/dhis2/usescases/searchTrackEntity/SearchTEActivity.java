@@ -48,6 +48,7 @@ import org.dhis2.R;
 import org.dhis2.animations.CarouselViewAnimations;
 import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.data.biometrics.IdentifyResult;
+import org.dhis2.data.biometrics.RegisterResult;
 import org.dhis2.data.forms.dataentry.FormView;
 import org.dhis2.data.forms.dataentry.ProgramAdapter;
 import org.dhis2.data.forms.dataentry.fields.FieldViewModelFactory;
@@ -111,6 +112,7 @@ import static com.simprints.libsimprints.Constants.SIMPRINTS_REFUSAL_FORM;
 import static com.simprints.libsimprints.Constants.SIMPRINTS_SESSION_ID;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENROLL_LAST_REQUEST;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_IDENTIFY_REQUEST;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_USER_NOT_FOUND;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
@@ -292,13 +294,29 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     @Override
+    public void biometricsEnrollmentLast(String sessionId) {
+        BiometricsClientFactory.INSTANCE.get(this).registerLast(this, sessionId);
+    }
+
+
+    @Override
     public void showNoneOfTheAboveButton() {
-        binding.noneOfTheAboveButton.setVisibility(VISIBLE);
+        binding.biometricsButtonsContainer.noneOfTheAboveButton.setVisibility(VISIBLE);
     }
 
     @Override
     public void hideNoneOfTheAboveButton() {
-        binding.noneOfTheAboveButton.setVisibility(GONE);
+        binding.biometricsButtonsContainer.noneOfTheAboveButton.setVisibility(GONE);
+    }
+
+    @Override
+    public void showIdentificationPlusButton() {
+        binding.biometricsButtonsContainer.identificationPlusButton.setVisibility(VISIBLE);
+    }
+
+    @Override
+    public void hideIdentificationPlusButton() {
+        binding.biometricsButtonsContainer.identificationPlusButton.setVisibility(GONE);
     }
 
     @Override
@@ -430,12 +448,27 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
                     } else if (result instanceof IdentifyResult.UserNotFound){
                         Toast.makeText(getContext(), R.string.biometrics_user_not_found, Toast.LENGTH_SHORT).show();
-                        presenter.searchOnBiometrics(Collections.singletonList(BIOMETRICS_USER_NOT_FOUND),"");
+                        presenter.searchOnBiometrics(Collections.singletonList(BIOMETRICS_USER_NOT_FOUND),
+                                ((IdentifyResult.UserNotFound) result).getSessionId());
                     } else if (result instanceof IdentifyResult.Failure){
                         showBiometricsErrorDialog();
                     }
                 }else {
                     Toast.makeText(getContext(), R.string.biometrics_declined, Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case BIOMETRICS_ENROLL_LAST_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    RegisterResult result =
+                            BiometricsClientFactory.INSTANCE.get(this).handleRegisterResponse(data);
+
+                    RegisterResult.Completed completed = (RegisterResult.Completed)result;
+
+                    if (result instanceof RegisterResult.Completed) {
+                        presenter.enrollmentWithBiometrics(completed.getGuid());
+                    } else {
+                        Toast.makeText(getContext(), R.string.biometrics_declined, Toast.LENGTH_SHORT).show();
+                    }
                 }
                 break;
         }
@@ -637,8 +670,10 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
                     if (searchTeiModels.size() > 0){
                         showNoneOfTheAboveButton();
+                        hideIdentificationPlusButton();
                     } else {
                         hideNoneOfTheAboveButton();
+                        showIdentificationPlusButton();
                     }
 
                     for(int i = 0; i < searchTeiModels.size(); i++){

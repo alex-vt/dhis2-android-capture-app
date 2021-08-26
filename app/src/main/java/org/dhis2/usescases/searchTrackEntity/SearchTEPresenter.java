@@ -83,7 +83,6 @@ import timber.log.Timber;
 
 import static android.app.Activity.RESULT_OK;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_USER_NOT_FOUND;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
 import static org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipFragment.TEI_A_UID;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ADD_RELATIONSHIP;
@@ -138,7 +137,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
     private boolean biometricsSearchStatus = false;
     private String sessionId;
-    private String biometricsSearchGuid = null;
+    private String biometricsGuid = null;
     private String biometricUid;
 
     public SearchTEPresenter(SearchTEContractsModule.View view,
@@ -630,6 +629,13 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
             view.displayMessage(view.getContext().getString(R.string.search_program_not_selected));
     }
 
+    @Override
+    public void enrollmentWithBiometrics(String biometricsGuid){
+        this.biometricsGuid = biometricsGuid;
+        queryData.put(biometricUid, this.biometricsGuid);
+        onEnrollClick();
+    }
+
     private boolean canCreateTei() {
         boolean programAccess = selectedProgram.access().data().write() != null && selectedProgram.access().data().write();
         boolean teTypeAccess = d2.trackedEntityModule().trackedEntityTypes().uid(
@@ -786,6 +792,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     private void enrollInOrgUnit(String orgUnitUid, String programUid, String uid, Date enrollmentDate) {
+
         compositeDisposable.add(
                 searchRepository.saveToEnroll(trackedEntity.uid(), orgUnitUid, programUid, uid, queryData, enrollmentDate, view.fromRelationshipTEI())
                         .subscribeOn(schedulerProvider.computation())
@@ -805,7 +812,8 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     public void onTEIClick(String TEIuid, String enrollmentUid, boolean isOnline) {
         if(biometricsSearchStatus){
             view.hideNoneOfTheAboveButton();
-            sendBiometricsConfirmIdentity(biometricsSearchGuid);
+            view.hideIdentificationPlusButton();
+            sendBiometricsConfirmIdentity(biometricsGuid);
         }
 
         if (!isOnline) {
@@ -1066,11 +1074,11 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     @Override
     public void searchOnBiometrics(List<String> guids, String sessionId) {
         this.sessionId = sessionId;
-        this.biometricsSearchGuid =  guids.get(0);
+        this.biometricsGuid =  guids.get(0);
         biometricsSearchStatus = true;
 
         queryData.clear();
-        queryData.put(biometricUid, biometricsSearchGuid);
+        queryData.put(biometricUid, biometricsGuid);
 
         onFabClick(true);
 //        queryProcessor.onNext(queryData);
@@ -1087,6 +1095,15 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
             view.hideNoneOfTheAboveButton();
             biometricsSearchStatus = false;
             view.sendBiometricsNoneSelected(sessionId);
+        }
+    }
+
+    @Override
+    public void onBiometricsEnrolmentLastClick() {
+        if(biometricsSearchStatus){
+            view.hideIdentificationPlusButton();
+            biometricsSearchStatus = false;
+            view.biometricsEnrollmentLast(sessionId);
         }
     }
 

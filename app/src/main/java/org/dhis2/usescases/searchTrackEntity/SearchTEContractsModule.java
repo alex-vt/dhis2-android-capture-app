@@ -98,9 +98,12 @@ public class SearchTEContractsModule {
 
         void sendBiometricsConfirmIdentity(String sessionId, String guid);
         void sendBiometricsNoneSelected(String sessionId);
+        void biometricsEnrollmentLast(String sessionId);
 
         void showNoneOfTheAboveButton();
         void hideNoneOfTheAboveButton();
+        void showIdentificationPlusButton();
+        void hideIdentificationPlusButton();
     }
 
     public interface Presenter {
@@ -120,6 +123,8 @@ public class SearchTEContractsModule {
         void onFabClick(boolean needsSearch);
 
         void onEnrollClick();
+
+        void enrollmentWithBiometrics(String biometricsGuid);
 
         void onTEIClick(String teiUid, String enrollmentUid, boolean isOnline);
 
@@ -196,5 +201,7 @@ public class SearchTEContractsModule {
         boolean getBiometricsSearchStatus();
 
         void onBiometricsNoneOfTheAboveClick();
+
+        void onBiometricsEnrolmentLastClick();
     }
 }
