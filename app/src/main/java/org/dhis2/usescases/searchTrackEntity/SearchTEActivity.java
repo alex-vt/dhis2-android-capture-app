@@ -89,6 +89,8 @@ import org.hisp.dhis.android.core.program.Program;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -412,6 +414,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         Toast.makeText(getContext(), R.string.biometrics_declined, Toast.LENGTH_SHORT).show();
 
                     } else if (result instanceof IdentifyResult.UserNotFound){
+                        presenter.searchOnBiometrics(Collections.singletonList("not_found"),"");
                         Toast.makeText(getContext(), "User can not be identified!", Toast.LENGTH_SHORT).show();
 
                     } else if (result instanceof IdentifyResult.Failure){

@@ -222,8 +222,8 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
     }
 
     @Override
-    public void launchBiometricsVerification(String guid) {
-        BiometricsClientFactory.INSTANCE.get(context).verify(this, guid);
+    public void launchBiometricsVerification(String guid, String orgUnitUid) {
+        BiometricsClientFactory.INSTANCE.get(context).verify(this, guid, orgUnitUid);
     }
 
     @Override
@@ -354,14 +354,6 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
         VerifyResult result = BiometricsClientFactory.INSTANCE.get(context).handleVerifyResponse(data);
 
         presenter.handleVerifyResponse(result);
-
- /*       if (result instanceof VerifyResult.Match){
-            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 1);
-        } else if (result instanceof VerifyResult.NoMatch){
-            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
-        } else if (result instanceof VerifyResult.Failure){
-            presenter.launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
-        }*/
     }
 
     @Override
