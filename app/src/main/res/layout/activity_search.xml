@@ -285,10 +285,19 @@
                     android:paddingBottom="56dp"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/biometrics_buttons_container"
                     app:layout_constraintTop_toBottomOf="@id/progressLayout"
                     tools:listitem="@layout/item_search_tracked_entity" />
 
+                <include
+                    android:id="@+id/biometrics_buttons_container"
+                    android:layout_height="0dp"
+                    android:layout_width="wrap_content"
+                    layout="@layout/activity_search_results_biometrics"
+                    app:layout_constraintBottom_toTopOf="@+id/navigationBar"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:presenter="@{presenter}" />/>
 
                 <com.mapbox.mapboxsdk.maps.MapView
                     android:id="@+id/mapView"

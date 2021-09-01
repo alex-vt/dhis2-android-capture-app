@@ -866,5 +866,7 @@
     <string name="biometrics_verification_match">Success</string>
     <string name="biometrics_verification_no_match">Failed</string>
     <string name="biometrics_verification_failed">Declined</string>
+    <string name="biometrics_none_of_the_above">None of the above</string>
+    <string name="biometrics_enroll_last_biometrics">Enroll last</string>
     <!--endregion-->
 </resources>

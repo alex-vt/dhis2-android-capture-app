@@ -60,8 +60,8 @@ public class BiometricsView extends FieldLayout {
 
         rootView = findViewById(R.id.rootView);
         biometricsButton = findViewById(R.id.biometrics_button);
-        biometricsButtonText= findViewById(R.id.biometrics_button_text);
-        biometricsButtonIcon= findViewById(R.id.biometrics_button_icon);
+        biometricsButtonText = findViewById(R.id.biometrics_button_text);
+        biometricsButtonIcon = findViewById(R.id.biometrics_button_icon);
 
         biometricsButton.setOnClickListener(v -> {
             if (viewModel != null) {
@@ -80,40 +80,42 @@ public class BiometricsView extends FieldLayout {
         String value = viewModel.value();
         Timber.tag("BiometricsView value").d(value);
 
-        if(value !=null && value.length() > 0){
-            if(value.equalsIgnoreCase(BIOMETRICS_FAILURE_PATTERN)){
+        if (value != null && value.length() > 0) {
+            if (value.equalsIgnoreCase(BIOMETRICS_FAILURE_PATTERN)) {
                 Timber.tag("BiometricsView").d("onFailure");
                 onFailure();
-            }else {
+            } else {
                 Timber.tag("BiometricsView").d("onSuccess");
                 onSuccess();
             }
-        }else {
+        } else {
             Timber.tag("BiometricsView").d("onInitial");
         }
     }
 
-    void onSuccess(){
-        biometricsButton.setBackgroundColor(ContextCompat.getColor(
+    void onSuccess() {
+        biometricsButton.setBackground(ContextCompat.getDrawable(
                 rootView.getContext(),
-                R.color.green_success
+                R.drawable.button_round_success
         ));
 
         biometricsButtonText.setText(R.string.biometrics_completed);
 
         biometricsButtonIcon.setImageDrawable(
-                AppCompatResources.getDrawable(rootView.getContext(), R.drawable.ic_biometrics_success));
+                AppCompatResources.getDrawable(rootView.getContext(),
+                        R.drawable.ic_biometrics_success));
     }
 
-    void onFailure(){
-                biometricsButton.setBackgroundColor(ContextCompat.getColor(
-                        rootView.getContext(),
-                R.color.warning_dark_color
+    void onFailure() {
+        biometricsButton.setBackground(ContextCompat.getDrawable(
+                rootView.getContext(),
+                R.drawable.button_round_warning
         ));
 
         biometricsButtonText.setText(R.string.biometrics_declined);
 
         biometricsButtonIcon.setImageDrawable(
-                AppCompatResources.getDrawable(rootView.getContext(), R.drawable.ic_biometrics_warning));
+                AppCompatResources.getDrawable(rootView.getContext(),
+                        R.drawable.ic_biometrics_warning));
     }
 }

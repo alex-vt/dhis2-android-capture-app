@@ -1,6 +1,7 @@
 package org.dhis2.usescases.searchTrackEntity;
 
 import android.graphics.drawable.Drawable;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -95,7 +96,14 @@ public class SearchTEContractsModule {
 
         void hideFilter();
 
-        void sendBiometricsAppData(String sessionId, String guid);
+        void sendBiometricsConfirmIdentity(String sessionId, String guid);
+        void sendBiometricsNoneSelected(String sessionId);
+        void biometricsEnrollmentLast(String sessionId);
+
+        void showNoneOfTheAboveButton();
+        void hideNoneOfTheAboveButton();
+        void showIdentificationPlusButton();
+        void hideIdentificationPlusButton();
     }
 
     public interface Presenter {
@@ -115,6 +123,8 @@ public class SearchTEContractsModule {
         void onFabClick(boolean needsSearch);
 
         void onEnrollClick();
+
+        void enrollmentWithBiometrics(String biometricsGuid);
 
         void onTEIClick(String teiUid, String enrollmentUid, boolean isOnline);
 
@@ -188,10 +198,10 @@ public class SearchTEContractsModule {
 
         void searchOnBiometrics(List<String> guids, String sessionId);
 
-        void setBiometricsSearchStatus(boolean status);
-
         boolean getBiometricsSearchStatus();
 
-        void onNoneOfTheAboveBiometricsMatchButtonClick();
+        void onBiometricsNoneOfTheAboveClick();
+
+        void onBiometricsEnrolmentLastClick();
     }
 }

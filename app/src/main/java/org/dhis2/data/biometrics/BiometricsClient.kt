@@ -14,6 +14,9 @@ import com.simprints.libsimprints.SimHelper
 import com.simprints.libsimprints.Tier
 import com.simprints.libsimprints.Verification
 import org.dhis2.R
+import org.dhis2.data.biometrics.BiometricsClientFactory.get
+import org.dhis2.usescases.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
+import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_IDENTIFY_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_VERIFY_REQUEST
@@ -28,7 +31,7 @@ sealed class RegisterResult {
 sealed class IdentifyResult {
     data class Completed(val guids: List<String>, val sessionId: String) : IdentifyResult()
     object BiometricsDeclined : IdentifyResult()
-    object UserNotFound : IdentifyResult()
+    data class UserNotFound(val sessionId: String) : IdentifyResult()
     object Failure : IdentifyResult()
 }
 
@@ -40,21 +43,23 @@ sealed class VerifyResult {
 
 class BiometricsClient(
     projectId: String,
-    userId: String
+    userId: String,
+    private val confidenceScoreFilter: Int
 ) {
 
     init {
         Timber.d("BiometricsClient!")
-        Timber.d("UserId: $userId")
-        Timber.d("ProjectId: $projectId")
+        Timber.d("userId: $userId")
+        Timber.d("projectId: $projectId")
+        Timber.d("confidenceScoreFilter: $confidenceScoreFilter")
     }
 
-    val simHelper = SimHelper(projectId, userId)
+    private val simHelper = SimHelper(projectId, userId)
     private val defaultModuleId = "NA"
 
     fun register(activity: Activity, moduleId: String) {
         Timber.d("Biometrics register!")
-        Timber.d("ModuleId: $moduleId")
+        Timber.d("moduleId: $moduleId")
 
         val intent = simHelper.register(moduleId)
 
@@ -65,7 +70,7 @@ class BiometricsClient(
 
     fun identify(activity: Activity) {
         Timber.d("Biometrics identify!")
-        Timber.d("ModuleId: $defaultModuleId")
+        Timber.d("moduleId: $defaultModuleId")
 
         val intent = simHelper.identify(defaultModuleId)
 
@@ -81,7 +86,7 @@ class BiometricsClient(
         }
 
         Timber.d("Biometrics verify!")
-        Timber.d("ModuleId: $moduleId")
+        Timber.d("moduleId: $moduleId")
 
         val intent = simHelper.verify(moduleId, guid)
 
@@ -117,14 +122,22 @@ class BiometricsClient(
             val refusalForm: RefusalForm? =
                 data.getParcelableExtra(Constants.SIMPRINTS_REFUSAL_FORM)
 
+            val sessionId: String = data.getStringExtra(Constants.SIMPRINTS_SESSION_ID)
+
             return if (identifications == null && refusalForm != null) {
                 IdentifyResult.BiometricsDeclined
             } else if (identifications == null || identifications.size == 0) {
-                IdentifyResult.UserNotFound
+                IdentifyResult.UserNotFound(sessionId)
             } else {
-                val sessionId: String = data.getStringExtra(Constants.SIMPRINTS_SESSION_ID)
+                val finalIdentifications =
+                    identifications.filter { it.confidence >= confidenceScoreFilter }
 
-                IdentifyResult.Completed(identifications.map { it.guid }, sessionId)
+                if (finalIdentifications.isEmpty()) {
+                    Timber.w("Identify returns data but no match with confidence score filter")
+                    IdentifyResult.UserNotFound(sessionId)
+                } else {
+                    IdentifyResult.Completed(finalIdentifications.map { it.guid }, sessionId)
+                }
             }
         } else {
             return IdentifyResult.Failure
@@ -140,7 +153,14 @@ class BiometricsClient(
 
             if (verification != null) {
                 when (verification.tier) {
-                    Tier.TIER_1, Tier.TIER_2, Tier.TIER_3, Tier.TIER_4 -> VerifyResult.Match
+                    Tier.TIER_1, Tier.TIER_2, Tier.TIER_3, Tier.TIER_4 -> {
+                        if (verification.confidence >= confidenceScoreFilter) {
+                            VerifyResult.Match
+                        } else {
+                            Timber.w("Verify returns data but no match with confidence score filter")
+                            VerifyResult.NoMatch
+                        }
+                    }
                     Tier.TIER_5 -> VerifyResult.NoMatch
                 }
             } else {
@@ -148,6 +168,42 @@ class BiometricsClient(
             }
         } else {
             VerifyResult.Failure
+        }
+    }
+
+    fun confirmIdentify(activity: Activity, sessionId: String, guid: String) {
+        Timber.d("Biometrics confirmIdentify!")
+        Timber.d("sessionId: $sessionId")
+        Timber.d("guid: $guid")
+
+        val intent = simHelper.confirmIdentity(activity, sessionId, guid)
+
+        if (checkSimprintsApp(activity, intent)) {
+            activity.startActivityForResult(intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
+        }
+    }
+
+    fun noneSelected(activity: Activity, sessionId: String) {
+        Timber.d("Biometrics confirmIdentify!")
+        Timber.d("sessionId: $sessionId")
+        Timber.d("guid: none_selected")
+
+        val intent = simHelper.confirmIdentity(activity, sessionId, "none_selected")
+
+        if (checkSimprintsApp(activity, intent)) {
+            activity.startActivityForResult(intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
+        }
+    }
+
+    fun registerLast(activity: Activity, sessionId: String) {
+        Timber.d("Biometrics confirmIdentify!")
+        Timber.d("moduleId: $defaultModuleId")
+        Timber.d("sessionId: $sessionId")
+
+        val intent = simHelper.registerLastBiometrics(defaultModuleId, sessionId)
+
+        if (checkSimprintsApp(activity, intent)) {
+            activity.startActivityForResult(intent, BIOMETRICS_ENROLL_LAST_REQUEST)
         }
     }
 
@@ -164,4 +220,6 @@ class BiometricsClient(
             false
         }
     }
+
+
 }

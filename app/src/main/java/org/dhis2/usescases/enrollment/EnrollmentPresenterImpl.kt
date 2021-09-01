@@ -211,7 +211,7 @@ class EnrollmentPresenterImpl(
                                     checkFinishing(true)
                                 }
                                 ValueStoreResult.VALUE_HAS_NOT_CHANGED -> {
-                                    if (result.uid == getBiometricViewModel().blockingSingle().uid){
+                                    if (BIOMETRICS_ENABLED && result.uid == getBiometricViewModel().blockingSingle().uid){
                                         val orgUnit = enrollmentObjectRepository.get().blockingGet().organisationUnit()!!
                                         view.registerBiometrics(orgUnit)
                                     } else {
