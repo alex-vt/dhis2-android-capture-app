@@ -56,8 +56,12 @@ class EventCaptureFormPresenter(
                             } else {
                                 populateList()
 
-                                if (result.uid == getBiometricVerificationViewModel().uid) {
-                                    view.verifyBiometrics(this.biometricsGuid, this.teiOrgUnit)
+                                if (BIOMETRICS_ENABLED){
+                                    val biometricsViewModel = getBiometricVerificationViewModel()
+
+                                    if (result.uid == biometricsViewModel?.uid) {
+                                        view.verifyBiometrics(this.biometricsGuid, this.teiOrgUnit)
+                                    }
                                 }
                             }
                         } ?: activityPresenter.hideProgress()
@@ -77,15 +81,15 @@ class EventCaptureFormPresenter(
         )
     }
 
-    private fun getBiometricVerificationViewModel(): BiometricsVerificationViewModel {
+    private fun getBiometricVerificationViewModel(): BiometricsVerificationViewModel? {
         val viewModel = formRepository.composeList().toMutableList().firstOrNull {
             it.isBiometricsVerificationModel()
         }
 
-        if (viewModel == null) {
-            throw IllegalStateException("Shouldn't have been allowed to start Simprints without Biometrics Verification ViewModel")
+        return if (viewModel == null) {
+            null
         } else {
-            return viewModel as BiometricsVerificationViewModel
+            viewModel as BiometricsVerificationViewModel
         }
     }
 
