@@ -61,6 +61,9 @@ import org.hisp.dhis.android.core.maintenance.D2Error;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 import org.hisp.dhis.android.core.program.Program;
 import org.hisp.dhis.android.core.program.ProgramStage;
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute;
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue;
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityType;
 
 import java.util.ArrayList;
@@ -137,7 +140,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
     private boolean biometricsSearchStatus = false;
     private String sessionId;
-    private String biometricsGuid = null;
     private String biometricUid;
 
     public SearchTEPresenter(SearchTEContractsModule.View view,
@@ -631,8 +633,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
     @Override
     public void enrollmentWithBiometrics(String biometricsGuid){
-        this.biometricsGuid = biometricsGuid;
-        queryData.put(biometricUid, this.biometricsGuid);
+        queryData.put(biometricUid, biometricsGuid);
         onEnrollClick();
     }
 
@@ -811,9 +812,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     @Override
     public void onTEIClick(String TEIuid, String enrollmentUid, boolean isOnline) {
         if(biometricsSearchStatus){
-            view.hideNoneOfTheAboveButton();
-            view.hideIdentificationPlusButton();
-            sendBiometricsConfirmIdentity(biometricsGuid);
+            sendBiometricsConfirmIdentity(TEIuid);
         }
 
         if (!isOnline) {
@@ -825,10 +824,31 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         }
     }
 
-    private void sendBiometricsConfirmIdentity(String guid) {
+    private void sendBiometricsConfirmIdentity(String teiUid) {
         if (sessionId != null) {
+            TrackedEntityInstance tei =
+                    d2.trackedEntityModule().trackedEntityInstances()
+                            .withTrackedEntityAttributeValues().uid(teiUid).blockingGet();
+
+            String guid = getBiometricsValueFromTEI(tei);
+
+            view.hideNoneOfTheAboveButton();
+            view.hideIdentificationPlusButton();
             view.sendBiometricsConfirmIdentity(sessionId, guid);
         }
+    }
+
+    private String getBiometricsValueFromTEI(TrackedEntityInstance tei) {
+        String guid = "";
+
+        for (TrackedEntityAttributeValue att:tei.trackedEntityAttributeValues()) {
+            if (att.trackedEntityAttribute().equals(biometricUid)){
+                guid = att.value();
+                break;
+            }
+        }
+
+        return guid;
     }
 
     @Override
@@ -1074,11 +1094,27 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     @Override
     public void searchOnBiometrics(List<String> guids, String sessionId) {
         this.sessionId = sessionId;
-        this.biometricsGuid =  guids.get(0);
+
+        if (guids == null || guids.size() <= 0) return;
+
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < guids.size(); i++) {
+
+            sb.append(guids.get(i));
+
+            // if not the last item
+            if (i != guids.size() - 1) {
+                sb.append(";");
+            }
+
+        }
+
         biometricsSearchStatus = true;
 
         queryData.clear();
-        queryData.put(biometricUid, biometricsGuid);
+        Timber.d("Search by biometrics %s", sb.toString());
+        queryData.put(biometricUid, sb.toString());
 
         onFabClick(true);
 //        queryProcessor.onNext(queryData);
