@@ -255,13 +255,19 @@ public class SearchRepositoryImpl implements SearchRepository {
             String dataValue = searchParametersModel.getQueryData().get(dataId);
             boolean isUnique = d2.trackedEntityModule().trackedEntityAttributes().uid(dataId).blockingGet().unique();
             if (isUnique) {
-                trackedEntityInstanceQuery = trackedEntityInstanceQuery.byAttribute(dataId).eq(dataValue);
+                if (dataValue.contains(";")) {
+                    trackedEntityInstanceQuery = trackedEntityInstanceQuery.byAttribute(dataId).in(dataValue);
+                }else {
+                    trackedEntityInstanceQuery = trackedEntityInstanceQuery.byAttribute(dataId).eq(dataValue);
+                }
             } else if (dataValue.contains("_os_")) {
                 dataValue = dataValue.split("_os_")[1];
                 trackedEntityInstanceQuery = trackedEntityInstanceQuery.byAttribute(dataId).eq(dataValue);
             } else if (dataValue.contains("_ou_")) {
                 dataValue = dataValue.split("_ou_")[0];
                 trackedEntityInstanceQuery = trackedEntityInstanceQuery.byAttribute(dataId).eq(dataValue);
+            } else if (dataValue.contains(";")) {
+                trackedEntityInstanceQuery = trackedEntityInstanceQuery.byAttribute(dataId).in(dataValue);
             } else
                 trackedEntityInstanceQuery = trackedEntityInstanceQuery.byAttribute(dataId).like(dataValue);
         }
