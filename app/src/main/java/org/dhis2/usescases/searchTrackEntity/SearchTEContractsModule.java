@@ -104,6 +104,8 @@ public class SearchTEContractsModule {
         void hideNoneOfTheAboveButton();
         void showIdentificationPlusButton();
         void hideIdentificationPlusButton();
+
+        void activeBiometricsSearch(boolean active);
     }
 
     public interface Presenter {
