@@ -1,7 +1,6 @@
 package org.dhis2.usescases.searchTrackEntity;
 
 import android.graphics.drawable.Drawable;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -96,7 +95,8 @@ public class SearchTEContractsModule {
 
         void hideFilter();
 
-        void sendBiometricsConfirmIdentity(String sessionId, String guid);
+        void sendBiometricsConfirmIdentity(String sessionId, String guid, String teiUid,
+                String enrollmentUid, boolean isOnline);
         void sendBiometricsNoneSelected(String sessionId);
         void biometricsEnrollmentLast(String sessionId);
 
