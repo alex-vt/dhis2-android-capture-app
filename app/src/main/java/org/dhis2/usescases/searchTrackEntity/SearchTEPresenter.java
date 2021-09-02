@@ -553,6 +553,8 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         view.showClearSearch(false);
         currentProgram.onNext(selectedProgram != null ? selectedProgram.uid() : "");
         queryProcessor.onNext(new HashMap<>());
+        biometricsSearchStatus = false;
+        view.activeBiometricsSearch(false);
     }
 
     @Override
@@ -813,6 +815,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     public void onTEIClick(String TEIuid, String enrollmentUid, boolean isOnline) {
         if(biometricsSearchStatus){
             sendBiometricsConfirmIdentity(TEIuid, enrollmentUid, isOnline);
+            view.activeBiometricsSearch(false);
             biometricsSearchStatus = false;
         } else {
             if (!isOnline) {
@@ -1109,6 +1112,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         }
 
         biometricsSearchStatus = true;
+        view.activeBiometricsSearch(true);
 
         queryData.clear();
         Timber.d("Search by biometrics %s", sb.toString());
@@ -1128,6 +1132,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         if(biometricsSearchStatus){
             view.hideNoneOfTheAboveButton();
             biometricsSearchStatus = false;
+            view.activeBiometricsSearch(false);
             view.sendBiometricsNoneSelected(sessionId);
         }
     }
@@ -1137,6 +1142,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         if(biometricsSearchStatus){
             view.hideIdentificationPlusButton();
             biometricsSearchStatus = false;
+            view.activeBiometricsSearch(false);
             view.biometricsEnrollmentLast(sessionId);
         }
     }

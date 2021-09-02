@@ -323,6 +323,17 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     @Override
+    public void activeBiometricsSearch(boolean active) {
+        if (active){
+            binding.biometricSearch.setColorFilter(ContextCompat.getColor(this, R.color.green_success),
+                    android.graphics.PorterDuff.Mode.MULTIPLY);
+        } else {
+            binding.biometricSearch.setColorFilter(ContextCompat.getColor(this, R.color.white),
+                    android.graphics.PorterDuff.Mode.MULTIPLY);
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         FilterManager.getInstance().clearUnsupportedFilters();
