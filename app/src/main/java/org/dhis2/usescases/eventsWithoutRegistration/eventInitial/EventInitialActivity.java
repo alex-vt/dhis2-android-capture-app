@@ -94,6 +94,10 @@ import kotlin.Unit;
 import timber.log.Timber;
 
 import static android.text.TextUtils.isEmpty;
+
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 import static org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialPresenter.ACCESS_LOCATION_PERMISSION_REQUEST;
 import static org.dhis2.utils.Constants.ENROLLMENT_UID;
 import static org.dhis2.utils.Constants.EVENT_CREATION_TYPE;
@@ -160,6 +164,9 @@ public class EventInitialActivity extends ActivityGlobalAbstract implements Even
     private Geometry newGeometry;
     private CoordinateViewModel currentGeometryModel;
     private GeometryController geometryController = new GeometryController(new GeometryParserImpl());
+    private String biometricsGuid;
+    private int verificationStatus;
+    private String teiOrgUnitUid;
 
     public static Bundle getBundle(String programUid, String eventUid, String eventCreationType,
                                    String teiUid, PeriodType eventPeriodType, String orgUnit, String stageUid,
@@ -178,6 +185,18 @@ public class EventInitialActivity extends ActivityGlobalAbstract implements Even
         return bundle;
     }
 
+    public static Bundle getBundleWithBiometrics(String programUid, String eventUid, String eventCreationType,
+            String teiUid, PeriodType eventPeriodType, String orgUnit, String stageUid,
+            String enrollmentUid, int eventScheduleInterval, EnrollmentStatus enrollmentStatus,
+            String biometricsGuid, int verificationStatus, String orgUnitUid) {
+        Bundle bundle =getBundle(programUid,eventUid,eventCreationType,teiUid,eventPeriodType,
+                orgUnit,stageUid,enrollmentUid,eventScheduleInterval,enrollmentStatus);
+        bundle.putString(BIOMETRICS_GUID, biometricsGuid);
+        bundle.putInt(BIOMETRICS_VERIFICATION_STATUS, verificationStatus);
+        bundle.putString(BIOMETRICS_TEI_ORGANISATION_UNIT, orgUnitUid);
+        return bundle;
+    }
+
     private void initVariables() {
         programUid = getIntent().getStringExtra(PROGRAM_UID);
         eventUid = getIntent().getStringExtra(Constants.EVENT_UID);
@@ -191,6 +210,10 @@ public class EventInitialActivity extends ActivityGlobalAbstract implements Even
         programStageUid = getIntent().getStringExtra(Constants.PROGRAM_STAGE_UID);
         enrollmentStatus = (EnrollmentStatus) getIntent().getSerializableExtra(Constants.ENROLLMENT_STATUS);
         eventScheduleInterval = getIntent().getIntExtra(Constants.EVENT_SCHEDULE_INTERVAL, 0);
+
+        biometricsGuid = getIntent().getStringExtra(BIOMETRICS_GUID);
+        verificationStatus = getIntent().getIntExtra(BIOMETRICS_VERIFICATION_STATUS, -1);
+        teiOrgUnitUid =getIntent().getStringExtra(BIOMETRICS_TEI_ORGANISATION_UNIT);
     }
 
     @Override
@@ -505,7 +528,8 @@ public class EventInitialActivity extends ActivityGlobalAbstract implements Even
     private void startFormActivity(String eventUid, boolean isNew) {
         Intent intent = new Intent(this, EventCaptureActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
-        intent.putExtras(EventCaptureActivity.getActivityBundle(eventUid, programUid, isNew ? EventMode.NEW : EventMode.CHECK));
+        intent.putExtras(EventCaptureActivity.getActivityBundleWithBiometrics(eventUid, programUid, isNew ? EventMode.NEW : EventMode.CHECK, biometricsGuid,
+        verificationStatus, teiOrgUnitUid));
         startActivity(intent);
         finish();
     }

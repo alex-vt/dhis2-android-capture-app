@@ -56,7 +56,7 @@ class EventCaptureFormPresenter(
                             } else {
                                 populateList()
 
-                                if (BIOMETRICS_ENABLED){
+                                if (BIOMETRICS_ENABLED) {
                                     val biometricsViewModel = getBiometricVerificationViewModel()
 
                                     if (result.uid == biometricsViewModel?.uid) {
@@ -75,7 +75,9 @@ class EventCaptureFormPresenter(
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
                 .subscribe(
-                    { fields -> populateList(fields) },
+                    { fields ->
+                        populateList(fields)
+                    },
                     { Timber.e(it) }
                 )
         )
@@ -96,11 +98,22 @@ class EventCaptureFormPresenter(
     private fun populateList(items: List<FieldUiModel>? = null) {
         val fields = formRepository.composeList(items).toMutableList()
 
-        val updatedFields =
-            if (BIOMETRICS_ENABLED) updateBiometricsField(fields)
-            else fields
+        if (BIOMETRICS_ENABLED) {
+            val updatedFields = updateBiometricsField(fields)
+            view.showFields(updatedFields)
 
-        view.showFields(updatedFields)
+            val biometricsViewModel =  updatedFields.firstOrNull { it.isBiometricsVerificationModel() }
+
+            if (biometricsViewModel != null &&
+                this.biometricsGuid != null &&
+                (biometricsViewModel as BiometricsVerificationViewModel).status() == BiometricsVerificationView.BiometricsVerificationStatus.NOT_DONE
+            ) {
+                view.verifyBiometrics(this.biometricsGuid, this.teiOrgUnit)
+            }
+        } else {
+            view.showFields(fields)
+        }
+
         checkFinishing(true)
         activityPresenter.hideProgress()
         if (items != null) {

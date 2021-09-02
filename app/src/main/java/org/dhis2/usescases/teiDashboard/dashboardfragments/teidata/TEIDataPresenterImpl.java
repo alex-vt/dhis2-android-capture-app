@@ -407,13 +407,13 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
             Event event = d2.eventModule().events().uid(uid).blockingGet();
             ProgramStage stage = d2.programModule().programStages().uid(event.programStage()).blockingGet();
 
-            if(BIOMETRICS_ENABLED && guid!=null && stage.displayName().equalsIgnoreCase("Follow-up")) {
+/*            if(BIOMETRICS_ENABLED && guid!=null && stage.displayName().equalsIgnoreCase("Follow-up")) {
                 verifyingBeforeEnterEvent = true;
                 verifyBiometrics();
-            }else {
-                launchEventCapture(uid, null, -1);
+            }else {*/
+                launchEventCapture(uid, dashboardModel.getTrackedBiometricEntityValue(), -1);
 
-            }
+            //}
 
 /*            Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
             intent.putExtras(EventCaptureActivity.getActivityBundle(uid, programUid, EventMode.CHECK));
@@ -421,9 +421,12 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
         } else {
             Event event = d2.eventModule().events().uid(uid).blockingGet();
             Intent intent = new Intent(view.getContext(), EventInitialActivity.class);
-            intent.putExtras(EventInitialActivity.getBundle(
-                    programUid, uid, EventCreationType.DEFAULT.name(), teiUid, null, event.organisationUnit(), event.programStage(), dashboardModel.getCurrentEnrollment().uid(), 0, dashboardModel.getCurrentEnrollment().status()
+
+            intent.putExtras(EventInitialActivity.getBundleWithBiometrics(
+                    programUid, uid, EventCreationType.DEFAULT.name(), teiUid, null, event.organisationUnit(), event.programStage(), dashboardModel.getCurrentEnrollment().uid(), 0, dashboardModel.getCurrentEnrollment().status(),
+                    dashboardModel.getTrackedBiometricEntityValue(),-1,orgUnitUid
             ));
+
             view.openEventInitial(intent);
         }
     }
@@ -435,10 +438,7 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
         }
 
         Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
-        intent.putExtras(EventCaptureActivity.getActivityBundle(uid, programUid, EventMode.CHECK));
-        intent.putExtra(BIOMETRICS_GUID, guid);
-        intent.putExtra(BIOMETRICS_VERIFICATION_STATUS, status);
-        intent.putExtra(BIOMETRICS_TEI_ORGANISATION_UNIT, orgUnitUid);
+        intent.putExtras(EventCaptureActivity.getActivityBundleWithBiometrics(uid, programUid, EventMode.CHECK,guid,status,orgUnitUid));
         view.openEventCapture(intent);
     }
 
@@ -450,7 +450,7 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
 
     @Override
     public void handleVerifyResponse(VerifyResult result) {
-        if (verifyingBeforeEnterEvent){
+/*        if (verifyingBeforeEnterEvent){
             verifyingBeforeEnterEvent = false;
             if (result instanceof VerifyResult.Match){
                 launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 1);
@@ -459,7 +459,7 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
             } else if (result instanceof VerifyResult.Failure){
                 launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
             }
-        } else{
+        } else{*/
             if (result instanceof VerifyResult.Match){
                 view.verificationStatusMatch();
             } else if (result instanceof VerifyResult.NoMatch){
@@ -467,7 +467,7 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
             } else {
                 view.verificationStatusFailed();
             }
-        }
+       // }
     }
 
     @Override

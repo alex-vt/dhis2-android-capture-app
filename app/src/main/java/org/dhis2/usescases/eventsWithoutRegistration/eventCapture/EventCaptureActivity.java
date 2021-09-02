@@ -84,6 +84,19 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
         return bundle;
     }
 
+    public static Bundle getActivityBundleWithBiometrics(@NonNull String eventUid,
+            @NonNull String programUid,
+            @NonNull EventMode eventMode,
+            @NonNull String guid,
+            @NonNull int status,
+            @NonNull String orgUnitUid) {
+        Bundle bundle = getActivityBundle(eventUid, programUid,eventMode);
+        bundle.putString(BIOMETRICS_GUID, guid);
+        bundle.putInt(BIOMETRICS_VERIFICATION_STATUS, status);
+        bundle.putString(BIOMETRICS_TEI_ORGANISATION_UNIT, orgUnitUid);
+        return bundle;
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         eventCaptureComponent = (ExtensionsKt.app(this)).userComponent().plus(
