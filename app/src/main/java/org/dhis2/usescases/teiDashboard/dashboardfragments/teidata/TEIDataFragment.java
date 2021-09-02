@@ -76,6 +76,9 @@ import timber.log.Timber;
 import static android.app.Activity.RESULT_OK;
 import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
 import static org.dhis2.utils.Constants.ENROLLMENT_UID;
 import static org.dhis2.utils.Constants.EVENT_CREATION_TYPE;
@@ -504,6 +507,11 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
             bundle.putString(ENROLLMENT_UID, dashboardModel.getCurrentEnrollment().uid());
             bundle.putString(EVENT_CREATION_TYPE, eventCreationType.name());
             bundle.putInt(EVENT_SCHEDULE_INTERVAL, scheduleIntervalDays);
+
+            bundle.putString(BIOMETRICS_GUID, dashboardModel.getTrackedBiometricEntityValue());
+            bundle.putInt(BIOMETRICS_VERIFICATION_STATUS, -1);
+            bundle.putString(BIOMETRICS_TEI_ORGANISATION_UNIT, dashboardModel.getCurrentOrgUnit().uid());
+
             Intent intent = new Intent(getContext(), ProgramStageSelectionActivity.class);
             intent.putExtras(bundle);
             startActivityForResult(intent, REQ_EVENT);
@@ -638,6 +646,11 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
         bundle.putSerializable(EVENT_PERIOD_TYPE, programStage.periodType());
         bundle.putString(Constants.PROGRAM_STAGE_UID, programStage.uid());
         bundle.putInt(EVENT_SCHEDULE_INTERVAL, programStage.standardInterval() != null ? programStage.standardInterval() : 0);
+
+        bundle.putString(BIOMETRICS_GUID, dashboardModel.getTrackedBiometricEntityValue());
+        bundle.putInt(BIOMETRICS_VERIFICATION_STATUS, -1);
+        bundle.putString(BIOMETRICS_TEI_ORGANISATION_UNIT, dashboardModel.getCurrentOrgUnit().uid());
+
         intent.putExtras(bundle);
         startActivityForResult(intent, REQ_EVENT);
     }
