@@ -90,7 +90,6 @@ import org.hisp.dhis.android.core.program.Program;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -106,11 +105,7 @@ import timber.log.Timber;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
-import static com.simprints.libsimprints.Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK;
-import static com.simprints.libsimprints.Constants.SIMPRINTS_IDENTIFICATIONS;
-import static com.simprints.libsimprints.Constants.SIMPRINTS_REFUSAL_FORM;
-import static com.simprints.libsimprints.Constants.SIMPRINTS_SESSION_ID;
-
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_CONFIRM_IDENTITY_REQUEST;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENROLL_LAST_REQUEST;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_IDENTIFY_REQUEST;
@@ -166,6 +161,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private FormView formView;
 
     private CustomDialog biometricsErrorDialog;
+
+    private LastSelection lastSelection;
 
     //---------------------------------------------------------------------------------------------
 
@@ -283,8 +280,14 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         BiometricsClientFactory.INSTANCE.get(this).identify(this);
     }
 
+
     @Override
-    public void sendBiometricsConfirmIdentity(String sessionId, String guid) {
+    public void sendBiometricsConfirmIdentity(String sessionId, String guid, String teiUid,
+            String enrollmentUid, boolean isOnline) {
+        lastSelection = new LastSelection();
+        lastSelection.teiUid = teiUid;
+        lastSelection.enrollmentUid = enrollmentUid;
+        lastSelection.isOnline = isOnline;
         BiometricsClientFactory.INSTANCE.get(this).confirmIdentify(this, sessionId, guid);
     }
 
@@ -434,43 +437,59 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode) {
-            case BIOMETRICS_IDENTIFY_REQUEST:
+            case BIOMETRICS_IDENTIFY_REQUEST: {
                 if (resultCode == RESULT_OK) {
 
-                    IdentifyResult result = BiometricsClientFactory.INSTANCE.get(this).handleIdentifyResponse(data);
+                    IdentifyResult result = BiometricsClientFactory.INSTANCE.get(
+                            this).handleIdentifyResponse(data);
 
-                    if (result instanceof IdentifyResult.Completed){
-                        IdentifyResult.Completed completedResult = (IdentifyResult.Completed)result;
+                    if (result instanceof IdentifyResult.Completed) {
+                        IdentifyResult.Completed completedResult =
+                                (IdentifyResult.Completed) result;
 
-                        presenter.searchOnBiometrics( completedResult.getGuids(),completedResult.getSessionId());
-                    } else if (result instanceof IdentifyResult.BiometricsDeclined){
-                        Toast.makeText(getContext(), R.string.biometrics_declined, Toast.LENGTH_SHORT).show();
+                        presenter.searchOnBiometrics(completedResult.getGuids(),
+                                completedResult.getSessionId());
+                    } else if (result instanceof IdentifyResult.BiometricsDeclined) {
+                        Toast.makeText(getContext(), R.string.biometrics_declined,
+                                Toast.LENGTH_SHORT).show();
 
-                    } else if (result instanceof IdentifyResult.UserNotFound){
-                        Toast.makeText(getContext(), R.string.biometrics_user_not_found, Toast.LENGTH_SHORT).show();
-                        presenter.searchOnBiometrics(Collections.singletonList(BIOMETRICS_USER_NOT_FOUND),
+                    } else if (result instanceof IdentifyResult.UserNotFound) {
+                        Toast.makeText(getContext(), R.string.biometrics_user_not_found,
+                                Toast.LENGTH_SHORT).show();
+                        presenter.searchOnBiometrics(
+                                Collections.singletonList(BIOMETRICS_USER_NOT_FOUND),
                                 ((IdentifyResult.UserNotFound) result).getSessionId());
-                    } else if (result instanceof IdentifyResult.Failure){
+                    } else if (result instanceof IdentifyResult.Failure) {
                         showBiometricsErrorDialog();
                     }
-                }else {
-                    Toast.makeText(getContext(), R.string.biometrics_declined, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), R.string.biometrics_declined,
+                            Toast.LENGTH_SHORT).show();
                 }
                 break;
-            case BIOMETRICS_ENROLL_LAST_REQUEST:
+            }
+            case BIOMETRICS_ENROLL_LAST_REQUEST: {
                 if (resultCode == RESULT_OK) {
                     RegisterResult result =
                             BiometricsClientFactory.INSTANCE.get(this).handleRegisterResponse(data);
 
-                    RegisterResult.Completed completed = (RegisterResult.Completed)result;
+                    RegisterResult.Completed completed = (RegisterResult.Completed) result;
 
                     if (result instanceof RegisterResult.Completed) {
                         presenter.enrollmentWithBiometrics(completed.getGuid());
                     } else {
-                        Toast.makeText(getContext(), R.string.biometrics_declined, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), R.string.biometrics_declined,
+                                Toast.LENGTH_SHORT).show();
                     }
                 }
                 break;
+            }
+            case BIOMETRICS_CONFIRM_IDENTITY_REQUEST:{
+                if (lastSelection != null){
+                    presenter.onTEIClick(lastSelection.teiUid, lastSelection.enrollmentUid,lastSelection.isOnline);
+                    lastSelection = null;
+                }
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -1170,3 +1189,11 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     /*endregion*/
 }
+
+class LastSelection{
+    public String teiUid;
+    public String enrollmentUid;
+    public boolean isOnline;
+}
+
+

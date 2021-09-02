@@ -812,19 +812,17 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     @Override
     public void onTEIClick(String TEIuid, String enrollmentUid, boolean isOnline) {
         if(biometricsSearchStatus){
-            sendBiometricsConfirmIdentity(TEIuid);
-        }
-
-        if (!isOnline) {
+            sendBiometricsConfirmIdentity(TEIuid, enrollmentUid, isOnline);
             biometricsSearchStatus = false;
-            openDashboard(TEIuid, enrollmentUid);
         } else {
-            biometricsSearchStatus = false;
-            downloadTei(TEIuid, enrollmentUid);
+            if (!isOnline) {
+                openDashboard(TEIuid, enrollmentUid);
+            } else {
+                downloadTei(TEIuid, enrollmentUid);
+            }
         }
     }
-
-    private void sendBiometricsConfirmIdentity(String teiUid) {
+    private void sendBiometricsConfirmIdentity(String teiUid, String enrollmentUid, boolean isOnline) {
         if (sessionId != null) {
             TrackedEntityInstance tei =
                     d2.trackedEntityModule().trackedEntityInstances()
@@ -834,7 +832,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
             view.hideNoneOfTheAboveButton();
             view.hideIdentificationPlusButton();
-            view.sendBiometricsConfirmIdentity(sessionId, guid);
+            view.sendBiometricsConfirmIdentity(sessionId, guid, teiUid, enrollmentUid, isOnline);
         }
     }
 
