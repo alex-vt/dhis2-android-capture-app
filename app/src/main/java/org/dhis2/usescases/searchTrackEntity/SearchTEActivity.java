@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -110,6 +111,8 @@ import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENA
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENROLL_LAST_REQUEST;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_IDENTIFY_REQUEST;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_USER_NOT_FOUND;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconBasic;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconNoneOfTheAbove;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
 import static org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialPresenter.ACCESS_LOCATION_PERMISSION_REQUEST;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CHANGE_PROGRAM;
@@ -271,6 +274,12 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         teiMapManager.setEnrollmentFeatureType(presenter.getProgram() != null ? presenter.getProgram().featureType() : null);
         teiMapManager.setOnMapClickListener(this);
 
+        binding.biometricsButtonsContainer.identificationPlusButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(this, getBioIconBasic(getContext())));
+        binding.biometricsButtonsContainer.noneOfTheAboveButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(this, getBioIconNoneOfTheAbove(getContext())));
+        binding.biometricSearch.setImageDrawable(
+                AppCompatResources.getDrawable(this, getBioIconBasic(getContext())));
         binding.biometricSearch.setOnClickListener(v -> {
             searchByBiometrics();
         });

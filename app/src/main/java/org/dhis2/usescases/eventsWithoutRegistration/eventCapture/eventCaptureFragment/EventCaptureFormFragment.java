@@ -7,7 +7,6 @@ import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_TEI
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,7 +20,6 @@ import org.dhis2.R;
 import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.data.forms.dataentry.FormView;
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
 import org.dhis2.data.location.LocationProvider;
 import org.dhis2.databinding.SectionSelectorFragmentBinding;
 import org.dhis2.form.data.FormRepository;
