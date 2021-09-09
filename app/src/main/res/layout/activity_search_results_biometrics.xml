@@ -36,7 +36,7 @@
                 android:layout_height="27dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_biometrics_none_of_the_above"
+                app:srcCompat="@drawable/ic_bio_fingerprint_warning_red"
                 tools:ignore="ContentDescription" />
 
             <TextView
@@ -70,7 +70,7 @@
                 android:layout_height="27dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_biometrics"
+                app:srcCompat="@drawable/ic_bio_fingerprint"
                 tools:ignore="ContentDescription" />
 
             <TextView

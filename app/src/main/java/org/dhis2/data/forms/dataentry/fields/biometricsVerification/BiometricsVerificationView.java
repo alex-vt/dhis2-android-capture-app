@@ -1,19 +1,14 @@
 package org.dhis2.data.forms.dataentry.fields.biometricsVerification;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import org.dhis2.R;
-import org.dhis2.data.biometrics.BiometricsClientFactory;
-import org.dhis2.databinding.AgeCustomViewBinding;
 import org.dhis2.databinding.BiometricsVerificationViewBinding;
-import org.dhis2.databinding.BiometricsViewBinding;
 import org.dhis2.utils.customviews.FieldLayout;
 
 import androidx.appcompat.content.res.AppCompatResources;

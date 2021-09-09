@@ -1,21 +1,19 @@
 package org.dhis2.data.forms.dataentry.fields.biometrics;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_FAILURE_PATTERN;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconBasic;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconSuccess;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconWarning;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.dhis2.R;
-import org.dhis2.data.biometrics.BiometricsClientFactory;
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView;
 import org.dhis2.databinding.BiometricsViewBinding;
 import org.dhis2.utils.customviews.FieldLayout;
 
@@ -89,8 +87,15 @@ public class BiometricsView extends FieldLayout {
                 onSuccess();
             }
         } else {
+            onInitial();
             Timber.tag("BiometricsView").d("onInitial");
         }
+    }
+
+    void onInitial() {
+        biometricsButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(rootView.getContext(),
+                        getBioIconBasic(rootView.getContext())));
     }
 
     void onSuccess() {
@@ -103,7 +108,7 @@ public class BiometricsView extends FieldLayout {
 
         biometricsButtonIcon.setImageDrawable(
                 AppCompatResources.getDrawable(rootView.getContext(),
-                        R.drawable.ic_biometrics_success));
+                        getBioIconSuccess(rootView.getContext())));
     }
 
     void onFailure() {
@@ -116,6 +121,6 @@ public class BiometricsView extends FieldLayout {
 
         biometricsButtonIcon.setImageDrawable(
                 AppCompatResources.getDrawable(rootView.getContext(),
-                        R.drawable.ic_biometrics_warning));
+                        getBioIconWarning(rootView.getContext())));
     }
 }

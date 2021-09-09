@@ -398,7 +398,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         );
 
         updaterFlowable.connect();
-
     }
 
     @Override
