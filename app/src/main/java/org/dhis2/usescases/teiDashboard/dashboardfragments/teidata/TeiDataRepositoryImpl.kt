@@ -1,11 +1,12 @@
 package org.dhis2.usescases.teiDashboard.dashboardfragments.teidata
 
 import io.reactivex.Single
-import java.util.Locale
 import org.dhis2.Bindings.applyFilters
+import org.dhis2.Bindings.blockingSetCheck
 import org.dhis2.Bindings.userFriendlyValue
-import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.getProgramStageName
 import org.dhis2.data.dhislogic.DhisPeriodUtils
+import org.dhis2.usescases.biometrics.isBiometricAttribute
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.getProgramStageName
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.teievents.EventViewModel
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.teievents.EventViewModelType
 import org.dhis2.utils.DateUtils
@@ -25,6 +26,7 @@ import org.hisp.dhis.android.core.period.DatePeriod
 import org.hisp.dhis.android.core.period.PeriodType
 import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance
+import java.util.Locale
 
 class TeiDataRepositoryImpl(
     private val d2: D2,
@@ -92,6 +94,26 @@ class TeiDataRepositoryImpl(
             }
     }
 
+    override fun updateBiometricsAttributeValueInTei(value: String) {
+        val tei = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
+        val attributes = d2.programModule().programTrackedEntityAttributes()
+            .byProgram().eq(programUid).blockingGet()
+
+        var attributeUid: String? = null
+
+        for (attribute in attributes) {
+            if (attribute.isBiometricAttribute()) {
+                attributeUid = attribute.trackedEntityAttribute()?.uid()
+                break
+            }
+        }
+        if (attributeUid != null) {
+            val valueRepository = d2.trackedEntityModule().trackedEntityAttributeValues()
+                .value(attributeUid, tei.uid())
+            valueRepository.blockingSetCheck(d2, attributeUid, value)
+        }
+    }
+
     private fun getGroupedEvents(
         eventRepository: EventCollectionRepository,
         selectedStage: String?,
@@ -144,7 +166,9 @@ class TeiDataRepositoryImpl(
                             val showBottomShadow = index == eventList.size - 1
 
                             val programStageDisplayName = getProgramStageName(d2, event.uid())
-                            val editedProgramStage = programStage.toBuilder().displayName(programStageDisplayName).build();
+                            val editedProgramStage = programStage.toBuilder().displayName(
+                                programStageDisplayName
+                            ).build()
 
                             eventViewModels.add(
                                 EventViewModel(
@@ -198,7 +222,9 @@ class TeiDataRepositoryImpl(
                         .blockingGet()
 
                     val programStageDisplayName = getProgramStageName(d2, event.uid())
-                    val editedProgramStage = programStage.toBuilder().displayName(programStageDisplayName).build();
+                    val editedProgramStage = programStage.toBuilder().displayName(
+                        programStageDisplayName
+                    ).build()
 
                     val showTopShadow = index == 0
                     val showBottomShadow = index == eventList.size - 1

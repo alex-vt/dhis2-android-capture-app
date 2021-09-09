@@ -7,7 +7,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.databinding.ObservableField;
 
 import org.dhis2.R;
-import org.dhis2.data.forms.FormSectionViewModel;
 import org.dhis2.data.forms.dataentry.ValueStore;
 import org.dhis2.data.forms.dataentry.fields.display.DisplayViewModel;
 import org.dhis2.data.forms.dataentry.fields.edittext.EditTextViewModel;
@@ -18,7 +17,6 @@ import org.dhis2.data.tuples.Quartet;
 import org.dhis2.form.model.ActionType;
 import org.dhis2.form.model.FieldUiModel;
 import org.dhis2.form.model.RowAction;
-import org.dhis2.form.model.ValueStoreResult;
 import org.dhis2.utils.AuthorityException;
 import org.dhis2.utils.DhisTextUtils;
 import org.dhis2.utils.Result;
@@ -30,6 +28,7 @@ import org.hisp.dhis.android.core.common.ValueType;
 import org.hisp.dhis.android.core.event.EventStatus;
 import org.hisp.dhis.rules.models.RuleEffect;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -285,6 +284,7 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
         }
         return fieldSection;
     }
+
 
     @Override
     public BehaviorSubject<List<FieldUiModel>> formFieldsFlowable() {
@@ -624,5 +624,15 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
     @Override
     public void refreshByBiometricsVerification(int status) {
         view.refreshByBiometricsVerification(status);
+    }
+
+    @Override
+    public Date getBiometricsAttributeValueInTeiLastUpdated(String deUid)  {
+        return eventCaptureRepository.getBiometricsAttributeValueInTeiLastUpdated();
+    }
+
+    @Override
+    public void updateBiometricsAttributeValueInTei(@Nullable String biometricsGuid) {
+        eventCaptureRepository.updateBiometricsAttributeValueInTei( biometricsGuid);
     }
 }

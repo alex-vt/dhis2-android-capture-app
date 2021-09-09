@@ -1,7 +1,6 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import org.dhis2.data.forms.FormSectionViewModel;
 import org.dhis2.form.model.FieldUiModel;
@@ -13,6 +12,7 @@ import org.hisp.dhis.android.core.event.EventStatus;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 import org.hisp.dhis.rules.models.RuleEffect;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 import java.util.List;
@@ -84,6 +84,8 @@ public class EventCaptureContract {
 
         void init();
 
+        Date getBiometricsAttributeValueInTeiLastUpdated(String deUid);
+
         BehaviorSubject<List<FieldUiModel>> formFieldsFlowable();
 
         void onBackClick();
@@ -127,6 +129,8 @@ public class EventCaptureContract {
         void disableConfErrorMessage();
         
         void refreshByBiometricsVerification(int status);
+
+        void updateBiometricsAttributeValueInTei(@Nullable String biometricsGuid);
     }
 
     public interface EventCaptureRepository {
@@ -184,6 +188,10 @@ public class EventCaptureContract {
         boolean showCompletionPercentage();
 
         void updateFieldValue(String uid);
+
+        Date getBiometricsAttributeValueInTeiLastUpdated();
+
+        void updateBiometricsAttributeValueInTei(String biometricsGuid);
     }
 
 }
