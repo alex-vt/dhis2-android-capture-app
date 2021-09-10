@@ -35,6 +35,11 @@ fun Context.getBioIconBasic() =
     if (getBioIcon(this) == BiometricsIcon.FINGERPRINT) R.drawable.ic_bio_fingerprint
     else R.drawable.ic_bio_face
 
+fun Context.getBioIconFilter() =
+    if (getBioIcon(this) == BiometricsIcon.FINGERPRINT) R.drawable.ic_bio_fingerprint_funnel
+    else R.drawable.ic_bio_face_funnel
+
+
 fun Context.getBioIconNew() =
     if (getBioIcon(this) == BiometricsIcon.FINGERPRINT) R.drawable.ic_bio_fingerprint_new
     else R.drawable.ic_bio_face_new
