@@ -131,6 +131,8 @@ public class EventCaptureContract {
         void refreshByBiometricsVerification(int status);
 
         void updateBiometricsAttributeValueInTei(@Nullable String biometricsGuid);
+
+        int getLastBiometricsVerificationDuration();
     }
 
     public interface EventCaptureRepository {

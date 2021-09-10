@@ -130,14 +130,14 @@ class EventCaptureFormPresenter(
                 biometricsViewModel.uid()
             )
 
-            Timber.d("Biometrics last updated date $lastUpdated")
-
             val lastUpdatedMinutes = if (lastUpdated != null)
                 TimeUnit.MILLISECONDS.toMinutes(Date().time - lastUpdated.time) else null
 
+            Timber.d("lastBiometricsVerificationDuration ${activityPresenter.lastBiometricsVerificationDuration}")
+            Timber.d("Biometrics last updated date $lastUpdated")
             Timber.d("Biometrics last updated minutes $lastUpdatedMinutes")
 
-            if (lastUpdatedMinutes == null || lastUpdatedMinutes >= 30) {
+            if (lastUpdatedMinutes == null || lastUpdatedMinutes >= activityPresenter.lastBiometricsVerificationDuration) {
                 view.verifyBiometrics(this.biometricsGuid, this.teiOrgUnit)
             }
         }

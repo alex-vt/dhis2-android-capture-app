@@ -7,6 +7,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.databinding.ObservableField;
 
 import org.dhis2.R;
+import org.dhis2.data.biometrics.BiometricsPreference;
 import org.dhis2.data.forms.dataentry.ValueStore;
 import org.dhis2.data.forms.dataentry.fields.display.DisplayViewModel;
 import org.dhis2.data.forms.dataentry.fields.edittext.EditTextViewModel;
@@ -634,5 +635,10 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
     @Override
     public void updateBiometricsAttributeValueInTei(@Nullable String biometricsGuid) {
         eventCaptureRepository.updateBiometricsAttributeValueInTei( biometricsGuid);
+    }
+
+    @Override
+    public int getLastBiometricsVerificationDuration(){
+        return preferences.getInt(BiometricsPreference.LAST_VERIFICATION_DURATION,0);
     }
 }
