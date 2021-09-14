@@ -112,9 +112,9 @@ import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENR
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_IDENTIFY_REQUEST;
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_USER_NOT_FOUND;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconBasic;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconFilter;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconFunnel;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconNoneOfTheAbove;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconSuccess;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconSearch;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
 import static org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialPresenter.ACCESS_LOCATION_PERMISSION_REQUEST;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CHANGE_PROGRAM;
@@ -281,7 +281,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         binding.biometricsButtonsContainer.noneOfTheAboveButtonIcon.setImageDrawable(
                 AppCompatResources.getDrawable(this, getBioIconNoneOfTheAbove(getContext())));
         binding.biometricSearch.setImageDrawable(
-                AppCompatResources.getDrawable(this, getBioIconBasic(getContext())));
+                AppCompatResources.getDrawable(this, getBioIconSearch(getContext())));
         binding.biometricSearch.setOnClickListener(v -> {
             searchByBiometrics();
         });
@@ -337,10 +337,10 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     public void activeBiometricsSearch(boolean active) {
         if (active){
             binding.biometricSearch.setImageDrawable(AppCompatResources.getDrawable(this,
-                            getBioIconFilter(this)));
+                            getBioIconFunnel(this)));
         } else {
             binding.biometricSearch.setImageDrawable(AppCompatResources.getDrawable(this,
-                            getBioIconBasic(this)));
+                            getBioIconSearch(this)));
         }
     }
 
