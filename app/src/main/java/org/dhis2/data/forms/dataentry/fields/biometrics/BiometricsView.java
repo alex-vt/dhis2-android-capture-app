@@ -1,6 +1,7 @@
 package org.dhis2.data.forms.dataentry.fields.biometrics;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_FAILURE_PATTERN;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconNew;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconBasic;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconNew;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconSuccess;
