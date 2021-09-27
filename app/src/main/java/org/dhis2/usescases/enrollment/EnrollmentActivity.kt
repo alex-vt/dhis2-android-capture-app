@@ -48,6 +48,7 @@ import org.dhis2.utils.toMessage
 import org.hisp.dhis.android.core.arch.helpers.FileResourceDirectoryHelper
 import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
@@ -215,6 +216,9 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                             }
                             is RegisterResult.Failure -> {
                                 presenter.onBiometricsFailure()
+                            }
+                            is RegisterResult.PossibleDuplicates -> {
+                                Timber.d("Possible duplicates ${result.guids.toString()} in session ${result.sessionId}")
                             }
                         }
                     }
