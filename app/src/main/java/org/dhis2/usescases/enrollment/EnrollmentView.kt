@@ -31,4 +31,6 @@ interface EnrollmentView : AbstractActivityContracts.View {
     fun showDateEditionWarning()
     fun displayConfigurationErrors(configurationError: List<RulesUtilsProviderConfigurationError>)
     fun registerBiometrics(orgUnit: String)
+    fun showPossibleDuplicatesDialog(guids: List<String>, sessionId: String) {
+    }
 }

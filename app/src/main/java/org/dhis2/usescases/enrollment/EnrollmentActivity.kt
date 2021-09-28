@@ -28,6 +28,7 @@ import org.dhis2.form.data.GeometryParserImpl
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.uicomponents.map.views.MapSelectorActivity
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_REQUEST
+import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialog
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity
 import org.dhis2.usescases.general.ActivityGlobalAbstract
@@ -48,7 +49,6 @@ import org.dhis2.utils.toMessage
 import org.hisp.dhis.android.core.arch.helpers.FileResourceDirectoryHelper
 import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
-import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
@@ -163,6 +163,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
                 RQ_INCIDENT_GEOMETRY, RQ_ENROLLMENT_GEOMETRY -> {
@@ -212,13 +213,16 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                             data
                         )) {
                             is RegisterResult.Completed -> {
-                                presenter.onBiometricsCompleted(result.guid)
+                               presenter.onBiometricsCompleted(result.guid)
                             }
                             is RegisterResult.Failure -> {
                                 presenter.onBiometricsFailure()
                             }
                             is RegisterResult.PossibleDuplicates -> {
-                                Timber.d("Possible duplicates ${result.guids.toString()} in session ${result.sessionId}")
+                                presenter.onBiometricsPossibleDuplicates(
+                                    result.guids,
+                                    result.sessionId
+                                )
                             }
                         }
                     }
@@ -226,7 +230,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                 RQ_EVENT -> openDashboard(presenter.getEnrollment()!!.uid()!!)
             }
         }
-        super.onActivityResult(requestCode, resultCode, data)
+
     }
 
     override fun openEvent(eventUid: String) {
@@ -498,5 +502,12 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
 
     override fun registerBiometrics(orgUnit: String) {
         BiometricsClientFactory.get(this).register(this, orgUnit)
+    }
+
+    override fun showPossibleDuplicatesDialog(guids: List<String>, sessionId: String) {
+        BiometricsDuplicatesDialog.newInstance(guids,sessionId).show(
+            supportFragmentManager,
+            BiometricsDuplicatesDialog.TAG
+        )
     }
 }

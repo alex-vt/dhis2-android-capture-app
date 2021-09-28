@@ -47,7 +47,6 @@ import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstanceObjectRepository
 import org.hisp.dhis.rules.models.RuleEffect
 import timber.log.Timber
-import java.util.Timer
 
 private const val TAG = "EnrollmentPresenter"
 
@@ -602,5 +601,10 @@ class EnrollmentPresenterImpl(
                 },
                 { Timber.tag(TAG).e(it) }
             ))
+    }
+
+    fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId:String) {
+        view.hideProgress()
+        view.showPossibleDuplicatesDialog(guids,sessionId)
     }
 }
