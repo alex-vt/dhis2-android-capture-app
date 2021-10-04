@@ -1,38 +1,95 @@
-/*
- * Copyright (c) 2004 - 2019, University of Oslo
- * All rights reserved.
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- * Neither the name of the HISP project nor the names of its contributors may
- * be used to endorse or promote products derived from this software without
- * specific prior written permission.
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package org.dhis2.usescases.biometrics.duplicates
 
+import android.content.Context
 import dagger.Module
 import dagger.Provides
+import org.dhis2.Bindings.valueTypeHintMap
+import org.dhis2.R
+import org.dhis2.data.dagger.PerActivity
+import org.dhis2.data.dhislogic.DhisPeriodUtils
+import org.dhis2.data.enrollment.EnrollmentUiDataHelper
+import org.dhis2.data.filter.FilterPresenter
+import org.dhis2.data.forms.dataentry.FormUiModelColorFactoryImpl
+import org.dhis2.data.forms.dataentry.fields.FieldViewModelFactory
+import org.dhis2.data.forms.dataentry.fields.FieldViewModelFactoryImpl
+import org.dhis2.data.schedulers.SchedulerProvider
+import org.dhis2.data.sorting.SearchSortingValueSetter
+import org.dhis2.form.ui.style.FormUiColorFactory
+import org.dhis2.usescases.searchTrackEntity.SearchRepository
+import org.dhis2.usescases.searchTrackEntity.SearchRepositoryImpl
+import org.dhis2.utils.DateUtils
+import org.dhis2.utils.resources.ResourceManager
+import org.hisp.dhis.android.core.D2
 
 @Module
-class BiometricsDuplicatesDialogModule() {
+class BiometricsDuplicatesDialogModule(private val context:Context, private val teiType: String) {
 
     @Provides
-    fun providesPresenter(): BiometricsDuplicatesDialogPresenter {
-        return BiometricsDuplicatesDialogPresenter()
+    open fun provideFormUiColorFactory(): FormUiColorFactory {
+        return FormUiModelColorFactoryImpl(context, false)
+    }
+
+    @Provides
+    fun fieldViewModelFactory(
+        context: Context,
+        colorFactory: FormUiColorFactory
+    ): FieldViewModelFactory {
+        return FieldViewModelFactoryImpl(context.valueTypeHintMap(), true, colorFactory)
+    }
+
+    @Provides
+    fun enrollmentUiDataHelper(context: Context): EnrollmentUiDataHelper {
+        return EnrollmentUiDataHelper(context)
+    }
+
+    @Provides
+    fun searchSortingValueSetter(
+        context: Context,
+        d2: D2,
+        enrollmentUiDataHelper: EnrollmentUiDataHelper
+    ): SearchSortingValueSetter {
+        val unknownLabel = context.getString(R.string.unknownValue)
+        val eventDateLabel = context.getString(R.string.most_recent_event_date)
+        val enrollmentStatusLabel = context.getString(R.string.filters_title_enrollment_status)
+        val enrollmentDateDefaultLabel = context.getString(R.string.enrollment_date)
+        val uiDateFormat = DateUtils.SIMPLE_DATE_FORMAT
+        return SearchSortingValueSetter(
+            d2,
+            unknownLabel,
+            eventDateLabel,
+            enrollmentStatusLabel,
+            enrollmentDateDefaultLabel,
+            uiDateFormat,
+            enrollmentUiDataHelper
+        )
+    }
+
+    @Provides
+    fun searchRepository(
+        d2: D2,
+        filterPresenter: FilterPresenter,
+        resources: ResourceManager,
+        searchSortingValueSetter: SearchSortingValueSetter,
+        fieldFactory: FieldViewModelFactory,
+        periodUtils: DhisPeriodUtils
+    ): SearchRepository{
+        return SearchRepositoryImpl(
+            teiType,
+            d2,
+            filterPresenter,
+            resources,
+            searchSortingValueSetter,
+            fieldFactory,
+            periodUtils
+        )
+    }
+
+    @Provides
+    fun providesPresenter(
+        d2: D2,
+        searchRepository: SearchRepository,
+        schedulerProvider: SchedulerProvider
+    ): BiometricsDuplicatesDialogPresenter {
+        return BiometricsDuplicatesDialogPresenter(d2, searchRepository, schedulerProvider)
     }
 }

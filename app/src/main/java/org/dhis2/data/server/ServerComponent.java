@@ -48,7 +48,4 @@ public interface ServerComponent extends Charts.Dependencies {
 
     @NonNull
     DhisPeriodUtils dhisPeriodUtils();
-
-    @NotNull
-    BiometricsDuplicatesDialogComponent plus(@NotNull BiometricsDuplicatesDialogModule biometricsDuplicatesDialogModule);
 }
