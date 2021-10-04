@@ -870,5 +870,6 @@
     <string name="biometrics_enroll_last_biometrics">Enroll last</string>
     <string name="biometrics_enroll_new">Enroll new</string>
     <string name="biometrics_possible_duplicates">Possible duplicates</string>
+    <string name="biometrics_duplicates_empty_message">The search by possible duplicate guids returned by Simprints ID didn\'t return any result in Data Capture App.</string>
     <!--endregion-->
 </resources>
