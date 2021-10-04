@@ -112,6 +112,7 @@ class BiometricsClient(
         val handlePossibleDuplicates = {
             when (val identifyResponse = handleIdentifyResponse(data)) {
                 is IdentifyResult.Completed -> {
+                    Timber.d("Possible duplicates ${identifyResponse.guids}")
                     RegisterResult.PossibleDuplicates(
                         identifyResponse.guids,
                         identifyResponse.sessionId
