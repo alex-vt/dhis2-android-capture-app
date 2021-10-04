@@ -27,6 +27,7 @@ import org.dhis2.form.data.GeometryController
 import org.dhis2.form.data.GeometryParserImpl
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.uicomponents.map.views.MapSelectorActivity
+import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_REQUEST
 import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialog
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
@@ -213,7 +214,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                             data
                         )) {
                             is RegisterResult.Completed -> {
-                               presenter.onBiometricsCompleted(result.guid)
+                                presenter.onBiometricsCompleted(result.guid)
                             }
                             is RegisterResult.Failure -> {
                                 presenter.onBiometricsFailure()
@@ -227,10 +228,23 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                         }
                     }
                 }
+                BIOMETRICS_ENROLL_LAST_REQUEST -> {
+                if (resultCode == RESULT_OK) {
+                    if (data != null) {
+                        when (val result = BiometricsClientFactory.get(this).handleRegisterResponse(data)) {
+                            is RegisterResult.Completed -> {
+                                presenter.onBiometricsCompleted(result.guid)
+                            }
+                            else -> {
+                                presenter.onBiometricsFailure()
+                            }
+                        }
+                    }
+                }
+            }
                 RQ_EVENT -> openDashboard(presenter.getEnrollment()!!.uid()!!)
             }
         }
-
     }
 
     override fun openEvent(eventUid: String) {
@@ -504,8 +518,35 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
         BiometricsClientFactory.get(this).register(this, orgUnit)
     }
 
-    override fun showPossibleDuplicatesDialog(guids: List<String>, sessionId: String) {
-        BiometricsDuplicatesDialog.newInstance(guids,sessionId).show(
+    override fun showPossibleDuplicatesDialog(
+        guids: List<String>, sessionId: String, programUid: String,
+        trackedEntityTypeUid: String,
+        biometricsAttributeUid: String
+    ) {
+        val dialog = BiometricsDuplicatesDialog.newInstance(
+            guids, sessionId, programUid,
+            trackedEntityTypeUid,
+            biometricsAttributeUid
+        )
+
+        dialog.setOnOpenTeiDashboardListener{ teiUid: String, programUid: String, enrollmentUid: String ->
+            presenter.deleteAllSavedData()
+            finish()
+            startActivity(
+                TeiDashboardMobileActivity.intent(
+                    this,
+                    teiUid,
+                    programUid,
+                    enrollmentUid
+                )
+            )
+        }
+
+        dialog.setOnEnrollNewListener{ biometricsSessionId ->
+            BiometricsClientFactory.get(this).registerLast(this, biometricsSessionId)
+        }
+
+        dialog.show(
             supportFragmentManager,
             BiometricsDuplicatesDialog.TAG
         )

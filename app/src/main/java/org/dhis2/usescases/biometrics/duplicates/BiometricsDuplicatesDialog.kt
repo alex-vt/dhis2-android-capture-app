@@ -7,16 +7,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import javax.inject.Inject
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import androidx.paging.PagedList
+import com.google.android.material.snackbar.Snackbar
+import io.reactivex.functions.Consumer
 import org.dhis2.Bindings.app
 import org.dhis2.R
 import org.dhis2.databinding.DialogBiometricsDuplicatesBinding
+import org.dhis2.usescases.searchTrackEntity.adapters.SearchTeiLiveAdapter
+import org.dhis2.usescases.searchTrackEntity.adapters.SearchTeiModel
+import org.hisp.dhis.android.core.arch.call.D2Progress
+import javax.inject.Inject
 
-class BiometricsDuplicatesDialog() : DialogFragment(), BiometricsDuplicatesDialogView {
+class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogView {
 
+    private var onEnrollNewListener: ((sessionId: String) -> Unit)? = null
+    private var onOpenTeiDashboardListener: ((String, String, String) -> Unit)? = null
     private lateinit var binding: DialogBiometricsDuplicatesBinding
 
     @Inject
@@ -31,7 +42,7 @@ class BiometricsDuplicatesDialog() : DialogFragment(), BiometricsDuplicatesDialo
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.window!!.requestFeature(Window.FEATURE_NO_TITLE)
         dialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        create()
+        create(requireArguments().getString(TRACKED_ENTITY_TYPE_UID)!!)
         return dialog
     }
 
@@ -39,19 +50,46 @@ class BiometricsDuplicatesDialog() : DialogFragment(), BiometricsDuplicatesDialo
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.dialog_biometrics_duplicates, container, false)
+    ): View {
+        binding = DataBindingUtil.inflate(
+            inflater,
+            R.layout.dialog_biometrics_duplicates,
+            container,
+            false
+        )
 
-        val guids:List<String> = requireArguments().getString(GUIDs)!!.split(",")
-        val sessionId = requireArguments().getString(SESSION_ID)!!
+        val biometricsGuids: List<String> =
+            requireArguments().getString(BIOMETRICS_GUIDs)!!.trim().split(",")
+        val biometricsSessionId = requireArguments().getString(BIOMETRICS_SESSION_ID)!!
+        val programUid = requireArguments().getString(PROGRAM_UID)!!
+        val trackedEntityTypeUid = requireArguments().getString(TRACKED_ENTITY_TYPE_UID)!!
+        val biometricsAttributeUid = requireArguments().getString(BIOMETRICS_ATTRIBUTE_UID)!!
 
-        binding.enrollNewButton.setOnClickListener { view ->
-           // clearListener?.onClick(view)
-            this.dismiss()
+        binding.enrollNewButton.setOnClickListener {
+            presenter.enrollNewClick()
         }
         binding.cancelButton.setOnClickListener { this.dismiss() }
 
-        presenter.init(this, guids, sessionId)
+        this.adapter =
+            BiometricsDuplicatesDialogAdapter(activity?.supportFragmentManager) { searchTeiModel ->
+
+                presenter.onTEIClick(
+                    searchTeiModel.tei.uid(),
+                    searchTeiModel.selectedEnrollment.uid(),
+                    searchTeiModel.isOnline
+                )
+            }
+
+        binding.duplicatesRecycler.adapter = adapter
+
+        presenter.init(
+            this,
+            biometricsGuids,
+            biometricsSessionId,
+            programUid,
+            trackedEntityTypeUid,
+            biometricsAttributeUid
+        )
 
         return binding.root
     }
@@ -61,11 +99,19 @@ class BiometricsDuplicatesDialog() : DialogFragment(), BiometricsDuplicatesDialo
         super.onCancel(dialog)
     }
 
-    override fun setData(data: List<BiometricsDuplicatesDialogItem>) {
-        binding.duplicatesRecycler.adapter = BiometricsDuplicatesDialogAdapter(data) {
-            //onItemSelected(it.uid)
-            this.dismiss()
-        }
+    override fun setLiveData(liveData: LiveData<PagedList<SearchTeiModel>>) {
+        liveData.observe(this, Observer { searchTeiModels: PagedList<SearchTeiModel> ->
+            if (searchTeiModels.size == 0) {
+                binding.duplicatesEmptyContainer.visibility = View.VISIBLE
+            } else {
+                binding.duplicatesEmptyContainer.visibility = View.GONE
+                adapter.submitList(searchTeiModels)
+            }
+        })
+    }
+
+    override fun openDashboard(teiUid: String, programUid: String, enrollmentUid: String) {
+        onOpenTeiDashboardListener?.invoke(teiUid, programUid, enrollmentUid)
     }
 
     override fun show(manager: FragmentManager, tag: String?) {
@@ -81,26 +127,69 @@ class BiometricsDuplicatesDialog() : DialogFragment(), BiometricsDuplicatesDialo
         }
     }
 
-    private fun create() {
+    override fun downloadProgress(): Consumer<D2Progress> {
+        return Consumer {
+            Snackbar.make(
+                binding.root,
+                getString(R.string.downloading),
+                Snackbar.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    override fun couldNotDownload(typeName: String) {
+        Toast.makeText(
+            context,
+            getString(R.string.download_tei_error, typeName),
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    override fun enrollNew(biometricsSessionId: String) {
+        onEnrollNewListener?.invoke(biometricsSessionId)
+        dismiss()
+    }
+
+    fun setOnOpenTeiDashboardListener(onOpenTeiDashboardListener: (teiUid: String, programUid: String, enrollmentUid: String) -> Unit) {
+        this.onOpenTeiDashboardListener = onOpenTeiDashboardListener
+    }
+
+    fun setOnEnrollNewListener(onEnrollNewListener: (sessionId: String) -> Unit) {
+        this.onEnrollNewListener = onEnrollNewListener
+    }
+
+    private fun create(teiType: String) {
         app()
-            .serverComponent()!!
-            .plus(BiometricsDuplicatesDialogModule())
+            .userComponent()!!
+            .plus(BiometricsDuplicatesDialogModule(requireContext(), teiType))
             .inject(this)
     }
 
     companion object {
-        private const val GUIDs = "GUIDs"
-        private const val SESSION_ID = "sessionId"
+        private const val BIOMETRICS_GUIDs = "GUIDs"
+        private const val BIOMETRICS_SESSION_ID = "BIOMETRICS_SESSION_ID"
+        private const val PROGRAM_UID = "PROGRAM_UID"
+        private const val TRACKED_ENTITY_TYPE_UID = "TRACKED_ENTITY_TYPE_UID"
+        private const val BIOMETRICS_ATTRIBUTE_UID = "BIOMETRICS_ATTRIBUTE_UID"
 
         val TAG: String = this::class.java.name
 
         @JvmStatic
-        fun newInstance(guids: List<String>, sessionId: String): BiometricsDuplicatesDialog {
+        fun newInstance(
+            guids: List<String>,
+            sessionId: String,
+            programUid: String,
+            trackedEntityTypeUid: String,
+            biometricsAttributeUid: String
+        ): BiometricsDuplicatesDialog {
             val fragment = BiometricsDuplicatesDialog()
 
             val args = Bundle()
-            args.putString(GUIDs,guids.joinToString ())
-            args.putString(SESSION_ID, sessionId)
+            args.putString(BIOMETRICS_GUIDs, guids.joinToString(","))
+            args.putString(BIOMETRICS_SESSION_ID, sessionId)
+            args.putString(PROGRAM_UID, programUid)
+            args.putString(TRACKED_ENTITY_TYPE_UID, trackedEntityTypeUid)
+            args.putString(BIOMETRICS_ATTRIBUTE_UID, biometricsAttributeUid)
             fragment.arguments = args
 
             return fragment
