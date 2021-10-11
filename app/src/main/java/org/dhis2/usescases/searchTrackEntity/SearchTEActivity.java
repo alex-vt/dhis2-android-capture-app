@@ -711,11 +711,10 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
                     if (searchTeiModels.size() > 0){
                         showNoneOfTheAboveButton();
-                        hideIdentificationPlusButton();
                     } else {
                         hideNoneOfTheAboveButton();
-                        showIdentificationPlusButton();
                     }
+                    showIdentificationPlusButton();
 
                     for(int i = 0; i < searchTeiModels.size(); i++){
                         searchTeiModels.get(i).setBiometricsSearchStatus(true);
