@@ -96,7 +96,7 @@ public class SearchRepositoryImpl implements SearchRepository {
     private FieldViewModelFactory fieldFactory;
     private DhisPeriodUtils periodUtils;
 
-    SearchRepositoryImpl(String teiType, D2 d2, FilterPresenter filterPresenter, ResourceManager resources, SearchSortingValueSetter sortingValueSetter, FieldViewModelFactory fieldFactory,
+    public SearchRepositoryImpl(String teiType, D2 d2, FilterPresenter filterPresenter, ResourceManager resources, SearchSortingValueSetter sortingValueSetter, FieldViewModelFactory fieldFactory,
                          DhisPeriodUtils periodUtils) {
         this.teiType = teiType;
         this.d2 = d2;
