@@ -1,19 +1,14 @@
 package org.dhis2.data.forms.dataentry.fields.biometricsVerification;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import org.dhis2.R;
-import org.dhis2.data.biometrics.BiometricsClientFactory;
-import org.dhis2.databinding.AgeCustomViewBinding;
 import org.dhis2.databinding.BiometricsVerificationViewBinding;
-import org.dhis2.databinding.BiometricsViewBinding;
 import org.dhis2.utils.customviews.FieldLayout;
 
 import androidx.appcompat.content.res.AppCompatResources;
@@ -76,22 +71,17 @@ public class BiometricsVerificationView extends FieldLayout {
             setLayout();
         }
 
-        //guid = viewModel.value();
-
         if(viewModel.status().equals(BiometricsVerificationStatus.SUCCESS)){
+            statusImageView.setVisibility(VISIBLE);
             statusImageView.setImageDrawable(AppCompatResources.getDrawable(getContext(), R.drawable.ic_bio_available_yes));
             tryAgainButton.setVisibility(GONE);
         }else if(viewModel.status().equals(BiometricsVerificationStatus.FAILURE)){
+            statusImageView.setVisibility(VISIBLE);
             statusImageView.setImageDrawable(AppCompatResources.getDrawable(getContext(), R.drawable.ic_bio_available_no));
             tryAgainButton.setVisibility(VISIBLE);
         }else{
-            statusImageView.setImageDrawable(AppCompatResources.getDrawable(getContext(), R.drawable.ic_bio_available_no));
+            statusImageView.setVisibility(GONE);
             tryAgainButton.setVisibility(GONE);
         }
     }
-
-
- /*   private void launchBiometricsVerification() {
-        BiometricsClientFactory.INSTANCE.get(this.getContext()).verify(((Activity) this.getContext()), guid);
-    }*/
 }

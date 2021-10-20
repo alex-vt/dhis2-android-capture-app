@@ -89,7 +89,6 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     private String currentStage = null;
 
     private String uidForEvent;
-    private boolean verifyingBeforeEnterEvent;
     private String orgUnitUid;
 
     public TEIDataPresenterImpl(TEIDataContracts.View view, D2 d2,
@@ -403,28 +402,15 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     public void onEventSelected(String uid, EventStatus eventStatus, View sharedView) {
         if (eventStatus == EventStatus.ACTIVE || eventStatus == EventStatus.COMPLETED) {
             uidForEvent = uid;
-           String guid = dashboardModel.getTrackedBiometricEntityValue();
-            Event event = d2.eventModule().events().uid(uid).blockingGet();
-            ProgramStage stage = d2.programModule().programStages().uid(event.programStage()).blockingGet();
 
-/*            if(BIOMETRICS_ENABLED && guid!=null && stage.displayName().equalsIgnoreCase("Follow-up")) {
-                verifyingBeforeEnterEvent = true;
-                verifyBiometrics();
-            }else {*/
-                launchEventCapture(uid, dashboardModel.getTrackedBiometricEntityValue(), -1);
-
-            //}
-
-/*            Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
-            intent.putExtras(EventCaptureActivity.getActivityBundle(uid, programUid, EventMode.CHECK));
-            view.openEventCapture(intent);*/
+            launchEventCapture(uid, dashboardModel.getTrackedBiometricEntityValue(), -1);
         } else {
             Event event = d2.eventModule().events().uid(uid).blockingGet();
             Intent intent = new Intent(view.getContext(), EventInitialActivity.class);
 
             intent.putExtras(EventInitialActivity.getBundleWithBiometrics(
                     programUid, uid, EventCreationType.DEFAULT.name(), teiUid, null, event.organisationUnit(), event.programStage(), dashboardModel.getCurrentEnrollment().uid(), 0, dashboardModel.getCurrentEnrollment().status(),
-                    dashboardModel.getTrackedBiometricEntityValue(),-1,orgUnitUid
+                    dashboardModel.getTrackedBiometricEntityValue(), -1, orgUnitUid
             ));
 
             view.openEventInitial(intent);
@@ -438,7 +424,7 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
         }
 
         Intent intent = new Intent(view.getContext(), EventCaptureActivity.class);
-        intent.putExtras(EventCaptureActivity.getActivityBundleWithBiometrics(uid, programUid, EventMode.CHECK,guid,status,orgUnitUid));
+        intent.putExtras(EventCaptureActivity.getActivityBundleWithBiometrics(uid, programUid, EventMode.CHECK, guid, status, orgUnitUid));
         view.openEventCapture(intent);
     }
 
@@ -450,24 +436,16 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
 
     @Override
     public void handleVerifyResponse(VerifyResult result) {
-/*        if (verifyingBeforeEnterEvent){
-            verifyingBeforeEnterEvent = false;
-            if (result instanceof VerifyResult.Match){
-                launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 1);
-            } else if (result instanceof VerifyResult.NoMatch){
-                launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
-            } else if (result instanceof VerifyResult.Failure){
-                launchEventCapture(null, dashboardModel.getTrackedBiometricEntityValue(), 0);
-            }
-        } else{*/
-            if (result instanceof VerifyResult.Match){
-                view.verificationStatusMatch();
-            } else if (result instanceof VerifyResult.NoMatch){
-                view.verificationStatusNoMatch();
-            } else {
-                view.verificationStatusFailed();
-            }
-       // }
+        if (result instanceof VerifyResult.Match) {
+            teiDataRepository.updateBiometricsAttributeValueInTei(
+                    this.dashboardModel.getTrackedBiometricEntityValue());
+
+            view.verificationStatusMatch();
+        } else if (result instanceof VerifyResult.NoMatch) {
+            view.verificationStatusNoMatch();
+        } else {
+            view.verificationStatusFailed();
+        }
     }
 
     @Override

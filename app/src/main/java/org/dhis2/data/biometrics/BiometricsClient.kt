@@ -14,7 +14,6 @@ import com.simprints.libsimprints.SimHelper
 import com.simprints.libsimprints.Tier
 import com.simprints.libsimprints.Verification
 import org.dhis2.R
-import org.dhis2.data.biometrics.BiometricsClientFactory.get
 import org.dhis2.usescases.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_REQUEST
@@ -25,6 +24,7 @@ import java.util.ArrayList
 
 sealed class RegisterResult {
     data class Completed(val guid: String) : RegisterResult()
+    data class PossibleDuplicates(val guids: List<String>, val sessionId: String) : RegisterResult()
     object Failure : RegisterResult()
 }
 
@@ -98,7 +98,7 @@ class BiometricsClient(
     fun handleRegisterResponse(data: Intent): RegisterResult {
         val biometricsCompleted = checkBiometricsCompleted(data)
 
-        return if (biometricsCompleted) {
+        val handleRegister = {
             val registration: Registration? =
                 data.getParcelableExtra(Constants.SIMPRINTS_REGISTRATION)
 
@@ -106,6 +106,41 @@ class BiometricsClient(
                 RegisterResult.Failure
             } else {
                 RegisterResult.Completed(registration?.guid)
+            }
+        }
+
+        val handlePossibleDuplicates = {
+            when (val identifyResponse = handleIdentifyResponse(data)) {
+                is IdentifyResult.Completed -> {
+                    Timber.d("Possible duplicates ${identifyResponse.guids}")
+                    RegisterResult.PossibleDuplicates(
+                        identifyResponse.guids,
+                        identifyResponse.sessionId
+                    )
+                }
+                is IdentifyResult.BiometricsDeclined -> {
+                    RegisterResult.Failure
+                }
+                is IdentifyResult.UserNotFound -> {
+                    handleRegister()
+                }
+                is IdentifyResult.Failure -> {
+                    RegisterResult.Failure
+                }
+            }
+        }
+
+        return if (biometricsCompleted) {
+            when {
+                data.hasExtra(Constants.SIMPRINTS_IDENTIFICATIONS) -> {
+                    handlePossibleDuplicates()
+                }
+                data.hasExtra(Constants.SIMPRINTS_REGISTRATION) -> {
+                    handleRegister()
+                }
+                else -> {
+                    RegisterResult.Failure
+                }
             }
         } else {
             RegisterResult.Failure
@@ -220,6 +255,4 @@ class BiometricsClient(
             false
         }
     }
-
-
 }

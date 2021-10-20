@@ -398,7 +398,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         );
 
         updaterFlowable.connect();
-
     }
 
     @Override
@@ -1142,7 +1141,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         if(biometricsSearchStatus){
             view.hideIdentificationPlusButton();
             biometricsSearchStatus = false;
-            view.activeBiometricsSearch(false);
             view.biometricsEnrollmentLast(sessionId);
         }
     }

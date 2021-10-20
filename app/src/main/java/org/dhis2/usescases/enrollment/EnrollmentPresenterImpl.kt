@@ -47,7 +47,6 @@ import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstanceObjectRepository
 import org.hisp.dhis.rules.models.RuleEffect
 import timber.log.Timber
-import java.util.Timer
 
 private const val TAG = "EnrollmentPresenter"
 
@@ -211,15 +210,15 @@ class EnrollmentPresenterImpl(
                                     checkFinishing(true)
                                 }
                                 ValueStoreResult.VALUE_HAS_NOT_CHANGED -> {
-                                    if (BIOMETRICS_ENABLED && result.uid == getBiometricViewModel().blockingSingle().uid){
-                                        val orgUnit = enrollmentObjectRepository.get().blockingGet().organisationUnit()!!
+                                    if (BIOMETRICS_ENABLED && result.uid == getBiometricViewModel().blockingSingle().uid) {
+                                        val orgUnit = enrollmentObjectRepository.get().blockingGet()
+                                            .organisationUnit()!!
                                         view.registerBiometrics(orgUnit)
                                     } else {
                                         populateList()
                                         view.hideProgress()
                                         checkFinishing(true)
                                     }
-
                                 }
                                 ValueStoreResult.VALUE_NOT_UNIQUE -> {
                                     uniqueFields.add(result.uid)
@@ -418,7 +417,7 @@ class EnrollmentPresenterImpl(
         val stage = d2.programModule().programStages().uid(event.programStage()).blockingGet()
         val needsCatCombo = programRepository.blockingGet().categoryComboUid() != null &&
             d2.categoryModule().categoryCombos().uid(catComboUid)
-            .blockingGet().isDefault == false
+                .blockingGet().isDefault == false
         val needsCoordinates =
             stage.featureType() != null && stage.featureType() != FeatureType.NONE
 
@@ -506,7 +505,7 @@ class EnrollmentPresenterImpl(
     }
 
     fun dataIntegrityCheck(): Boolean {
-        if (BIOMETRICS_ENABLED && dataEntryRepository.list() != null){
+        if (BIOMETRICS_ENABLED && dataEntryRepository.list() != null) {
             checkIfBiometricValueValid()
         }
 
@@ -575,7 +574,7 @@ class EnrollmentPresenterImpl(
                 ))
     }
 
-    private fun getBiometricViewModel(): Flowable<BiometricsViewModel>{
+    private fun getBiometricViewModel(): Flowable<BiometricsViewModel> {
         return dataEntryRepository
             .list()
             .map { fieldViewModels ->
@@ -594,13 +593,25 @@ class EnrollmentPresenterImpl(
     private fun saveBiometricValue(value: String) {
         disposable.add(
             getBiometricViewModel()
-            .subscribe(
-                { viewModel ->
-                    valueStore.save(viewModel.uid(), value)
-                        .blockingFirst()
-                    updateFields()
-                },
-                { Timber.tag(TAG).e(it) }
-            ))
+                .subscribe(
+                    { viewModel ->
+                        valueStore.save(viewModel.uid(), value)
+                            .blockingFirst()
+                        updateFields()
+                    },
+                    { Timber.tag(TAG).e(it) }
+                ))
+    }
+
+    fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
+        val program = getProgram().uid()
+        val biometricsAttUid = getBiometricViewModel().blockingSingle().uid
+        val teiUid = getEnrollment()!!.trackedEntityInstance()
+
+        val teiTypeUid = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
+            .trackedEntityType()!!
+
+        view.hideProgress()
+        view.showPossibleDuplicatesDialog(guids, sessionId, program, teiTypeUid, biometricsAttUid)
     }
 }
