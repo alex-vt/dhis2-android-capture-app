@@ -16,6 +16,8 @@ import org.dhis2.data.service.SyncMetadataWorkerComponent;
 import org.dhis2.data.service.SyncMetadataWorkerModule;
 import org.dhis2.usescases.about.AboutComponent;
 import org.dhis2.usescases.about.AboutModule;
+import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialogComponent;
+import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialogModule;
 import org.dhis2.usescases.datasets.dataSetTable.DataSetTableComponent;
 import org.dhis2.usescases.datasets.dataSetTable.DataSetTableModule;
 import org.dhis2.usescases.datasets.dataSetTable.dataSetSection.DataValueComponent;
@@ -183,4 +185,7 @@ public interface UserComponent extends UserComponentFlavor{
 
     @NonNull
     ScanComponent plus(ScanModule scanModule);
+
+    @NonNull
+    BiometricsDuplicatesDialogComponent plus(@NonNull BiometricsDuplicatesDialogModule biometricsDuplicatesDialogModule);
 }

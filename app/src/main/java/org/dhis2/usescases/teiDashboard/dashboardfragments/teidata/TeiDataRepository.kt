@@ -29,4 +29,5 @@ interface TeiDataRepository {
     fun getEnrollmentProgram(): Single<Program>
     fun getTrackedEntityInstance(): Single<TrackedEntityInstance>
     fun enrollingOrgUnit(): Single<OrganisationUnit>
+    fun updateBiometricsAttributeValueInTei(value: String)
 }

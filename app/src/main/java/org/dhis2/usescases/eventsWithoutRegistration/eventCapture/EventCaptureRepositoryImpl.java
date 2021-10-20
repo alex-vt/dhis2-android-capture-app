@@ -2,16 +2,20 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture;
 
 import androidx.annotation.NonNull;
 
+import org.dhis2.usescases.biometrics.ExtensionsKt;
 import org.dhis2.Bindings.ValueExtensionsKt;
 import org.dhis2.data.dhislogic.AuthoritiesKt;
 import org.dhis2.data.forms.FormSectionViewModel;
+import org.dhis2.data.forms.dataentry.DataEntryStore;
 import org.dhis2.data.forms.dataentry.RuleEngineRepository;
 import org.dhis2.data.forms.dataentry.fields.FieldViewModelFactory;
 import org.dhis2.data.forms.dataentry.fields.orgUnit.OrgUnitViewModel;
 import org.dhis2.form.model.FieldUiModel;
 import org.dhis2.form.model.LegendValue;
 import org.dhis2.form.model.RowAction;
+import org.dhis2.form.model.ValueStoreResult;
 import org.dhis2.utils.DateUtils;
+import org.dhis2.utils.DhisTextUtils;
 import org.dhis2.utils.Result;
 import org.dhis2.utils.resources.ResourceManager;
 import org.hisp.dhis.android.core.D2;
@@ -36,10 +40,16 @@ import org.hisp.dhis.android.core.maintenance.D2Error;
 import org.hisp.dhis.android.core.option.Option;
 import org.hisp.dhis.android.core.option.OptionGroup;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
+import org.hisp.dhis.android.core.program.Program;
 import org.hisp.dhis.android.core.program.ProgramStageDataElement;
 import org.hisp.dhis.android.core.program.ProgramStageSection;
 import org.hisp.dhis.android.core.program.ProgramStageSectionRenderingType;
+import org.hisp.dhis.android.core.program.ProgramTrackedEntityAttribute;
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue;
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValueObjectRepository;
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityDataValue;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityDataValueObjectRepository;
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.rules.models.RuleEffect;
 
 import java.util.ArrayList;
@@ -527,6 +537,70 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
                 Timber.d("DONE FOR FIELD %s", uid);
             }
         }
+    }
+
+    @Override
+    public Date getBiometricsAttributeValueInTeiLastUpdated() {
+        Date lastUpdated = null;
+
+        TrackedEntityInstance tei =  getTei();
+        String attributeUid = getBiometricsAttributeUid();
+
+        if (tei != null && attributeUid != null){
+            for (TrackedEntityAttributeValue value:tei.trackedEntityAttributeValues()) {
+                if (value.trackedEntityAttribute().equals(attributeUid)){
+                    lastUpdated = value.lastUpdated();
+                    break;
+                }
+            }
+        }
+
+        return lastUpdated;
+    }
+
+    @Override
+    public void updateBiometricsAttributeValueInTei(String biometricsGuid) {
+        TrackedEntityInstance tei = getTei();
+        String attributeUid = getBiometricsAttributeUid();
+
+        if (tei != null && attributeUid != null){
+            TrackedEntityAttributeValueObjectRepository valueRepository =
+                    d2.trackedEntityModule().trackedEntityAttributeValues()
+                            .value(attributeUid, tei.uid());
+
+            ValueExtensionsKt.blockingSetCheck(valueRepository,d2, attributeUid, biometricsGuid);
+        }
+    }
+
+    private TrackedEntityInstance getTei() {
+        String enrollmentUid = currentEvent.enrollment();
+
+        if (enrollmentUid != null) {
+            Enrollment enrollment = d2.enrollmentModule().enrollments()
+                    .uid(enrollmentUid).blockingGet();
+
+            return d2.trackedEntityModule().trackedEntityInstances()
+                    .withTrackedEntityAttributeValues().uid(
+                            enrollment.trackedEntityInstance()).blockingGet();
+        }else {
+            return null;
+        }
+    }
+
+    private String getBiometricsAttributeUid() {
+        List<ProgramTrackedEntityAttribute> attributes =d2.programModule().programTrackedEntityAttributes()
+                .byProgram().eq(currentEvent.program()).blockingGet();
+
+        String attributeUid = null;
+
+        for (ProgramTrackedEntityAttribute attribute:attributes) {
+            if (ExtensionsKt.isBiometricAttribute(attribute)){
+                attributeUid = attribute.trackedEntityAttribute().uid();
+                break;
+            }
+        }
+
+        return attributeUid;
     }
 }
 
