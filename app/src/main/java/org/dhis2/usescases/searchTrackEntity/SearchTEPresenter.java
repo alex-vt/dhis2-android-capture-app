@@ -1141,6 +1141,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         if(biometricsSearchStatus){
             view.hideIdentificationPlusButton();
             biometricsSearchStatus = false;
+            view.hideNoneOfTheAboveButton();
             view.biometricsEnrollmentLast(sessionId);
         }
     }
