@@ -139,6 +139,8 @@ class EventCaptureFormPresenter(
 
             if (lastUpdatedMinutes == null || lastUpdatedMinutes >= activityPresenter.lastBiometricsVerificationDuration) {
                 view.verifyBiometrics(this.biometricsGuid, this.teiOrgUnit)
+            } else {
+                refreshBiometricsVerificationStatus(1)
             }
         }
     }
