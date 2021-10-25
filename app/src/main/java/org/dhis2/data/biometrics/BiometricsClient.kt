@@ -218,6 +218,18 @@ class BiometricsClient(
         }
     }
 
+    fun confirmIdentify(fragment: Fragment, sessionId: String, guid: String) {
+        Timber.d("Biometrics confirmIdentify!")
+        Timber.d("sessionId: $sessionId")
+        Timber.d("guid: $guid")
+
+        val intent = simHelper.confirmIdentity(fragment.requireContext(), sessionId, guid)
+
+        if (checkSimprintsApp(fragment.requireContext(), intent)) {
+            fragment.startActivityForResult(intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
+        }
+    }
+
     fun noneSelected(activity: Activity, sessionId: String) {
         Timber.d("Biometrics confirmIdentify!")
         Timber.d("sessionId: $sessionId")

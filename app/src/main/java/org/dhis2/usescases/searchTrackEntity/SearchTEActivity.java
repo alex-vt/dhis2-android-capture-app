@@ -76,6 +76,7 @@ import org.dhis2.utils.Constants;
 import org.dhis2.utils.DateUtils;
 import org.dhis2.utils.DialogClickListener;
 import org.dhis2.utils.HelpManager;
+import org.dhis2.utils.LastSelection;
 import org.dhis2.utils.NetworkUtils;
 import org.dhis2.utils.customviews.BreakTheGlassBottomDialog;
 import org.dhis2.utils.customviews.CustomDialog;
@@ -120,7 +121,8 @@ import static org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventIn
 import static org.dhis2.utils.analytics.AnalyticsConstants.CHANGE_PROGRAM;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CLICK;
 
-public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTEContractsModule.View,
+public class SearchTEActivity extends ActivityGlobalAbstract implements
+        SearchTEContractsModule.View,
         MapboxMap.OnMapClickListener {
 
     ActivitySearchBinding binding;
@@ -179,7 +181,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         tEType = getIntent().getStringExtra("TRACKED_ENTITY_UID");
         initialProgram = getIntent().getStringExtra("PROGRAM_UID");
 
-        ((App) getApplicationContext()).userComponent().plus(new SearchTEModule(this, tEType, initialProgram, getContext())).inject(this);
+        ((App) getApplicationContext()).userComponent().plus(
+                new SearchTEModule(this, tEType, initialProgram, getContext())).inject(this);
 
         formView = new FormView.Builder()
                 .persistence(formRepository)
@@ -212,7 +215,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         ViewExtensionsKt.clipWithRoundedCorners(binding.mainLayout, ExtensionsKt.getDp(16));
         ViewExtensionsKt.clipWithRoundedCorners(binding.mapView, ExtensionsKt.getDp(16));
         if (fromRelationship) {
-            relationshipLiveAdapter = new RelationshipLiveAdapter(presenter, getSupportFragmentManager());
+            relationshipLiveAdapter = new RelationshipLiveAdapter(presenter,
+                    getSupportFragmentManager());
             binding.scrollView.setAdapter(relationshipLiveAdapter);
         } else {
             liveAdapter = new SearchTeiLiveAdapter(presenter, getSupportFragmentManager());
@@ -266,14 +270,16 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         }
 
         if (savedInstanceState != null) {
-            presenter.restoreQueryData((HashMap<String, String>) savedInstanceState.getSerializable(Constants.QUERY_DATA));
+            presenter.restoreQueryData((HashMap<String, String>) savedInstanceState.getSerializable(
+                    Constants.QUERY_DATA));
         }
         updateFiltersSearch(presenter.getQueryData().size());
         teiMapManager = new TeiMapManager(binding.mapView);
         getLifecycle().addObserver(teiMapManager);
         teiMapManager.onCreate(savedInstanceState);
         teiMapManager.setTeiFeatureType(presenter.getTrackedEntityType(tEType).featureType());
-        teiMapManager.setEnrollmentFeatureType(presenter.getProgram() != null ? presenter.getProgram().featureType() : null);
+        teiMapManager.setEnrollmentFeatureType(
+                presenter.getProgram() != null ? presenter.getProgram().featureType() : null);
         teiMapManager.setOnMapClickListener(this);
 
         binding.biometricsButtonsContainer.identificationPlusButtonIcon.setImageDrawable(
@@ -295,10 +301,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void sendBiometricsConfirmIdentity(String sessionId, String guid, String teiUid,
             String enrollmentUid, boolean isOnline) {
-        lastSelection = new LastSelection();
-        lastSelection.teiUid = teiUid;
-        lastSelection.enrollmentUid = enrollmentUid;
-        lastSelection.isOnline = isOnline;
+        lastSelection = new LastSelection(teiUid, enrollmentUid, isOnline);
         BiometricsClientFactory.INSTANCE.get(this).confirmIdentify(this, sessionId, guid);
     }
 
@@ -335,12 +338,12 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     @Override
     public void activeBiometricsSearch(boolean active) {
-        if (active){
+        if (active) {
             binding.biometricSearch.setImageDrawable(AppCompatResources.getDrawable(this,
-                            getBioIconFunnel(this)));
+                    getBioIconFunnel(this)));
         } else {
             binding.biometricSearch.setImageDrawable(AppCompatResources.getDrawable(this,
-                            getBioIconSearch(this)));
+                    getBioIconSearch(this)));
         }
     }
 
@@ -355,9 +358,11 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             binding.progressLayout.setVisibility(GONE);
             if (updateTei != null) {
                 if (updateEvent != null) {
-                    ((CarouselAdapter) binding.mapCarousel.getAdapter()).updateItem(presenter.getEventInfo(updateEvent, updateTei));
+                    ((CarouselAdapter) binding.mapCarousel.getAdapter()).updateItem(
+                            presenter.getEventInfo(updateEvent, updateTei));
                 } else {
-                    ((CarouselAdapter) binding.mapCarousel.getAdapter()).updateItem(presenter.getTeiInfo(updateTei));
+                    ((CarouselAdapter) binding.mapCarousel.getAdapter()).updateItem(
+                            presenter.getTeiInfo(updateTei));
                 }
                 updateEvent = null;
                 updateTei = null;
@@ -431,10 +436,12 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (isMapVisible() && teiMapManager.getPermissionsManager() != null) {
-            teiMapManager.getPermissionsManager().onRequestPermissionsResult(requestCode, permissions, grantResults);
+            teiMapManager.getPermissionsManager().onRequestPermissionsResult(requestCode,
+                    permissions, grantResults);
         } else if (requestCode == ACCESS_LOCATION_PERMISSION_REQUEST) {
             initSearchNeeded = false;
         }
@@ -506,9 +513,10 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 }
                 break;
             }
-            case BIOMETRICS_CONFIRM_IDENTITY_REQUEST:{
-                if (lastSelection != null){
-                    presenter.onTEIClick(lastSelection.teiUid, lastSelection.enrollmentUid,lastSelection.isOnline);
+            case BIOMETRICS_CONFIRM_IDENTITY_REQUEST: {
+                if (lastSelection != null) {
+                    presenter.onTEIClick(lastSelection.getTeiUid(), lastSelection.getEnrollmentUid(),
+                            lastSelection.isOnline());
                     lastSelection = null;
                 }
             }
@@ -529,12 +537,13 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
             @Override
             public void onNegative() {
-                if(null != biometricsErrorDialog){
+                if (null != biometricsErrorDialog) {
                     biometricsErrorDialog.dismiss();
                 }
             }
         };
-        biometricsErrorDialog = new CustomDialog(getContext(), title, desc, posButton, negButton, 0, dialogClickListener);
+        biometricsErrorDialog = new CustomDialog(getContext(), title, desc, posButton, negButton, 0,
+                dialogClickListener);
         biometricsErrorDialog.show();
     }
 
@@ -564,7 +573,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 presenter.getListData();
             }
 
-            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            if (getResources().getConfiguration().orientation
+                    == Configuration.ORIENTATION_PORTRAIT) {
                 setFabVisibility(!needsSearch.get() && !showMap, true);
             }
         }
@@ -582,7 +592,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         (teiUid, enrollmentUid, isDeleted) -> {
                             if (binding.mapCarousel.getCarouselEnabled()) {
                                 if (fromRelationship) {
-                                    presenter.addRelationship(teiUid, null, NetworkUtils.isOnline(this));
+                                    presenter.addRelationship(teiUid, null,
+                                            NetworkUtils.isOnline(this));
                                 } else {
                                     updateTei = teiUid;
                                     presenter.onTEIClick(teiUid, enrollmentUid, isDeleted);
@@ -655,13 +666,13 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         updateFiltersSearch(presenter.getQueryData().size());
     }
 
-    private List<FieldUiModel>  removeBiometricsAttribute(List<FieldUiModel> data) {
+    private List<FieldUiModel> removeBiometricsAttribute(List<FieldUiModel> data) {
         List<FieldUiModel> finalData = new ArrayList<>();
 
-        for(int i=data.size()-1; i>=0; i--){
+        for (int i = data.size() - 1; i >= 0; i--) {
             String label = data.get(i).getLabel();
-            if(!isBiometricText( label)){
-                finalData.add( data.get(i));
+            if (!isBiometricText(label)) {
+                finalData.add(data.get(i));
             }
         }
 
@@ -706,26 +717,27 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     public void setLiveData(LiveData<PagedList<SearchTeiModel>> liveData) {
         if (!fromRelationship) {
             liveData.observe(this, searchTeiModels -> {
-                if(presenter.getBiometricsSearchStatus()){
+                if (presenter.getBiometricsSearchStatus()) {
                     presenter.clearQueryData();
 
-                    if (searchTeiModels.size() > 0){
+                    if (searchTeiModels.size() > 0) {
                         showNoneOfTheAboveButton();
                     } else {
                         hideNoneOfTheAboveButton();
                     }
                     showIdentificationPlusButton();
 
-                    for(int i = 0; i < searchTeiModels.size(); i++){
+                    for (int i = 0; i < searchTeiModels.size(); i++) {
                         searchTeiModels.get(i).setBiometricsSearchStatus(true);
                     }
-                }else{
-                    for(int i = 0; i < searchTeiModels.size(); i++){
+                } else {
+                    for (int i = 0; i < searchTeiModels.size(); i++) {
                         searchTeiModels.get(i).setBiometricsSearchStatus(false);
                     }
                 }
 
-                org.dhis2.data.tuples.Pair<String, Boolean> data = presenter.getMessage(searchTeiModels);
+                org.dhis2.data.tuples.Pair<String, Boolean> data = presenter.getMessage(
+                        searchTeiModels);
 
                 presenter.checkFilters(data.val0().isEmpty());
 
@@ -742,13 +754,15 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                     binding.scrollView.setVisibility(GONE);
                     CountingIdlingResourceSingleton.INSTANCE.decrement();
                 }
-                if (!searchTeiModels.isEmpty() && !data.val1() && !presenter.getBiometricsSearchStatus()) {
+                if (!searchTeiModels.isEmpty() && !data.val1()
+                        && !presenter.getBiometricsSearchStatus()) {
                     showHideFilter();
                 }
             });
         } else {
             liveData.observeForever(searchTeiModels -> {
-                org.dhis2.data.tuples.Pair<String, Boolean> data = presenter.getMessage(searchTeiModels);
+                org.dhis2.data.tuples.Pair<String, Boolean> data = presenter.getMessage(
+                        searchTeiModels);
                 if (data.val0().isEmpty()) {
                     binding.messageContainer.setVisibility(GONE);
                     binding.scrollView.setVisibility(VISIBLE);
@@ -761,8 +775,9 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                     binding.scrollView.setVisibility(GONE);
                 }
                 CountingIdlingResourceSingleton.INSTANCE.decrement();
-                if (!presenter.getQueryData().isEmpty() && data.val1())
+                if (!presenter.getQueryData().isEmpty() && data.val1()) {
                     setFabIcon(false);
+                }
             });
         }
         updateFilters(FilterManager.getInstance().getTotalFilters());
@@ -772,30 +787,35 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     public void setFiltersVisibility(boolean showFilters) {
         binding.filterCounter.setVisibility(showFilters ? VISIBLE : GONE);
         binding.searchFilterGeneral.setVisibility(VISIBLE);
-        binding.biometricSearch.setVisibility(BIOMETRICS_ENABLED ? VISIBLE: View.GONE);
+        binding.biometricSearch.setVisibility(BIOMETRICS_ENABLED ? VISIBLE : View.GONE);
     }
 
     @Override
     public void clearList(String uid) {
         this.initialProgram = uid;
-        if (uid == null)
+        if (uid == null) {
             binding.programSpinner.setSelection(0);
+        }
     }
     //endregion
 
     @Override
     public void setPrograms(List<Program> programs) {
-        binding.programSpinner.setAdapter(new ProgramAdapter(this, R.layout.spinner_program_layout, R.id.spinner_text, programs, presenter.getTrackedEntityName().displayName()));
-        if (initialProgram != null && !initialProgram.isEmpty())
+        binding.programSpinner.setAdapter(
+                new ProgramAdapter(this, R.layout.spinner_program_layout, R.id.spinner_text,
+                        programs, presenter.getTrackedEntityName().displayName()));
+        if (initialProgram != null && !initialProgram.isEmpty()) {
             setInitialProgram(programs);
-        else
+        } else {
             binding.programSpinner.setSelection(0);
+        }
         try {
             Field popup = Spinner.class.getDeclaredField("mPopup");
             popup.setAccessible(true);
 
             // Get private mPopup member variable and try cast to ListPopupWindow
-            android.widget.ListPopupWindow popupWindow = (android.widget.ListPopupWindow) popup.get(binding.programSpinner);
+            android.widget.ListPopupWindow popupWindow = (android.widget.ListPopupWindow) popup.get(
+                    binding.programSpinner);
 
             // Set popupWindow height to 500px
             popupWindow.setHeight(500);
@@ -848,7 +868,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     private void updateMapVisibility(Program newProgram) {
-        String currentProgram = presenter.getProgram() != null ? presenter.getProgram().uid() : null;
+        String currentProgram =
+                presenter.getProgram() != null ? presenter.getProgram().uid() : null;
         String selectedProgram = newProgram != null ? newProgram.uid() : null;
         boolean programChanged = !Objects.equals(currentProgram, selectedProgram);
         if (isMapVisible() && programChanged) {
@@ -867,7 +888,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void setProgramColor(String color) {
         int programTheme = ColorUtils.getThemeFromColor(color);
-        int programColor = ColorUtils.getColorFrom(color, ColorUtils.getPrimaryColor(getContext(), ColorUtils.ColorType.PRIMARY));
+        int programColor = ColorUtils.getColorFrom(color,
+                ColorUtils.getPrimaryColor(getContext(), ColorUtils.ColorType.PRIMARY));
 
         SharedPreferences prefs = getAbstracContext().getSharedPreferences(
                 Constants.SHARE_PREFS, Context.MODE_PRIVATE);
@@ -893,14 +915,16 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             programColor = ContextCompat.getColor(this, colorPrimary);
         }
         binding.enrollmentButton.setSupportImageTintList(ColorStateList.valueOf(programColor));
-        binding.clearFilterSearchButton.setSupportImageTintList(ColorStateList.valueOf(programColor));
+        binding.clearFilterSearchButton.setSupportImageTintList(
+                ColorStateList.valueOf(programColor));
         binding.mainToolbar.setBackgroundColor(programColor);
         binding.backdropLayout.setBackgroundColor(programColor);
         binding.navigationBar.setIconsColor(programColor);
         binding.totalFilterCount.setTextColor(programColor);
         binding.totalSearchCount.setTextColor(programColor);
 
-        setTheme(prefs.getInt(Constants.PROGRAM_THEME, prefs.getInt(Constants.THEME, R.style.AppTheme)));
+        setTheme(prefs.getInt(Constants.PROGRAM_THEME,
+                prefs.getInt(Constants.THEME, R.style.AppTheme)));
         binding.executePendingBindings();
         binding.clearFilter.setImageDrawable(
                 ColorUtils.tintDrawableWithColor(
@@ -922,7 +946,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             TypedValue typedValue = new TypedValue();
-            TypedArray a = obtainStyledAttributes(typedValue.data, new int[]{R.attr.colorPrimaryDark});
+            TypedArray a = obtainStyledAttributes(typedValue.data,
+                    new int[]{R.attr.colorPrimaryDark});
             int colorToReturn = a.getColor(0, 0);
             a.recycle();
             window.setStatusBarColor(colorToReturn);
@@ -944,7 +969,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         if (hasQuery) {
             PropertyValuesHolder scalex = PropertyValuesHolder.ofFloat(View.SCALE_X, 1.2f);
             PropertyValuesHolder scaley = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1.2f);
-            animation = ObjectAnimator.ofPropertyValuesHolder(binding.enrollmentButton, scalex, scaley);
+            animation = ObjectAnimator.ofPropertyValuesHolder(binding.enrollmentButton, scalex,
+                    scaley);
             animation.setRepeatCount(ValueAnimator.INFINITE);
             animation.setRepeatMode(ValueAnimator.REVERSE);
             animation.setDuration(500);
@@ -977,11 +1003,11 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         Transition transition = new ChangeBounds();
         transition.setDuration(200);
         TransitionManager.beginDelayedTransition(binding.backdropLayout, transition);
-        if (backDropActive && !general && switchOpenClose == 0)
+        if (backDropActive && !general && switchOpenClose == 0) {
             switchOpenClose = 1;
-        else if (backDropActive && general && switchOpenClose == 1)
+        } else if (backDropActive && general && switchOpenClose == 1) {
             switchOpenClose = 0;
-        else {
+        } else {
             switchOpenClose = general ? 0 : 1;
             backDropActive = !backDropActive;
         }
@@ -1001,9 +1027,12 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         initSet.clone(binding.backdropLayout);
 
         if (backDropActive) {
-            initSet.connect(R.id.mainLayout, ConstraintSet.TOP, general ? R.id.filterRecyclerLayout : R.id.formViewContainer, ConstraintSet.BOTTOM, general ? ExtensionsKt.getDp(16) : 0);
+            initSet.connect(R.id.mainLayout, ConstraintSet.TOP,
+                    general ? R.id.filterRecyclerLayout : R.id.formViewContainer,
+                    ConstraintSet.BOTTOM, general ? ExtensionsKt.getDp(16) : 0);
         } else {
-            initSet.connect(R.id.mainLayout, ConstraintSet.TOP, R.id.backdropGuideTop, ConstraintSet.BOTTOM, 0);
+            initSet.connect(R.id.mainLayout, ConstraintSet.TOP, R.id.backdropGuideTop,
+                    ConstraintSet.BOTTOM, 0);
         }
 
         setFabVisibility(
@@ -1052,10 +1081,11 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     @Override
     public void closeFilters() {
-        if (switchOpenClose == 0)
+        if (switchOpenClose == 0) {
             showHideFilterGeneral();
-        else
+        } else {
             showHideFilter();
+        }
     }
 
     @Override
@@ -1063,8 +1093,9 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         if (switchOpenClose == 0) {
             filtersAdapter.notifyDataSetChanged();
             FilterManager.getInstance().clearAllFilters();
-        } else
+        } else {
             presenter.onClearClick();
+        }
     }
 
     @Override
@@ -1074,7 +1105,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     @Override
     public void openOrgUnitTreeSelector() {
-        OUTreeFragment.Companion.newInstance(true).show(getSupportFragmentManager(), "OUTreeFragment");
+        OUTreeFragment.Companion.newInstance(true).show(getSupportFragmentManager(),
+                "OUTreeFragment");
     }
 
     @Override
@@ -1102,7 +1134,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void openDashboard(String teiUid, String programUid, String enrollmentUid) {
         FilterManager.getInstance().clearWorkingList(true);
-        startActivity(TeiDashboardMobileActivity.intent(this, teiUid, enrollmentUid != null ? programUid : null, enrollmentUid));
+        startActivity(TeiDashboardMobileActivity.intent(this, teiUid,
+                enrollmentUid != null ? programUid : null, enrollmentUid));
     }
 
     @Override
@@ -1138,7 +1171,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             binding.messageContainer.setVisibility(GONE);
             showMap(true);
         } else {
-            org.dhis2.data.tuples.Pair<String, Boolean> data = presenter.getMessage(trackerMapData.getTeiModels());
+            org.dhis2.data.tuples.Pair<String, Boolean> data = presenter.getMessage(
+                    trackerMapData.getTeiModels());
             if (data.val0().isEmpty()) {
                 binding.messageContainer.setVisibility(GONE);
                 binding.mapView.setVisibility(VISIBLE);
@@ -1149,7 +1183,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 allItems.addAll(trackerMapData.getTeiModels());
                 allItems.addAll(trackerMapData.getEventModels());
                 for (SearchTeiModel searchTeiModel : trackerMapData.getTeiModels()) {
-                    allItems.addAll(new MapRelationshipToRelationshipMapModel().mapList(searchTeiModel.getRelationships()));
+                    allItems.addAll(new MapRelationshipToRelationshipMapModel().mapList(
+                            searchTeiModel.getRelationships()));
                 }
 
                 teiMapManager.update(
@@ -1180,15 +1215,18 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private void updateCarousel(List<CarouselItemModel> allItems) {
         if (binding.mapCarousel.getAdapter() != null) {
             ((CarouselAdapter) binding.mapCarousel.getAdapter()).setAllItems(allItems);
-            List<String> sources = new ArrayList<String>(teiMapManager.mapLayerManager.getMapLayers().keySet());
-            ((CarouselAdapter) binding.mapCarousel.getAdapter()).updateLayers(sources, teiMapManager.mapLayerManager.getMapLayers());
+            List<String> sources = new ArrayList<String>(
+                    teiMapManager.mapLayerManager.getMapLayers().keySet());
+            ((CarouselAdapter) binding.mapCarousel.getAdapter()).updateLayers(sources,
+                    teiMapManager.mapLayerManager.getMapLayers());
         }
     }
 
 
     @Override
     public Consumer<D2Progress> downloadProgress() {
-        return progress -> Snackbar.make(binding.getRoot(), getString(R.string.downloading), Snackbar.LENGTH_SHORT).show();
+        return progress -> Snackbar.make(binding.getRoot(), getString(R.string.downloading),
+                Snackbar.LENGTH_SHORT).show();
     }
 
     @Override
@@ -1209,12 +1247,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     /*endregion*/
-}
-
-class LastSelection{
-    public String teiUid;
-    public String enrollmentUid;
-    public boolean isOnline;
 }
 
 
