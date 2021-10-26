@@ -237,6 +237,18 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
     }
 
     @Override
+    public void resetVerificationStatus() {
+        binding.cardFront.verificationButton.setBackground(ContextCompat.getDrawable(context,
+                R.drawable.button_round_2
+        ));
+
+        binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_not_done);
+
+        binding.cardFront.verificationButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(context, getBioIconSuccess(context)));
+    }
+
+    @Override
     public void verificationStatusMatch() {
         binding.cardFront.verificationButton.setBackground(ContextCompat.getDrawable(context,
                 R.drawable.button_round_success

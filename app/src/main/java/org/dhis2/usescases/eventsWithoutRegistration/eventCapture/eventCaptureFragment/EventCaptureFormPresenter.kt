@@ -14,11 +14,10 @@ import org.dhis2.form.model.ValueStoreResult
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.biometrics.isBiometricsVerificationModel
 import org.dhis2.usescases.biometrics.isBiometricsVerificationText
+import org.dhis2.usescases.biometrics.isLastVerificationValid
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract
 import org.jetbrains.annotations.Nullable
 import timber.log.Timber
-import java.util.Date
-import java.util.concurrent.TimeUnit
 
 class EventCaptureFormPresenter(
     val view: EventCaptureFormView,
@@ -130,17 +129,11 @@ class EventCaptureFormPresenter(
                 biometricsViewModel.uid()
             )
 
-            val lastUpdatedMinutes = if (lastUpdated != null)
-                TimeUnit.MILLISECONDS.toMinutes(Date().time - lastUpdated.time) else null
 
-            Timber.d("lastBiometricsVerificationDuration ${activityPresenter.lastBiometricsVerificationDuration}")
-            Timber.d("Biometrics last updated date $lastUpdated")
-            Timber.d("Biometrics last updated minutes $lastUpdatedMinutes")
-
-            if (lastUpdatedMinutes == null || lastUpdatedMinutes >= activityPresenter.lastBiometricsVerificationDuration) {
+            if (!isLastVerificationValid(lastUpdated, activityPresenter.lastBiometricsVerificationDuration,true)) {
                 view.verifyBiometrics(this.biometricsGuid, this.teiOrgUnit)
             } else {
-                refreshBiometricsVerificationStatus(1)
+                refreshBiometricsVerificationStatus(1,false)
             }
         }
     }
@@ -209,7 +202,8 @@ class EventCaptureFormPresenter(
     }
 
     fun refreshBiometricsVerificationStatus(
-        biometricsVerificationStatus: Int
+        biometricsVerificationStatus: Int,
+        saveValue: Boolean =true
     ) {
         val biometricsViewModel = getBiometricVerificationViewModel()
 
@@ -219,7 +213,7 @@ class EventCaptureFormPresenter(
 
         val status = mapVerificationStatus(biometricsVerificationStatus)
 
-        if (status == BiometricsVerificationView.BiometricsVerificationStatus.SUCCESS) {
+        if (status == BiometricsVerificationView.BiometricsVerificationStatus.SUCCESS && saveValue) {
             activityPresenter.updateBiometricsAttributeValueInTei(biometricsGuid)
         }
 
