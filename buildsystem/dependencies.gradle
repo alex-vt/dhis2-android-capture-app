@@ -3,8 +3,8 @@ ext {
             sdk   : 29,
             tools : "29.0.2",
             minSdk: 19,
-            vCode: 103,
-            vName: "2.4.2-eyeseetea-fork-2"
+            vCode: 104,
+            vName: "2.4.2-eyeseetea-fork-3"
     ]
 
     libraries = [
