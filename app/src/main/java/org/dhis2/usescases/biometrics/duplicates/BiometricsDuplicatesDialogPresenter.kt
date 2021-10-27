@@ -2,12 +2,12 @@ package org.dhis2.usescases.biometrics.duplicates
 
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.functions.Consumer
 import org.dhis2.data.schedulers.SchedulerProvider
 import org.dhis2.data.search.SearchParametersModel
 import org.dhis2.usescases.searchTrackEntity.SearchRepository
 import org.dhis2.utils.NetworkUtils
 import org.hisp.dhis.android.core.D2
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance
 import timber.log.Timber
 
 class BiometricsDuplicatesDialogPresenter(
@@ -21,6 +21,8 @@ class BiometricsDuplicatesDialogPresenter(
     lateinit var programUid: String
     lateinit var trackedEntityTypeUid: String
     lateinit var biometricsAttributeUid: String
+
+    private var identityConfirmed: Boolean = false
 
     var disposable: CompositeDisposable = CompositeDisposable()
 
@@ -71,11 +73,44 @@ class BiometricsDuplicatesDialogPresenter(
     }
 
     fun onTEIClick(teiUid: String, enrollmentUid: String, isOnline: Boolean) {
-        if (!isOnline) {
-            openDashboard(teiUid, enrollmentUid)
+        if (!identityConfirmed) {
+            identityConfirmed = true
+            sendBiometricsConfirmIdentity(teiUid, enrollmentUid, isOnline)
         } else {
-            downloadTei(teiUid, enrollmentUid)
+            if (!isOnline) {
+                openDashboard(teiUid, enrollmentUid)
+            } else {
+                downloadTei(teiUid, enrollmentUid)
+            }
         }
+    }
+
+    private fun sendBiometricsConfirmIdentity(
+        teiUid: String,
+        enrollmentUid: String,
+        isOnline: Boolean
+    ) {
+        val tei = d2.trackedEntityModule().trackedEntityInstances()
+            .withTrackedEntityAttributeValues().uid(teiUid).blockingGet()
+        val guid: String = getBiometricsValueFromTEI(tei) ?: ""
+        view.sendBiometricsConfirmIdentity(
+            biometricsSessionId,
+            guid,
+            teiUid,
+            enrollmentUid,
+            isOnline
+        )
+    }
+
+    private fun getBiometricsValueFromTEI(tei: TrackedEntityInstance): String? {
+        var guid: String? = null
+        for (att in tei.trackedEntityAttributeValues()!!) {
+            if (att.trackedEntityAttribute() == biometricsAttributeUid) {
+                guid = att.value()
+                break
+            }
+        }
+        return guid
     }
 
     private fun openDashboard(teiUid: String, enrollmentUid: String) {

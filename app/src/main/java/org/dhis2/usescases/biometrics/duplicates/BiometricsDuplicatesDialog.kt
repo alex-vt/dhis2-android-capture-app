@@ -1,7 +1,9 @@
 package org.dhis2.usescases.biometrics.duplicates
 
+import android.app.Activity
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,9 +20,16 @@ import com.google.android.material.snackbar.Snackbar
 import io.reactivex.functions.Consumer
 import org.dhis2.Bindings.app
 import org.dhis2.R
+import org.dhis2.data.biometrics.BiometricsClientFactory
+import org.dhis2.data.biometrics.BiometricsClientFactory.get
+import org.dhis2.data.biometrics.IdentifyResult
+import org.dhis2.data.biometrics.IdentifyResult.BiometricsDeclined
+import org.dhis2.data.biometrics.IdentifyResult.UserNotFound
+import org.dhis2.data.biometrics.RegisterResult
 import org.dhis2.databinding.DialogBiometricsDuplicatesBinding
-import org.dhis2.usescases.searchTrackEntity.adapters.SearchTeiLiveAdapter
+import org.dhis2.usescases.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
 import org.dhis2.usescases.searchTrackEntity.adapters.SearchTeiModel
+import org.dhis2.utils.LastSelection
 import org.hisp.dhis.android.core.arch.call.D2Progress
 import javax.inject.Inject
 
@@ -29,6 +38,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
     private var onEnrollNewListener: ((sessionId: String) -> Unit)? = null
     private var onOpenTeiDashboardListener: ((String, String, String) -> Unit)? = null
     private lateinit var binding: DialogBiometricsDuplicatesBinding
+    private var lastSelection: LastSelection? = null
 
     @Inject
     lateinit var presenter: BiometricsDuplicatesDialogPresenter
@@ -148,6 +158,33 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
     override fun enrollNew(biometricsSessionId: String) {
         onEnrollNewListener?.invoke(biometricsSessionId)
         dismiss()
+    }
+
+    override fun sendBiometricsConfirmIdentity(
+        sessionId: String,
+        guid: String,
+        teiUid: String,
+        enrollmentUid: String,
+        isOnline: Boolean
+    ) {
+        lastSelection = LastSelection(teiUid, enrollmentUid, isOnline)
+
+        context?.let { get(it).confirmIdentify(this, sessionId, guid) }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            BIOMETRICS_CONFIRM_IDENTITY_REQUEST -> {
+                if (lastSelection != null) {
+                    presenter.onTEIClick(
+                        lastSelection!!.teiUid, lastSelection!!.enrollmentUid,
+                        lastSelection!!.isOnline
+                    )
+                    lastSelection = null
+                }
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     fun setOnOpenTeiDashboardListener(onOpenTeiDashboardListener: (teiUid: String, programUid: String, enrollmentUid: String) -> Unit) {
