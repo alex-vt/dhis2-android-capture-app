@@ -12,6 +12,7 @@ import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 import org.hisp.dhis.android.core.program.Program;
 import org.hisp.dhis.android.core.program.ProgramStage;
 import org.hisp.dhis.android.core.program.ProgramTrackedEntityAttribute;
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance;
 
@@ -129,6 +130,10 @@ public class DashboardProgramModel extends BaseObservable {
         return trackedEntityAttributeValues;
     }
 
+    public void updateTrackedEntityAttributeValues(List<TrackedEntityAttributeValue> values){
+        trackedEntityAttributeValues = values;
+    }
+
     public Enrollment getEnrollmentForProgram(String uid) {
         for (Enrollment enrollment : teiEnrollments)
             if (Objects.equals(enrollment.program(), uid))
@@ -194,5 +199,23 @@ public class DashboardProgramModel extends BaseObservable {
         }
 
         return biometricUid;
+    }
+
+    public TrackedEntityAttributeValue getTrackedBiometricEntityAttributeValue(){
+        String biometricUid = getTrackedBiometricEntityAttributeUid();
+
+        if(biometricUid != null){
+            for(TrackedEntityAttributeValue value: trackedEntityAttributeValues){
+                if(biometricUid.equalsIgnoreCase(value.trackedEntityAttribute())){
+                    if(value==null || value.value().isEmpty()){
+                        return null;
+                    }else{
+                        return value;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

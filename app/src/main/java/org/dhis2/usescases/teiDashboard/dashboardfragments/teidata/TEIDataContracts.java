@@ -88,6 +88,8 @@ public class TEIDataContracts {
 
         void launchBiometricsVerification(String guid, String orgUnitUid);
 
+        void resetVerificationStatus();
+
         void verificationStatusMatch();
 
         void verificationStatusNoMatch();

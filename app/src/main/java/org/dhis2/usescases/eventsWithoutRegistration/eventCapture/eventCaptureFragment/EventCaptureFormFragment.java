@@ -165,11 +165,11 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                             this.getContext()).handleVerifyResponse(data);
 
                     if (result instanceof VerifyResult.Match) {
-                        presenter.refreshBiometricsVerificationStatus(1);
+                        presenter.refreshBiometricsVerificationStatus(1,true);
                     } else if (result instanceof VerifyResult.NoMatch) {
-                        presenter.refreshBiometricsVerificationStatus(0);
+                        presenter.refreshBiometricsVerificationStatus(0,true);
                     } else if (result instanceof VerifyResult.Failure) {
-                        presenter.refreshBiometricsVerificationStatus(0);
+                        presenter.refreshBiometricsVerificationStatus(0,true);
                     }
                 }
                 break;
