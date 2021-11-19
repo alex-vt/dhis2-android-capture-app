@@ -6,7 +6,6 @@ import io.reactivex.processors.FlowableProcessor
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView
 import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel
-import org.dhis2.data.schedulers.SchedulerProvider
 import org.dhis2.form.data.FormRepository
 import org.dhis2.form.model.ActionType
 import org.dhis2.form.model.FieldUiModel

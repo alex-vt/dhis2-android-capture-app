@@ -51,6 +51,9 @@ public class EventCapturePagerAdapter extends FragmentStateAdapter {
         }
         pages.add(EventPageType.NOTES);
 
+        biometricsGuid = null;
+        biometricsVerificationStatus = -1;
+        teiOrgUnitUid = null;
     }
 
     public EventCapturePagerAdapter(FragmentActivity fragmentActivity,
@@ -64,9 +67,7 @@ public class EventCapturePagerAdapter extends FragmentStateAdapter {
         super(fragmentActivity);
         this.programUid = programUid;
         this.eventUid = eventUid;
-        this.biometricsGuid = guid;
-        this.biometricsVerificationStatus = status;
-        this.teiOrgUnitUid = teiOrgUnit;
+
         pages = new ArrayList<>();
         pages.add(EventPageType.DATA_ENTRY);
         if (displayAnalyticScreen) {
@@ -77,6 +78,9 @@ public class EventCapturePagerAdapter extends FragmentStateAdapter {
         }
         pages.add(EventPageType.NOTES);
 
+        this.biometricsGuid = guid;
+        this.biometricsVerificationStatus = status;
+        this.teiOrgUnitUid = teiOrgUnit;
     }
 
     @NonNull

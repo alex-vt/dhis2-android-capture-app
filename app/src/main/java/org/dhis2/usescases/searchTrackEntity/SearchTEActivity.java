@@ -47,6 +47,8 @@ import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
 import org.dhis2.animations.CarouselViewAnimations;
+import org.dhis2.commons.dialogs.CustomDialog;
+import org.dhis2.commons.dialogs.DialogClickListener;
 import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.data.biometrics.IdentifyResult;
 import org.dhis2.data.biometrics.RegisterResult;
@@ -75,12 +77,10 @@ import org.dhis2.usescases.teiDashboard.TeiDashboardMobileActivity;
 import org.dhis2.commons.resources.ColorUtils;
 import org.dhis2.utils.Constants;
 import org.dhis2.utils.DateUtils;
-import org.dhis2.utils.DialogClickListener;
 import org.dhis2.utils.HelpManager;
 import org.dhis2.utils.LastSelection;
 import org.dhis2.utils.NetworkUtils;
 import org.dhis2.utils.customviews.BreakTheGlassBottomDialog;
-import org.dhis2.utils.customviews.CustomDialog;
 import org.dhis2.utils.customviews.ImageDetailBottomDialog;
 import org.dhis2.utils.customviews.navigationbar.NavigationPageConfigurator;
 import org.dhis2.utils.filters.FilterItem;
@@ -804,7 +804,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements
                     binding.scrollView.setVisibility(GONE);
                 }
                 CountingIdlingResourceSingleton.INSTANCE.decrement();
-                if (!presenter.getQueryData().isEmpty() && data.val1())
+                if (!presenter.getQueryData().isEmpty() && data.val1()){
                     setFabIcon(false);
                 }
             });

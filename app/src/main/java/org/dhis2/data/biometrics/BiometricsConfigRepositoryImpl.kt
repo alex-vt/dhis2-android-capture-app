@@ -1,6 +1,6 @@
 package org.dhis2.data.biometrics
 
-import org.dhis2.data.prefs.PreferenceProvider
+import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.usescases.biometrics.BiometricsConfigRepository
 import org.dhis2.usescases.biometrics.BiometricsIcon
 import timber.log.Timber
