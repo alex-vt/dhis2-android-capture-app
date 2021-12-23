@@ -46,7 +46,7 @@ import org.dhis2.usescases.settings.models.ReservedValueSettingsViewModel;
 import org.dhis2.usescases.settings.models.SMSSettingsViewModel;
 import org.dhis2.usescases.settings.models.SyncParametersViewModel;
 import org.dhis2.usescases.settingsprogram.SettingsProgramActivity;
-import org.dhis2.utils.ColorUtils;
+import org.dhis2.commons.resources.ColorUtils;
 import org.dhis2.utils.Constants;
 import org.dhis2.utils.HelpManager;
 import org.dhis2.utils.NetworkUtils;
@@ -207,6 +207,7 @@ public class SyncManagerFragment extends FragmentGlobalAbstract implements SyncM
                 .setMessage(getString(R.string.wipe_data_meesage))
                 .setView(R.layout.warning_layout)
                 .setPositiveButton(getString(R.string.wipe_data_ok), (dialog, which) -> {
+                    presenter.resetFilters();
                     analyticsHelper().setEvent(CONFIRM_RESET, CLICK, CONFIRM_RESET);
                     showDeleteProgress();
                 })

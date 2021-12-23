@@ -2,7 +2,7 @@ package org.dhis2.usescases.biometrics.duplicates
 
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
-import org.dhis2.data.schedulers.SchedulerProvider
+import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.search.SearchParametersModel
 import org.dhis2.usescases.searchTrackEntity.SearchRepository
 import org.dhis2.utils.NetworkUtils

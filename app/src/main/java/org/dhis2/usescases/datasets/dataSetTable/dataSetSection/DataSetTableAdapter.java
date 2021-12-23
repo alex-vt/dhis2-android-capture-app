@@ -255,7 +255,8 @@ public class DataSetTableAdapter extends AbstractTableAdapter<CategoryOption, Da
     public void onBindColumnHeaderViewHolder(AbstractViewHolder holder, Object columnHeaderItemModel, int position) {
         ((DataSetRHeaderHeader) holder).bind(
                 defaultColumnLabel != null ? defaultColumnLabel : ((CategoryOption) columnHeaderItemModel).displayName(),
-                currentTableScale
+                currentTableScale,
+                position
         );
         if (((CategoryOption) columnHeaderItemModel).displayName().isEmpty()) {
             ((DataSetRHeaderHeader) holder).binding.container.getLayoutParams().width = currentWidth;
@@ -301,13 +302,14 @@ public class DataSetTableAdapter extends AbstractTableAdapter<CategoryOption, Da
     public void onBindRowHeaderViewHolder(AbstractViewHolder holder, Object rowHeaderItemModel, int
             position) {
         ((DataSetRowHeader) holder).bind(mRowHeaderItems.get(position), currentTableScale, dataElementDecoration);
-        holder.itemView.getLayoutParams().height = /*currentHeight*/getColumnHeaderHeight();
+        holder.itemView.getLayoutParams().height = getColumnHeaderHeight();
     }
 
 
     @Override
     public View onCreateCornerView() {
-        return null;
+        int layout = com.evrencoskun.tableview.R.layout.default_cornerview_layout;
+        return LayoutInflater.from(context).inflate(layout,null);
     }
 
     @Override
@@ -369,15 +371,23 @@ public class DataSetTableAdapter extends AbstractTableAdapter<CategoryOption, Da
     public void updateValue(RowAction rowAction) {
         if (showRowTotal || showColumnTotal) {
             int oldValue = 0;
-
-            if (getCellItem(rowAction.columnPos(), rowAction.rowPos()) != null && !getCellItem(rowAction.columnPos(), rowAction.rowPos()).isEmpty())
-                oldValue = Integer.parseInt(getCellItem(rowAction.columnPos(), rowAction.rowPos()));
-
+            int newValue = 0;
+            try {
+                if (getCellItem(rowAction.columnPos(), rowAction.rowPos()) != null && !getCellItem(rowAction.columnPos(), rowAction.rowPos()).isEmpty())
+                    oldValue = Integer.parseInt(getCellItem(rowAction.columnPos(), rowAction.rowPos()));
+            } catch (Exception e) {
+                Timber.d("Data element is not numeric");
+            }
+            try {
+                newValue = isEmpty(rowAction.value()) ? 0 : Integer.parseInt(rowAction.value() != null ? rowAction.value() : "0");
+            } catch (Exception e) {
+                Timber.d("Data element is not numeric");
+            }
             try {
                 if (showRowTotal) {
                     int totalRow = Integer.parseInt(isEmpty(getCellItem(viewModels.get(0).size() - 1, rowAction.rowPos())) ?
                             "0" : getCellItem(viewModels.get(0).size() - 1, rowAction.rowPos()))
-                            + (Integer.parseInt(rowAction.value() != null ? rowAction.value() : "0") - oldValue);
+                            + (newValue - oldValue);
                     changeCellItem(viewModels.get(0).size() - 1, rowAction.rowPos(), totalRow + "", showRowTotal);
                 }
             } catch (Exception e) {
@@ -388,7 +398,7 @@ public class DataSetTableAdapter extends AbstractTableAdapter<CategoryOption, Da
                 if (showColumnTotal) {
                     int totalColumn = Integer.parseInt(isEmpty(getCellItem(rowAction.columnPos(), viewModels.size() - 1)) ?
                             "0" : getCellItem(rowAction.columnPos(), viewModels.size() - 1))
-                            + (Integer.parseInt(rowAction.value() != null ? rowAction.value() : "0") - oldValue);
+                            + (newValue - oldValue);
                     changeCellItem(rowAction.columnPos(), viewModels.size() - 1, totalColumn + "", showColumnTotal);
                 }
             } catch (Exception e) {
@@ -399,7 +409,7 @@ public class DataSetTableAdapter extends AbstractTableAdapter<CategoryOption, Da
                 if (showRowTotal && showColumnTotal) {
                     int total = Integer.parseInt(isEmpty(getCellItem(viewModels.get(0).size() - 1, viewModels.size() - 1)) ?
                             "0" : getCellItem(viewModels.get(0).size() - 1, viewModels.size() - 1))
-                            + (Integer.parseInt(rowAction.value() != null ? rowAction.value() : "0") - oldValue);
+                            + (newValue - oldValue);
                     changeCellItem(viewModels.get(0).size() - 1, viewModels.size() - 1, total + "", true);
                 }
             } catch (Exception e) {

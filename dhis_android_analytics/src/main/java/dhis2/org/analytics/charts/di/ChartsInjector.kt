@@ -1,5 +1,6 @@
 package dhis2.org.analytics.charts.di
 
+import android.content.Context
 import dagger.Component
 import dagger.Module
 import dagger.Provides
@@ -7,12 +8,14 @@ import dhis2.org.analytics.charts.Charts
 import dhis2.org.analytics.charts.ChartsRepository
 import dhis2.org.analytics.charts.ChartsRepositoryImpl
 import dhis2.org.analytics.charts.DhisAnalyticCharts
+import dhis2.org.analytics.charts.data.AnalyticResources
 import dhis2.org.analytics.charts.mappers.AnalyticDataElementToDataElementData
 import dhis2.org.analytics.charts.mappers.AnalyticIndicatorToIndicatorData
 import dhis2.org.analytics.charts.mappers.AnalyticTeiSettingsToSettingsAnalyticsModel
 import dhis2.org.analytics.charts.mappers.AnalyticsTeiSettingsToGraph
 import dhis2.org.analytics.charts.mappers.DataElementToGraph
 import dhis2.org.analytics.charts.mappers.ProgramIndicatorToGraph
+import dhis2.org.analytics.charts.mappers.VisualizationToGraph
 import dhis2.org.analytics.charts.providers.ChartCoordinatesProvider
 import dhis2.org.analytics.charts.providers.ChartCoordinatesProviderImpl
 import dhis2.org.analytics.charts.providers.NutritionDataProvider
@@ -37,11 +40,28 @@ class ChartsModule {
     @Provides
     internal fun provideChartRepository(
         d2: D2,
+        visualizationToGraph: VisualizationToGraph,
         analyticsTeiSettingsToGraph: AnalyticsTeiSettingsToGraph,
         dataElementToGraph: DataElementToGraph,
-        indicatorToGraph: ProgramIndicatorToGraph
+        indicatorToGraph: ProgramIndicatorToGraph,
+        analyticsResources: AnalyticResources
     ): ChartsRepository =
-        ChartsRepositoryImpl(d2, analyticsTeiSettingsToGraph, dataElementToGraph, indicatorToGraph)
+        ChartsRepositoryImpl(
+            d2,
+            visualizationToGraph,
+            analyticsTeiSettingsToGraph,
+            dataElementToGraph,
+            indicatorToGraph,
+            analyticsResources
+        )
+
+    @Provides
+    internal fun provideVisualizationToGraph(
+        periodStepProvider: PeriodStepProvider,
+        chartCoordinatesProvider: ChartCoordinatesProvider
+    ): VisualizationToGraph {
+        return VisualizationToGraph(periodStepProvider, chartCoordinatesProvider)
+    }
 
     @Provides
     internal fun provideAnalyticsSettingsToGraph(
@@ -96,8 +116,16 @@ class ChartsModule {
     }
 
     @Provides
-    internal fun chartCoordinatesProvider(d2: D2): ChartCoordinatesProvider {
-        return ChartCoordinatesProviderImpl(d2)
+    internal fun chartCoordinatesProvider(
+        d2: D2,
+        periodStepProvider: PeriodStepProvider
+    ): ChartCoordinatesProvider {
+        return ChartCoordinatesProviderImpl(d2, periodStepProvider)
+    }
+
+    @Provides
+    internal fun analyticResources(context: Context): AnalyticResources {
+        return AnalyticResources(context)
     }
 
     @Provides

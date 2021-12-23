@@ -11,9 +11,9 @@ import org.dhis2.data.biometrics.BiometricsPreference;
 import org.dhis2.data.forms.dataentry.ValueStore;
 import org.dhis2.data.forms.dataentry.fields.display.DisplayViewModel;
 import org.dhis2.data.forms.dataentry.fields.edittext.EditTextViewModel;
-import org.dhis2.data.prefs.Preference;
-import org.dhis2.data.prefs.PreferenceProvider;
-import org.dhis2.data.schedulers.SchedulerProvider;
+import org.dhis2.commons.prefs.Preference;
+import org.dhis2.commons.prefs.PreferenceProvider;
+import org.dhis2.commons.schedulers.SchedulerProvider;
 import org.dhis2.data.tuples.Quartet;
 import org.dhis2.form.model.ActionType;
 import org.dhis2.form.model.FieldUiModel;
@@ -40,7 +40,6 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
@@ -63,7 +62,7 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
     private final SchedulerProvider schedulerProvider;
     private final ValueStore valueStore;
     private final EventFieldMapper fieldMapper;
-    private CompositeDisposable compositeDisposable;
+    public CompositeDisposable compositeDisposable;
     private EventCaptureContract.View view;
     private ObservableField<String> currentSection;
     private FlowableProcessor<Boolean> showCalculationProcessor;
@@ -72,6 +71,7 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
     private boolean canComplete;
     private String completeMessage;
     private Map<String, String> errors;
+    private Map<String, String> warnings;
     private EventStatus eventStatus;
     private boolean hasExpired;
     private final Flowable<String> sectionProcessor;
@@ -95,7 +95,9 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
                                      PreferenceProvider preferences,
                                      GetNextVisibleSection getNextVisibleSection,
                                      EventFieldMapper fieldMapper,
-                                     FlowableProcessor<RowAction> onFieldActionProcessor, Flowable<String> sectionProcessor) {
+                                     FlowableProcessor<RowAction> onFieldActionProcessor,
+                                     Flowable<String> sectionProcessor
+    ) {
         this.view = view;
         this.eventUid = eventUid;
         this.eventCaptureRepository = eventCaptureRepository;
@@ -104,6 +106,7 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
         this.schedulerProvider = schedulerProvider;
         this.currentSection = new ObservableField<>("");
         this.errors = new HashMap<>();
+        this.warnings = new HashMap<>();
         this.emptyMandatoryFields = new HashMap<>();
         this.canComplete = true;
         this.compositeDisposable = new CompositeDisposable();
@@ -209,6 +212,7 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
                                                                 sectionList,
                                                                 section,
                                                                 errors,
+                                                                warnings,
                                                                 emptyMandatoryFields,
                                                                 showErrors
                                                         ))))
@@ -233,7 +237,7 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
                                                 fieldMapper.completedFieldsPercentage()
                                         );
 
-                                        if(!configurationError.isEmpty() && showConfigurationError){
+                                        if (!configurationError.isEmpty() && showConfigurationError) {
                                             view.displayConfigurationErrors(configurationError);
                                         }
 
@@ -264,14 +268,13 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
                 onFieldActionProcessor.subscribe(
                         rowAction -> {
                             if (rowAction.getType() == ActionType.ON_FOCUS) {
-                                    view.hideNavigationBar();
+                                view.hideNavigationBar();
                             }
                         },
                         Timber::e
                 )
         );
     }
-
 
     @VisibleForTesting
     public String getFieldSection(FieldUiModel fieldViewModel) {
@@ -285,7 +288,6 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
         }
         return fieldSection;
     }
-
 
     @Override
     public BehaviorSubject<List<FieldUiModel>> formFieldsFlowable() {
@@ -365,9 +367,7 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
                 true,
                 fieldViewModels,
                 calcResult,
-                valueStore,
-                options -> eventCaptureRepository.getOptionsFromGroups(options)
-        );
+                valueStore);
 
         assignedValueChanged = !ruleResults.getFieldsToUpdate().isEmpty();
         for (String fieldUid : ruleResults.getFieldsToUpdate()) {
@@ -375,6 +375,7 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
         }
 
         errors = ruleResults.errorMap();
+        warnings = ruleResults.warningMap();
         configurationError = ruleResults.getConfigurationErrors();
         canComplete = ruleResults.getCanComplete();
         completeMessage = ruleResults.getMessageOnComplete();
@@ -393,7 +394,7 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
     }
 
     @Override
-    public void attempFinish() {
+    public void attemptFinish() {
 
         qualityCheck();
 
@@ -449,8 +450,10 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
                                 success -> {
                                     if (addNew)
                                         view.restartDataEntry();
-                                    else
+                                    else {
+                                        preferences.setValue(Preference.PREF_COMPLETED_EVENT, eventUid);
                                         view.finishDataEntry();
+                                    }
                                 },
                                 Timber::e
                         ));
@@ -554,6 +557,13 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
         setValueChanged(uuid);
     }
 
+    @SuppressLint("CheckResult")
+    @Override
+    public void saveValue(String uuid, String value) {
+        valueStore.save(uuid, value).blockingFirst();
+        setValueChanged(uuid);
+    }
+
     @Override
     public void initNoteCounter() {
         if (!notesCounterProcessor.hasSubscribers()) {
@@ -591,7 +601,7 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
 
     private void qualityCheck() {
         Pair<Boolean, Boolean> currentShowError = showErrors;
-        showErrors = new Pair<>(!emptyMandatoryFields.isEmpty(), !errors.isEmpty());
+        showErrors = new Pair<>(!emptyMandatoryFields.isEmpty() || !warnings.isEmpty(), !errors.isEmpty());
         showCalculationProcessor.onNext(
                 currentShowError.getFirst() != showErrors.getFirst() ||
                         currentShowError.getSecond() != showErrors.getSecond()
@@ -605,21 +615,16 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
 
     @Override
     public void setValueChanged(@NotNull String uid) {
-        compositeDisposable.add(
-                Completable.fromCallable(() -> {
-                    eventCaptureRepository.updateFieldValue(uid);
-                    return true;
-                })
-                        .subscribeOn(schedulerProvider.io())
-                        .observeOn(schedulerProvider.io())
-                        .subscribe(() -> {
-                        }, Timber::d)
-        );
+        eventCaptureRepository.updateFieldValue(uid);
     }
 
     @Override
     public void disableConfErrorMessage() {
         showConfigurationError = false;
+    }
+
+    public CompositeDisposable getDisposable() {
+        return compositeDisposable;
     }
 
     @Override

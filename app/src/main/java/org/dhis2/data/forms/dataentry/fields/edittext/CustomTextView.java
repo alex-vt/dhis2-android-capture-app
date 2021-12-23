@@ -1,5 +1,13 @@
 package org.dhis2.data.forms.dataentry.fields.edittext;
 
+import static android.content.Context.MODE_PRIVATE;
+import static android.text.TextUtils.isEmpty;
+import static android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
+import static android.view.inputmethod.EditorInfo.IME_ACTION_NEXT;
+import static org.dhis2.Bindings.ViewExtensionsKt.closeKeyboard;
+import static org.dhis2.Bindings.ViewExtensionsKt.openKeyboard;
+import static java.lang.String.valueOf;
+
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -13,7 +21,6 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.DigitsKeyListener;
 import android.util.AttributeSet;
-import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.databinding.DataBindingUtil;
@@ -34,17 +42,18 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import org.dhis2.BR;
-import org.dhis2.Components;
 import org.dhis2.R;
-import org.dhis2.utils.ColorUtils;
+import org.dhis2.commons.customviews.TextInputAutoCompleteTextView;
+import org.dhis2.commons.dialogs.CustomDialog;
+import org.dhis2.commons.resources.ColorUtils;
+import org.dhis2.form.ui.validation.failures.FieldMaskFailure;
+import org.dhis2.form.ui.validation.validators.FieldMaskValidator;
 import org.dhis2.utils.Constants;
 import org.dhis2.utils.ObjectStyleUtils;
 import org.dhis2.utils.Preconditions;
 import org.dhis2.utils.ValidationUtils;
-import org.dhis2.utils.Validator;
-import org.dhis2.utils.customviews.CustomDialog;
 import org.dhis2.utils.customviews.FieldLayout;
-import org.dhis2.utils.customviews.TextInputAutoCompleteTextView;
+import org.hisp.dhis.android.core.arch.helpers.Result;
 import org.hisp.dhis.android.core.common.ObjectStyle;
 import org.hisp.dhis.android.core.common.ValueType;
 import org.hisp.dhis.android.core.common.ValueTypeDeviceRendering;
@@ -53,25 +62,11 @@ import org.hisp.dhis.android.core.program.ProgramStageSectionRenderingType;
 
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
-import static android.content.Context.MODE_PRIVATE;
-import static android.text.TextUtils.isEmpty;
-import static android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
-import static android.view.inputmethod.EditorInfo.IME_ACTION_NEXT;
-import static java.lang.String.valueOf;
-import static org.dhis2.Bindings.ViewExtensionsKt.closeKeyboard;
-import static org.dhis2.Bindings.ViewExtensionsKt.openKeyboard;
-
 
 public class CustomTextView extends FieldLayout {
-
-    String urlStringPattern = "^(http://www\\.|https://www\\.|http://|https://)[a-z0-9]+([\\-.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(:[0-9]{1,5})?(/.*)?$";
-    Pattern urlPattern = Pattern.compile(urlStringPattern);
 
     private boolean isBgTransparent;
     private TextInputAutoCompleteTextView editText;
@@ -86,8 +81,6 @@ public class CustomTextView extends FieldLayout {
     private View descriptionLabel;
     private TextView labelText;
     private ImageView clearButton;
-    private Map<ValueType, Validator> validators;
-    private Validator validator;
 
     private List<String> autoCompleteValues;
 
@@ -111,7 +104,6 @@ public class CustomTextView extends FieldLayout {
     public void init(Context context) {
         super.init(context);
         inflater = LayoutInflater.from(context);
-        validators = ((Components) context.getApplicationContext()).appComponent().injectValidators();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -147,11 +139,8 @@ public class CustomTextView extends FieldLayout {
                 openKeyboard(v);
             }
             if (!hasFocus && valueHasChanged()) {
-                if (validate()) {
-                    inputLayout.setError(null);
-                }
                 sendAction();
-                validateRegex();
+                validateRegex(getEditText().getText().toString());
             }
         });
 
@@ -292,7 +281,6 @@ public class CustomTextView extends FieldLayout {
 
     public void setValueType(ValueType valueType) {
         this.valueType = valueType;
-        this.validator = validators.get(valueType);
 
         configureViews();
     }
@@ -352,87 +340,6 @@ public class CustomTextView extends FieldLayout {
 
     public TextInputLayout getInputLayout() {
         return inputLayout;
-    }
-
-    private boolean validate() {
-        if (editText.getText() != null && !isEmpty(editText.getText())) {
-            switch (valueType) {
-                case PHONE_NUMBER:
-                    if (Patterns.PHONE.matcher(editText.getText().toString()).matches())
-                        return true;
-                    else {
-                        inputLayout.setError(editText.getContext().getString(R.string.invalid_phone_number));
-                        return false;
-                    }
-                case EMAIL:
-                    if (Patterns.EMAIL_ADDRESS.matcher(editText.getText().toString()).matches())
-                        return true;
-                    else {
-                        inputLayout.setError(editText.getContext().getString(R.string.invalid_email));
-                        return false;
-                    }
-                case INTEGER_NEGATIVE:
-                    if (validator.validate(editText.getText().toString()))
-                        return true;
-                    else {
-                        inputLayout.setError(editText.getContext().getString(R.string.invalid_negative_number));
-                        return false;
-                    }
-                case INTEGER_ZERO_OR_POSITIVE:
-                    if (validator.validate(editText.getText().toString()))
-                        return true;
-                    else {
-                        inputLayout.setError(editText.getContext().getString(R.string.invalid_possitive_zero));
-                        return false;
-                    }
-                case INTEGER_POSITIVE:
-                    if (validator.validate(editText.getText().toString()))
-                        return true;
-                    else {
-                        inputLayout.setError(editText.getContext().getString(R.string.invalid_possitive));
-                        return false;
-                    }
-                case UNIT_INTERVAL:
-                    if (Float.parseFloat(editText.getText().toString()) >= 0 && Float.parseFloat(editText.getText().toString()) <= 1)
-                        return true;
-                    else {
-                        inputLayout.setError(editText.getContext().getString(R.string.invalid_interval));
-                        return false;
-                    }
-                case PERCENTAGE:
-                    if (Float.parseFloat(editText.getText().toString()) >= 0 && Float.parseFloat(editText.getText().toString()) <= 100)
-                        return true;
-                    else {
-                        inputLayout.setError(editText.getContext().getString(R.string.invalid_percentage));
-                        return false;
-                    }
-                case URL:
-                    if (urlPattern.matcher(editText.getText().toString()).matches()) {
-                        inputLayout.setError(null);
-                        return true;
-                    } else {
-                        inputLayout.setError(getContext().getString(R.string.validation_url));
-                        return false;
-                    }
-                case INTEGER:
-                    if (validator.validate(editText.getText().toString()))
-                        return true;
-                    else {
-                        inputLayout.setError(editText.getContext().getString(R.string.invalid_integer));
-                        return false;
-                    }
-                case NUMBER:
-                    if (validator.validate(editText.getText().toString()))
-                        return true;
-                    else {
-                        inputLayout.setError(editText.getContext().getString(R.string.formatting_error));
-                        return false;
-                    }
-                default:
-                    return true;
-            }
-        }
-        return true;
     }
 
     public void setRenderType(String renderType) {
@@ -514,12 +421,7 @@ public class CustomTextView extends FieldLayout {
         setDescription(description);
         setText(viewModel.value());
         setWarning(viewModel.warning(), viewModel.error());
-        if (!viewModel.isSearchMode() && viewModel.value() != null &&
-                !Objects.requireNonNull(viewModel.value()).isEmpty() &&
-                viewModel.fieldMask() != null &&
-                !Objects.requireNonNull(viewModel.value()).matches(Objects.requireNonNull(viewModel.fieldMask()))) {
-            setWarning(binding.getRoot().getContext().getString(R.string.wrong_pattern), "");
-        }
+        validateRegex(viewModel.value());
         setEditable(viewModel.editable());
         setRenderingType(viewModel.fieldRendering(), viewModel.uid());
         setOnLongActionListener();
@@ -547,10 +449,9 @@ public class CustomTextView extends FieldLayout {
         if (!isEmpty(getEditText().getText())) {
             checkAutocompleteRendering();
             String value = ValidationUtils.validate(viewModel.valueType(), getEditText().getText().toString());
-            String error = (String) inputLayout.getError();
-            viewModel.onTextFilled(value, error);
+            viewModel.onTextFilled(value);
         } else {
-            viewModel.onTextFilled(null, null);
+            viewModel.onTextFilled(null);
         }
     }
 
@@ -569,13 +470,26 @@ public class CustomTextView extends FieldLayout {
         getContext().getSharedPreferences(Constants.SHARE_PREFS, MODE_PRIVATE).edit().putString(key, json).apply();
     }
 
-    private void validateRegex() {
-        if (!viewModel.isSearchMode())
-            if (viewModel.fieldMask() != null && !getEditText().getText().toString().isEmpty() &&
-                    !getEditText().getText().toString().matches(Objects.requireNonNull(viewModel.fieldMask())))
-                setWarning(binding.getRoot().getContext().getString(R.string.wrong_pattern), "");
-            else
+    private void validateRegex(@Nullable String valueToValidate) {
+        if (!viewModel.isSearchMode()) {
+            Result<String, FieldMaskFailure> result = new FieldMaskValidator(viewModel.fieldMask())
+                    .validateNullSafe(valueToValidate);
+            result.fold(value -> {
                 setWarning(viewModel.warning(), viewModel.error());
+                return null;
+            }, fieldMaskFailure -> {
+                if (fieldMaskFailure instanceof FieldMaskFailure.WrongPatternException) {
+                    setWarning(getContext().getString(R.string.wrong_pattern), "");
+                } else if (fieldMaskFailure instanceof FieldMaskFailure.InvalidPatternException) {
+                    setWarning(
+                            String.format(
+                                    getContext().getString(R.string.pattern_error),
+                                    viewModel.fieldMask()),
+                            "");
+                }
+                return null;
+            });
+        }
     }
 
     private Boolean valueHasChanged() {

@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DividerItemDecoration
 import javax.inject.Inject
@@ -18,28 +19,26 @@ import org.dhis2.Bindings.Bindings
 import org.dhis2.Bindings.clipWithRoundedCorners
 import org.dhis2.Bindings.dp
 import org.dhis2.R
+import org.dhis2.commons.filters.FilterManager
+import org.dhis2.commons.orgunitselector.OUTreeFragment
+import org.dhis2.commons.orgunitselector.OnOrgUnitSelectionFinished
 import org.dhis2.databinding.FragmentProgramBinding
 import org.dhis2.usescases.datasets.datasetDetail.DataSetDetailActivity
 import org.dhis2.usescases.general.FragmentGlobalAbstract
 import org.dhis2.usescases.main.MainActivity
-import org.dhis2.usescases.orgunitselector.OUTreeFragment
 import org.dhis2.usescases.programEventDetail.ProgramEventDetailActivity
 import org.dhis2.usescases.searchTrackEntity.SearchTEActivity
 import org.dhis2.utils.Constants
 import org.dhis2.utils.HelpManager
 import org.dhis2.utils.analytics.SELECT_PROGRAM
 import org.dhis2.utils.analytics.TYPE_PROGRAM_SELECTED
-import org.dhis2.utils.filters.FilterManager
 import org.dhis2.utils.granularsync.GranularSyncContracts
 import org.dhis2.utils.granularsync.SyncStatusDialog
+import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
 import org.hisp.dhis.android.core.program.ProgramType
 import timber.log.Timber
 
-/**
- * Created by ppajuelo on 18/10/2017.f
- */
-
-class ProgramFragment : FragmentGlobalAbstract(), ProgramView {
+class ProgramFragment : FragmentGlobalAbstract(), ProgramView, OnOrgUnitSelectionFinished {
 
     private lateinit var binding: FragmentProgramBinding
 
@@ -66,8 +65,10 @@ class ProgramFragment : FragmentGlobalAbstract(), ProgramView {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_program, container, false)
+        ViewCompat.setTransitionName(binding.drawerLayout, "contenttest")
+        binding.lifecycleOwner = this
         (binding.drawerLayout.background as GradientDrawable).cornerRadius = 0f
         return binding.apply {
             presenter = this@ProgramFragment.presenter
@@ -126,7 +127,16 @@ class ProgramFragment : FragmentGlobalAbstract(), ProgramView {
     }
 
     override fun openOrgUnitTreeSelector() {
-        OUTreeFragment.newInstance(true).show(childFragmentManager, "OUTreeFragment")
+        OUTreeFragment.newInstance(
+            true,
+            FilterManager.getInstance().orgUnitFilters.map { it.uid() }.toMutableList()
+        ).apply {
+            selectionCallback = this@ProgramFragment
+        }.show(childFragmentManager, "OUTreeFragment")
+    }
+
+    override fun onSelectionFinished(selectedOrgUnits: List<OrganisationUnit>) {
+        presenter.setOrgUnitFilters(selectedOrgUnits)
     }
 
     override fun setTutorial() {
@@ -230,6 +240,8 @@ class ProgramFragment : FragmentGlobalAbstract(), ProgramView {
 
         dialog.show(abstractActivity.supportFragmentManager, FRAGMENT_TAG)
     }
+
+    fun sharedView() = binding.drawerLayout
 
     companion object {
         const val FRAGMENT_TAG = "SYNC"

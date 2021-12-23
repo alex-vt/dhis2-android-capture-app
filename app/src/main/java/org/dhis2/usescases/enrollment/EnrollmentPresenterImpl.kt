@@ -1,25 +1,25 @@
 package org.dhis2.usescases.enrollment
 
 import android.annotation.SuppressLint
-import androidx.annotation.VisibleForTesting
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.flowables.ConnectableFlowable
-import io.reactivex.functions.BiFunction
 import io.reactivex.processors.FlowableProcessor
 import io.reactivex.processors.PublishProcessor
 import org.dhis2.Bindings.profilePicturePath
 import org.dhis2.R
+import org.dhis2.commons.schedulers.SchedulerProvider
+import org.dhis2.commons.schedulers.defaultSubscribe
 import org.dhis2.data.forms.dataentry.EnrollmentRepository
 import org.dhis2.data.forms.dataentry.ValueStore
 import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel
 import org.dhis2.data.forms.dataentry.fields.display.DisplayViewModel
 import org.dhis2.data.forms.dataentry.fields.section.SectionViewModel
-import org.dhis2.data.schedulers.SchedulerProvider
-import org.dhis2.form.data.FormRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
 import org.dhis2.form.model.ValueStoreResult
+import org.dhis2.form.ui.event.RecyclerViewUiEvents
+import org.dhis2.form.ui.intent.FormIntent
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.usescases.biometrics.isBiometricModel
@@ -38,6 +38,7 @@ import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.`object`.ReadOnlyOneObjectRepositoryFinalImpl
 import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.common.Geometry
+import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.enrollment.Enrollment
 import org.hisp.dhis.android.core.enrollment.EnrollmentObjectRepository
@@ -62,10 +63,8 @@ class EnrollmentPresenterImpl(
     private val valueStore: ValueStore,
     private val analyticsHelper: AnalyticsHelper,
     private val mandatoryWarning: String,
-    private val onRowActionProcessor: FlowableProcessor<RowAction>,
     private val sectionProcessor: Flowable<String>,
-    private val matomoAnalyticsController: MatomoAnalyticsController,
-    private val formRepository: FormRepository
+    private val matomoAnalyticsController: MatomoAnalyticsController
 ) {
 
     private var configurationErrors: List<RulesUtilsProviderConfigurationError> = listOf()
@@ -75,6 +74,7 @@ class EnrollmentPresenterImpl(
     private val fieldsFlowable: FlowableProcessor<Boolean> = PublishProcessor.create()
     private var selectedSection: String = ""
     private var errorFields = mutableMapOf<String, String>()
+    private var warningFields = mutableMapOf<String, String>()
     private var mandatoryFields = mutableMapOf<String, String>()
     private var uniqueFields = mutableListOf<String>()
     private val backButtonProcessor: FlowableProcessor<Boolean> = PublishProcessor.create()
@@ -143,8 +143,6 @@ class EnrollmentPresenterImpl(
                 )
         )
 
-        listenToActions()
-
         val fields = getFieldFlowable()
 
         disposable.add(
@@ -163,6 +161,26 @@ class EnrollmentPresenterImpl(
                 .observeOn(schedulerProvider.ui())
                 .subscribe({
                     populateList(it)
+
+                    if (BIOMETRICS_ENABLED) {
+                        val biometricsViewModel = getBiometricViewModel().blockingFirst()
+
+                        val callback = object : FieldUiModel.Callback {
+                            override fun recyclerViewUiEvents(uiEvent: RecyclerViewUiEvents) {
+                            }
+
+                            override fun intent(intent: FormIntent) {
+                                if (intent is FormIntent.OnFocus) {
+                                    val orgUnit = enrollmentObjectRepository.get().blockingGet()
+                                        .organisationUnit()!!
+                                    view.registerBiometrics(orgUnit)
+                                }
+                            }
+                        }
+
+                        biometricsViewModel?.setCallback(callback)
+                    }
+
                     view.setSaveButtonVisible(true)
                     view.hideProgress()
                     if (configurationErrors.isNotEmpty() && showConfigurationError) {
@@ -186,72 +204,15 @@ class EnrollmentPresenterImpl(
         fields.connect()
     }
 
-    @VisibleForTesting
-    fun listenToActions() {
-        disposable.add(
-            onRowActionProcessor
-                .onBackpressureBuffer()
-                .doOnNext { view.showProgress() }
-                .observeOn(schedulerProvider.io())
-                .flatMap { rowAction ->
-                    Flowable.just(formRepository.processUserAction(rowAction))
-                }
-                .subscribeOn(schedulerProvider.io())
-                .observeOn(schedulerProvider.ui())
-                .subscribe(
-                    { result ->
-                        result.valueStoreResult?.let {
-                            when (it) {
-                                ValueStoreResult.VALUE_CHANGED -> {
-                                    if (shouldShowDateEditionWarning(result.uid)) {
-                                        view.showDateEditionWarning()
-                                    }
-                                    fieldsFlowable.onNext(true)
-                                    checkFinishing(true)
-                                }
-                                ValueStoreResult.VALUE_HAS_NOT_CHANGED -> {
-                                    if (BIOMETRICS_ENABLED && result.uid == getBiometricViewModel().blockingSingle().uid) {
-                                        val orgUnit = enrollmentObjectRepository.get().blockingGet()
-                                            .organisationUnit()!!
-                                        view.registerBiometrics(orgUnit)
-                                    } else {
-                                        populateList()
-                                        view.hideProgress()
-                                        checkFinishing(true)
-                                    }
-                                }
-                                ValueStoreResult.VALUE_NOT_UNIQUE -> {
-                                    uniqueFields.add(result.uid)
-                                    view.showInfoDialog(
-                                        view.context.getString(R.string.error),
-                                        view.context.getString(R.string.unique_warning)
-                                    )
-                                    view.hideProgress()
-                                    checkFinishing(false)
-                                }
-                                ValueStoreResult.UID_IS_NOT_DE_OR_ATTR -> {
-                                    Timber.tag(TAG)
-                                        .d("${result.uid} is not a data element or attribute")
-                                    view.hideProgress()
-                                    checkFinishing(false)
-                                }
-                            }
-                        } ?: view.hideProgress()
-                    },
-                    { Timber.tag(TAG).e(it) }
-                )
-        )
-    }
-
-    private fun checkFinishing(canFinish: Boolean) {
-        if (finishing && canFinish) {
+    private fun checkFinishing() {
+        if (finishing) {
             view.performSaveClick()
         }
         finishing = false
     }
 
     private fun populateList(items: List<FieldUiModel>? = null) {
-        view.showFields(formRepository.composeList(items))
+        view.showFields(items)
     }
 
     private fun setCurrentSection(sectionUid: String): String {
@@ -300,9 +261,6 @@ class EnrollmentPresenterImpl(
             }
 
             if (field !is SectionViewModel && field !is DisplayViewModel) {
-                if (field.error?.isNotEmpty() == true) {
-                    errorFields[field.programStageSection ?: sectionUid] = field.label
-                }
                 if (field.mandatory && field.value.isNullOrEmpty()) {
                     mandatoryFields[field.label] = field.programStageSection ?: sectionUid
                     if (showErrors.first) {
@@ -321,10 +279,23 @@ class EnrollmentPresenterImpl(
             var errors = 0
             var warnings = 0
             if (showErrors.first) {
-                repeat(mandatoryFields.filter { it.value == section.uid() }.size) { warnings++ }
+                repeat(
+                    warningFields.filter { warning ->
+                        fieldList.firstOrNull { field ->
+                            field.uid == warning.key && field.programStageSection == section.uid()
+                        } != null
+                    }.size +
+                        mandatoryFields.filter { it.value == section.uid() }.size
+                ) { warnings++ }
             }
             if (showErrors.second) {
-                repeat(errorFields.filter { it.value == section.uid() }.size) { errors++ }
+                repeat(
+                    errorFields.filter { error ->
+                        fieldList.firstOrNull { field ->
+                            field.uid == error.key && field.programStageSection == section.uid()
+                        } != null
+                    }.size
+                ) { errors++ }
             }
             finalList[finalList.indexOf(section)] = section.withErrorsAndWarnings(
                 if (errors != 0) {
@@ -362,7 +333,7 @@ class EnrollmentPresenterImpl(
                 Flowable.zip<List<FieldUiModel>, Result<RuleEffect>, List<FieldUiModel>>(
                     dataEntryRepository.list(),
                     enrollmentFormRepository.calculate(),
-                    BiFunction { fields, result -> applyRuleEffects(fields, result) }
+                    { fields, result -> applyRuleEffects(fields, result) }
                 )
             }.publish()
     }
@@ -383,17 +354,13 @@ class EnrollmentPresenterImpl(
             EnrollmentActivity.EnrollmentMode.NEW -> {
                 matomoAnalyticsController.trackEvent(TRACKER_LIST, CREATE_TEI, CLICK)
                 disposable.add(
-                    enrollmentFormRepository.autoGenerateEvents()
-                        .flatMap { enrollmentFormRepository.useFirstStageDuringRegistration() }
-                        .subscribeOn(schedulerProvider.io())
-                        .observeOn(schedulerProvider.ui())
-                        .subscribe(
+                    enrollmentFormRepository.generateEvents()
+                        .defaultSubscribe(
+                            schedulerProvider,
                             {
-                                if (!DhisTextUtils.isEmpty(it.second)) {
-                                    view.openEvent(it.second)
-                                } else {
-                                    view.openDashboard(it.first)
-                                }
+                                it.second?.let { eventUid ->
+                                    view.openEvent(eventUid)
+                                } ?: view.openDashboard(it.first)
                             },
                             { Timber.tag(TAG).e(it) }
                         )
@@ -403,8 +370,15 @@ class EnrollmentPresenterImpl(
         }
     }
 
-    fun updateFields() {
+    fun updateFields(action: RowAction? = null) {
+        action?.let {
+            if (shouldShowDateEditionWarning(it.id)) {
+                view.showDateEditionWarning()
+            }
+        }
+
         fieldsFlowable.onNext(true)
+        checkFinishing()
     }
 
     fun backIsClicked() {
@@ -424,7 +398,7 @@ class EnrollmentPresenterImpl(
         return needsCatCombo || needsCoordinates
     }
 
-    private fun applyRuleEffects(
+    fun applyRuleEffects(
         fields: List<FieldUiModel>,
         result: Result<RuleEffect>
     ): List<FieldUiModel> {
@@ -435,6 +409,7 @@ class EnrollmentPresenterImpl(
 
         mandatoryFields.clear()
         errorFields.clear()
+        warningFields.clear()
         uniqueFields.clear()
 
         val fieldMap = fields.map { it.uid to it }.toMap().toMutableMap()
@@ -443,11 +418,10 @@ class EnrollmentPresenterImpl(
             fieldMap,
             result,
             valueStore
-        ) { options ->
-            enrollmentFormRepository.getOptionsFromGroups(options)
-        }.apply {
+        ).apply {
             this@EnrollmentPresenterImpl.configurationErrors = configurationErrors
             errorFields = errorMap().toMutableMap()
+            warningFields = warningMap().toMutableMap()
         }
 
         return ArrayList(fieldMap.values)
@@ -487,7 +461,11 @@ class EnrollmentPresenterImpl(
     }
 
     fun deleteAllSavedData() {
-        teiRepository.blockingDelete()
+        if (teiRepository.blockingGet().syncState() == State.TO_POST) {
+            teiRepository.blockingDelete()
+        } else {
+            enrollmentObjectRepository.blockingDelete()
+        }
         analyticsHelper.setEvent(DELETE_AND_BACK, CLICK, DELETE_AND_BACK)
     }
 
@@ -524,8 +502,15 @@ class EnrollmentPresenterImpl(
                 false
             }
             this.errorFields.isNotEmpty() -> {
-                showErrors = Pair(showErrors.first, true)
+                showErrors = Pair(showErrors.first || warningFields.isNotEmpty(), true)
+                fieldsFlowable.onNext(true)
                 view.showErrorFieldsMessage(errorFields.values.toList())
+                false
+            }
+            warningFields.isNotEmpty() -> {
+                showErrors = Pair(true, showErrors.second)
+                fieldsFlowable.onNext(true)
+                view.showWarningFieldsMessage(warningFields.values.toList())
                 false
             }
             else -> {

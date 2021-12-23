@@ -52,7 +52,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.window!!.requestFeature(Window.FEATURE_NO_TITLE)
         dialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        create(requireArguments().getString(TRACKED_ENTITY_TYPE_UID)!!)
+        create(requireArguments().getString(TRACKED_ENTITY_TYPE_UID)!!,requireArguments().getString(PROGRAM_UID)!!)
         return dialog
     }
 
@@ -195,10 +195,10 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
         this.onEnrollNewListener = onEnrollNewListener
     }
 
-    private fun create(teiType: String) {
+    private fun create(teiType: String, program:String) {
         app()
             .userComponent()!!
-            .plus(BiometricsDuplicatesDialogModule(requireContext(), teiType))
+            .plus(BiometricsDuplicatesDialogModule(requireContext(), teiType,program))
             .inject(this)
     }
 

@@ -1,5 +1,6 @@
 package org.dhis2.usescases.searchte.robot
 
+import android.widget.DatePicker
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -11,12 +12,14 @@ import androidx.test.espresso.contrib.RecyclerViewActions.scrollTo
 import androidx.test.espresso.contrib.RecyclerViewActions.scrollToPosition
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.hasSibling
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withChild
+import androidx.test.espresso.matcher.ViewMatchers.withClassName
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import org.dhis2.R
 import org.dhis2.common.BaseRobot
-import org.dhis2.common.matchers.RecyclerviewMatchers.Companion.atPosition
+import org.dhis2.common.matchers.RecyclerviewMatchers
 import org.dhis2.common.matchers.RecyclerviewMatchers.Companion.allElementsHave
 import org.dhis2.common.matchers.RecyclerviewMatchers.Companion.hasItem
 import org.dhis2.common.viewactions.clickChildViewWithId
@@ -24,8 +27,10 @@ import org.dhis2.common.viewactions.openSpinnerPopup
 import org.dhis2.common.viewactions.typeChildViewWithId
 import org.dhis2.usescases.searchTrackEntity.adapters.SearchTEViewHolder
 import org.dhis2.usescases.searchte.entity.DisplayListFieldsUIModel
+import org.hamcrest.Matchers
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.not
+
 
 fun searchTeiRobot(searchTeiRobot: SearchTeiRobot.() -> Unit) {
     SearchTeiRobot().apply {
@@ -69,11 +74,11 @@ class SearchTeiRobot : BaseRobot() {
     }
 
     fun selectSpecificDate(year: Int, monthOfYear: Int, dayOfMonth: Int) {
-        onView(withId(R.id.widget_datepicker)).perform(PickerActions.setDate(year, monthOfYear, dayOfMonth))
+        onView(withId(R.id.datePicker)).perform(PickerActions.setDate(year, monthOfYear, dayOfMonth))
     }
 
     fun acceptDate() {
-        onView(withId(R.id.acceptButton)).perform(click())
+        onView(withId(R.id.acceptBtn)).perform(click())
     }
 
     fun clickOnFab() {
@@ -82,10 +87,14 @@ class SearchTeiRobot : BaseRobot() {
 
     fun checkListOfSearchTEI(firstSearchWord: String, secondSearchWord: String) {
         onView(withId(R.id.scrollView))
-            .check(matches(allElementsHave(allOf(
-                hasDescendant(withText(firstSearchWord)),
-                hasDescendant(withText(secondSearchWord))
-            ))))
+            .check(matches(
+                RecyclerviewMatchers.allElementsWithHolderTypeHave(
+                    SearchTEViewHolder::class.java, allOf(
+                        hasDescendant(withText(firstSearchWord)),
+                        hasDescendant(withText(secondSearchWord))
+                    )
+                )
+            ))
     }
 
     fun checkFilterCount(filterCount: String) {
@@ -95,7 +104,7 @@ class SearchTeiRobot : BaseRobot() {
 
     fun checkNoSearchResult(searchWord: String, message: String) {
         onView(withId(R.id.message))
-            .check(matches(withText(message)))
+            .check(matches(isDisplayed()))
     }
 
     fun clickOnProgramSpinner() {
@@ -126,12 +135,8 @@ class SearchTeiRobot : BaseRobot() {
             ))
     }
 
-    fun clickOnOptionMenu() {
-        onView(withId(R.id.moreOptions)).perform(click())
-    }
-
     fun clickOnShowMap() {
-        onView(withText(R.string.show_in_map)).perform(click())
+        onView(withId(R.id.navigation_map_view)).perform(click())
     }
 
     fun swipeCarouselToLeft() {

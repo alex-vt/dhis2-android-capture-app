@@ -17,6 +17,7 @@ import org.dhis2.usescases.teidashboard.robot.indicatorsRobot
 import org.dhis2.usescases.teidashboard.robot.noteRobot
 import org.dhis2.usescases.teidashboard.robot.relationshipRobot
 import org.dhis2.usescases.teidashboard.robot.teiDashboardRobot
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -89,7 +90,6 @@ class TeiDashboardTest : BaseTest() {
             clickOnMenuMoreOptions()
             clickOnMenuReOpen()
             checkUnlockIconIsDisplay()
-            checkCanAddEvent()
             checkAllEventsCompleted(1)
         }
     }
@@ -174,9 +174,7 @@ class TeiDashboardTest : BaseTest() {
         teiDashboardRobot {
             clickOnMenuMoreOptions()
             clickOnTimelineEvents()
-            clickOnFab()
-            clickOnReferral()
-            checkCannotAddMoreEventToastIsShown()
+            checkCanNotAddEvent()
         }
     }
 
@@ -297,6 +295,7 @@ class TeiDashboardTest : BaseTest() {
         val visitANCEvent = "ANC Visit (2-4+)"
         val firstANCVisitEvent = "ANC 1st visit"
 
+        setDatePicker()
         prepareTeiToEnrollToOtherProgramAndLaunchActivity(rule)
 
         teiDashboardRobot {
@@ -353,6 +352,10 @@ class TeiDashboardTest : BaseTest() {
         }
 
         searchTeiRobot {
+            clickOnSearchFilter()
+            typeAttributeAtPosition(relationshipName, 0)
+            typeAttributeAtPosition(relationshipLastName, 1)
+            clickOnFab()
             clickOnTEI(relationshipName, relationshipLastName)
         }
 
@@ -362,6 +365,7 @@ class TeiDashboardTest : BaseTest() {
     }
 
     @Test
+    @Ignore
     fun shouldDeleteTeiSuccessfully() {
         val teiName = "Anthony"
         val teiLastName = "Banks"

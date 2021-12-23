@@ -1,5 +1,7 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture;
 
+import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
 
 import org.dhis2.data.forms.FormSectionViewModel;
@@ -24,9 +26,6 @@ import io.reactivex.Single;
 import io.reactivex.processors.FlowableProcessor;
 import io.reactivex.subjects.BehaviorSubject;
 
-/**
- * QUADRAM. Created by ppajuelo on 19/11/2018.
- */
 public class EventCaptureContract {
 
     public interface View extends AbstractActivityContracts.View {
@@ -92,7 +91,7 @@ public class EventCaptureContract {
 
         void nextCalculation(boolean doNextCalculation);
 
-        void attempFinish();
+        void attemptFinish();
 
         boolean isEnrollmentOpen();
 
@@ -114,6 +113,9 @@ public class EventCaptureContract {
 
         void saveImage(String uuid, String filePath);
 
+        @SuppressLint("CheckResult")
+        void saveValue(String uuid, String value);
+
         void initNoteCounter();
 
         void refreshTabCounters();
@@ -127,7 +129,7 @@ public class EventCaptureContract {
         void setValueChanged(@NotNull String uid);
 
         void disableConfErrorMessage();
-        
+
         void refreshByBiometricsVerification(int status);
 
         void updateBiometricsAttributeValueInTei(@Nullable String biometricsGuid);
@@ -185,11 +187,13 @@ public class EventCaptureContract {
 
         Single<Integer> getNoteCount();
 
-        List<String> getOptionsFromGroups(List<String> optionGroupUids);
-
         boolean showCompletionPercentage();
 
         void updateFieldValue(String uid);
+
+        boolean hasAnalytics();
+
+        boolean hasRelationships();
 
         Date getBiometricsAttributeValueInTeiLastUpdated();
 

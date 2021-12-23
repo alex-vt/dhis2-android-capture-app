@@ -8,7 +8,7 @@ import androidx.databinding.BindingAdapter
 import java.util.Calendar
 import java.util.Date
 import org.dhis2.Bindings.toDate
-import org.dhis2.data.forms.dataentry.fields.setInputStyle
+import org.dhis2.form.ui.binding.setInputStyle
 import org.dhis2.utils.DateUtils
 
 @BindingAdapter("onFocusChangeAgeView")
@@ -35,16 +35,22 @@ fun setWarningOrError(textView: TextView, warning: String?, error: String?, isSe
     }
 }
 
-@BindingAdapter("setInitialValueDate")
-fun setInitialValueDate(editText: EditText, value: String?) {
+@BindingAdapter(value = ["setInitialValueDate", "parsingErrorText"], requireAll = true)
+fun EditText.setInitialValueDate(value: String?, errorTextView: TextView) {
     if (value.isNullOrEmpty()) {
-        editText.text = null
+        text = null
     } else {
-        val initialDate = value.toDate()
-        val dateFormat = DateUtils.uiDateFormat()
-        val result = dateFormat.format(initialDate)
-        Calendar.getInstance().time = initialDate
-        editText.setText(result)
+        try {
+            val initialDate = value.toDate()
+            val dateFormat = DateUtils.uiDateFormat()
+            val result = dateFormat.format(initialDate)
+            Calendar.getInstance().time = initialDate
+            setText(result)
+            errorTextView.visibility = View.GONE
+        } catch (e: Exception) {
+            errorTextView.text = errorTextView.text.toString().format(value)
+            errorTextView.visibility = View.VISIBLE
+        }
     }
 }
 
@@ -52,9 +58,11 @@ fun setInitialValueDate(editText: EditText, value: String?) {
 fun setInitialValueYear(editText: EditText, value: String?) {
     if (value.isNullOrEmpty()) {
         editText.text = null
-    } else {
+    } else try {
         val dateDifference = getDifferenceBetweenDates(value)
         editText.setText(dateDifference[0].toString())
+    } catch (e: Exception) {
+        editText.text = null
     }
 }
 
@@ -62,9 +70,11 @@ fun setInitialValueYear(editText: EditText, value: String?) {
 fun setInitialValueMonth(editText: EditText, value: String?) {
     if (value.isNullOrEmpty()) {
         editText.text = null
-    } else {
+    } else try {
         val dateDifference = getDifferenceBetweenDates(value)
         editText.setText(dateDifference[1].toString())
+    } catch (e: Exception) {
+        editText.text = null
     }
 }
 
@@ -72,9 +82,11 @@ fun setInitialValueMonth(editText: EditText, value: String?) {
 fun setInitialValueDay(editText: EditText, value: String?) {
     if (value.isNullOrEmpty()) {
         editText.text = null
-    } else {
+    } else try {
         val dateDifference = getDifferenceBetweenDates(value)
         editText.setText(dateDifference[2].toString())
+    } catch (e: Exception) {
+        editText.text = null
     }
 }
 

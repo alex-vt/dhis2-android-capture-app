@@ -73,12 +73,17 @@ class GraphTest {
         assertTrue(graph.minValue() == 0f)
     }
 
+    @Test
+    fun `Should xAxixMaximun catch exception if there are series with empty coordinates`() {
+        val graph = mockedGraph(emptyList())
+        assertTrue(graph.xAxixMaximun() == 0.0f)
+    }
+
     private fun mockedGraph(coordinates: List<GraphPoint> = mockedCoordinates()): Graph {
         return Graph(
             "testGraph",
-            false,
             coordinates.map { SerieData("fieldName", coordinates) },
-            "periodToDisplay",
+            null,
             PeriodType.Daily,
             dailyPeriodPeriod
         )

@@ -31,6 +31,8 @@ fun ValueType.toHint(context: Context): String {
         ValueType.TRUE_ONLY,
         ValueType.DATE,
         ValueType.DATETIME,
+        ValueType.BIOMETRICS,
+        ValueType.BIOMETRICS_VERIFICATION,
         ValueType.TIME -> context.getString(R.string.enter_value)
     }
 }

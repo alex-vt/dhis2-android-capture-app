@@ -28,18 +28,19 @@
 
 package org.dhis2.usescases.datasets.datasetDetail;
 
-import org.dhis2.data.dagger.PerActivity;
+import org.dhis2.commons.di.dagger.PerActivity;
+import org.dhis2.commons.filters.DisableHomeFiltersFromSettingsApp;
+import org.dhis2.commons.filters.FilterManager;
+import org.dhis2.commons.filters.FiltersAdapter;
+import org.dhis2.commons.filters.data.FilterRepository;
+import org.dhis2.commons.schedulers.SchedulerProvider;
 import org.dhis2.data.dhislogic.DhisPeriodUtils;
-import org.dhis2.data.filter.FilterRepository;
-import org.dhis2.data.schedulers.SchedulerProvider;
-import org.dhis2.utils.analytics.matomo.MatomoAnalyticsController;
-import org.dhis2.utils.filters.DisableHomeFiltersFromSettingsApp;
-import org.dhis2.utils.filters.FilterManager;
-import org.dhis2.utils.filters.FiltersAdapter;
+import org.dhis2.utils.customviews.navigationbar.NavigationPageConfigurator;
 import org.hisp.dhis.android.core.D2;
 
 import dagger.Module;
 import dagger.Provides;
+import dhis2.org.analytics.charts.Charts;
 
 @PerActivity
 @Module
@@ -59,16 +60,15 @@ public class DataSetDetailModule {
                                              SchedulerProvider schedulerProvider,
                                              FilterManager filterManager,
                                              FilterRepository filterRepository,
-                                             DisableHomeFiltersFromSettingsApp disableHomeFiltersFromSettingsApp,
-                                             MatomoAnalyticsController matomoAnalyticsController) {
+                                             DisableHomeFiltersFromSettingsApp disableHomeFiltersFromSettingsApp) {
         return new DataSetDetailPresenter(view, dataSetDetailRepository, schedulerProvider, filterManager, filterRepository,
-                disableHomeFiltersFromSettingsApp, matomoAnalyticsController);
+                disableHomeFiltersFromSettingsApp);
     }
 
     @Provides
     @PerActivity
-    DataSetDetailRepository eventDetailRepository(D2 d2, DhisPeriodUtils periodUtils) {
-        return new DataSetDetailRepositoryImpl(dataSetUid, d2, periodUtils);
+    DataSetDetailRepository eventDetailRepository(D2 d2, DhisPeriodUtils periodUtils, Charts charts) {
+        return new DataSetDetailRepositoryImpl(dataSetUid, d2, periodUtils, charts);
     }
 
     @Provides
@@ -81,5 +81,11 @@ public class DataSetDetailModule {
     @PerActivity
     DisableHomeFiltersFromSettingsApp provideDisableHomeFiltersFromSettingsApp() {
         return new DisableHomeFiltersFromSettingsApp();
+    }
+
+    @Provides
+    @PerActivity
+    NavigationPageConfigurator providePageConfigurator(DataSetDetailRepository dataSetDetailRepository) {
+        return new DataSetPageConfigurator(dataSetDetailRepository);
     }
 }

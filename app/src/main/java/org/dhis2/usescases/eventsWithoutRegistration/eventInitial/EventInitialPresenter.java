@@ -8,14 +8,14 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.dhis2.R;
-import org.dhis2.data.forms.dataentry.fields.edittext.EditTextViewModel;
-import org.dhis2.data.prefs.Preference;
-import org.dhis2.data.prefs.PreferenceProvider;
-import org.dhis2.data.schedulers.SchedulerProvider;
-import org.dhis2.data.tuples.Sextet;
+import org.dhis2.commons.prefs.Preference;
+import org.dhis2.commons.prefs.PreferenceProvider;
+import org.dhis2.commons.schedulers.SchedulerProvider;
+import org.dhis2.data.tuples.Septet;
 import org.dhis2.data.tuples.Trio;
 import org.dhis2.form.model.FieldUiModel;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventFieldMapper;
+import org.dhis2.utils.D2EditionMapper;
 import org.dhis2.utils.DateUtils;
 import org.dhis2.utils.DhisTextUtils;
 import org.dhis2.utils.EventCreationType;
@@ -28,15 +28,10 @@ import org.hisp.dhis.android.core.category.CategoryCombo;
 import org.hisp.dhis.android.core.category.CategoryOption;
 import org.hisp.dhis.android.core.category.CategoryOptionCombo;
 import org.hisp.dhis.android.core.common.Geometry;
+import org.hisp.dhis.android.core.event.EventEditableStatus;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 import org.hisp.dhis.android.core.program.Program;
-import org.hisp.dhis.rules.models.RuleAction;
-import org.hisp.dhis.rules.models.RuleActionHideField;
-import org.hisp.dhis.rules.models.RuleActionHideSection;
-import org.hisp.dhis.rules.models.RuleActionShowError;
-import org.hisp.dhis.rules.models.RuleActionShowWarning;
 import org.hisp.dhis.rules.models.RuleEffect;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,7 +44,6 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import kotlin.Pair;
-import kotlin.jvm.functions.Function1;
 import timber.log.Timber;
 
 import static org.dhis2.utils.analytics.AnalyticsConstants.BACK_EVENT;
@@ -139,15 +133,23 @@ public class EventInitialPresenter {
                                     eventInitialRepository.programStageForEvent(eventId),
                                     eventInitialRepository.getOptionsFromCatOptionCombo(eventId),
                                     eventInitialRepository.orgUnits(programId).toFlowable(BackpressureStrategy.LATEST),
-                                    Sextet::create)
+                                    eventInitialRepository.getEditableStatus(),
+                                    Septet::create)
                                     .subscribeOn(schedulerProvider.io()).observeOn(schedulerProvider.ui())
-                                    .subscribe(sextet -> {
-                                        this.program = sextet.val1();
-                                        this.orgUnits = sextet.val5();
-                                        view.setProgram(sextet.val1());
-                                        view.setProgramStage(sextet.val3());
-                                        view.setEvent(sextet.val0());
-                                        getCatOptionCombos(sextet.val2(), !sextet.val4().isEmpty() ? sextet.val4() : null);
+                                    .subscribe(septet -> {
+                                        this.program = septet.val1();
+                                        this.orgUnits = septet.val5();
+                                        view.setProgram(septet.val1());
+                                        view.setProgramStage(septet.val3());
+                                        view.setEvent(septet.val0());
+                                        getCatOptionCombos(septet.val2(), !septet.val4().isEmpty() ? septet.val4() : null);
+                                        if (septet.val6() instanceof EventEditableStatus.NonEditable) {
+                                            String mapReason = D2EditionMapper.mapEditionStatus(view.getContext(), ((EventEditableStatus.NonEditable) septet.val6()).getReason());
+                                            view.setEditionStatus(mapReason);
+                                        } else {
+                                            view.hideEditionStatus();
+                                        }
+
                                     }, Timber::d));
 
         } else {
@@ -313,16 +315,19 @@ public class EventInitialPresenter {
 
     public void editEvent(String trackedEntityInstance, String programStageModel, String eventUid, String date,
                           String orgUnitUid, String catComboUid, String catOptionCombo, Geometry geometry) {
-
-        compositeDisposable.add(
-                eventInitialRepository.editEvent(trackedEntityInstance, eventUid, date, orgUnitUid, catComboUid, catOptionCombo, geometry)
-                        .subscribeOn(schedulerProvider.io())
-                        .observeOn(schedulerProvider.ui())
-                        .subscribe(
-                                eventModel -> view.onEventUpdated(eventModel.uid()),
-                                error -> view.displayMessage(error.getLocalizedMessage())
-                        )
-        );
+        if (isEventEditable()) {
+            compositeDisposable.add(
+                    eventInitialRepository.editEvent(trackedEntityInstance, eventUid, date, orgUnitUid, catComboUid, catOptionCombo, geometry)
+                            .subscribeOn(schedulerProvider.io())
+                            .observeOn(schedulerProvider.ui())
+                            .subscribe(
+                                    eventModel -> view.onEventUpdated(eventModel.uid()),
+                                    error -> view.displayMessage(error.getLocalizedMessage())
+                            )
+            );
+        } else {
+            view.onEventUpdated(eventUid);
+        }
     }
 
     public void onDateClick(@Nullable DatePickerDialog.OnDateSetListener listener) {
@@ -364,6 +369,7 @@ public class EventInitialPresenter {
                                         "",
                                         new ArrayMap<>(),
                                         new ArrayMap<>(),
+                                        new ArrayMap<>(),
                                         new Pair<>(false, false)
                                 )))
                         .subscribeOn(schedulerProvider.io())
@@ -384,7 +390,7 @@ public class EventInitialPresenter {
         }
 
         Map<String, FieldUiModel> fieldViewModels = toMap(viewModels);
-        ruleUtils.applyRuleEffects(true, fieldViewModels, calcResult, null, options -> new ArrayList<>());
+        ruleUtils.applyRuleEffects(true, fieldViewModels, calcResult, null);
 
         return new ArrayList<>(fieldViewModels.values());
     }
@@ -406,6 +412,10 @@ public class EventInitialPresenter {
         return eventInitialRepository.getStageLastDate(programStageUid, enrollmentUid);
     }
 
+    public int getMinDateByProgramStage(String programStageUid){
+        return eventInitialRepository.getMinDaysFromStartByProgramStage(programStageUid);
+    }
+
     public void getEventOrgUnit(String ouUid) {
         compositeDisposable.add(
                 eventInitialRepository.getOrganisationUnit(ouUid)
@@ -422,6 +432,9 @@ public class EventInitialPresenter {
         compositeDisposable.add(eventInitialRepository
                 .filteredOrgUnits(DateUtils.databaseDateFormat().format(selectedDate), programId, null)
                 .flatMap(filteredOrgUnits -> {
+                    if (orgUnits.size() > 1) {
+                        orgUnits = filteredOrgUnits;
+                    }
                     if (getCurrentOrgUnit(null) != null) {
                         String prevOrgUnitUid = getCurrentOrgUnit(null);
                         for (OrganisationUnit ou : orgUnits) {
@@ -473,5 +486,9 @@ public class EventInitialPresenter {
 
     public void onEventCreated() {
         matomoAnalyticsController.trackEvent(EVENT_LIST, CREATE_EVENT, CLICK);
+    }
+
+    public boolean isEventEditable() {
+        return eventInitialRepository.getEditableStatus().blockingFirst() instanceof EventEditableStatus.Editable;
     }
 }

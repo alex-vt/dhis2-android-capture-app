@@ -14,7 +14,8 @@ import org.mockito.Mockito
 
 class ChartCoordinatesProviderImplTest {
     private val d2: D2 = Mockito.mock(D2::class.java, Mockito.RETURNS_DEEP_STUBS)
-    private val coordinatesProvider = ChartCoordinatesProviderImpl(d2)
+    private val periodStepProvider: PeriodStepProvider = mock()
+    private val coordinatesProvider = ChartCoordinatesProviderImpl(d2, periodStepProvider)
 
     @Test
     fun `Should get coordinates for data elements`() {
@@ -22,7 +23,9 @@ class ChartCoordinatesProviderImplTest {
         val result = coordinatesProvider.dataElementCoordinates(
             "stageUid",
             "teiUid",
-            "dataElementUid"
+            "dataElementUid",
+            null,
+            null
         )
         assertTrue(
             result.isNotEmpty()
@@ -35,7 +38,9 @@ class ChartCoordinatesProviderImplTest {
         val result = coordinatesProvider.dataElementCoordinates(
             "stageUid",
             "teiUid",
-            "dataElementUid"
+            "dataElementUid",
+            null,
+            null
         )
         assertTrue(
             result.isEmpty()
@@ -48,7 +53,9 @@ class ChartCoordinatesProviderImplTest {
         val result = coordinatesProvider.indicatorCoordinates(
             "stageUid",
             "teiUid",
-            "indicatorUid"
+            "indicatorUid",
+            null,
+            null
         )
         assertTrue(
             result.isNotEmpty()
@@ -61,7 +68,9 @@ class ChartCoordinatesProviderImplTest {
         val result = coordinatesProvider.indicatorCoordinates(
             "stageUid",
             "teiUid",
-            "indicatorUid"
+            "indicatorUid",
+            null,
+            null
         )
         assertTrue(
             result.isEmpty()

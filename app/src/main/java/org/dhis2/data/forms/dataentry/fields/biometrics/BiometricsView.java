@@ -65,7 +65,7 @@ public class BiometricsView extends FieldLayout {
 
         biometricsButton.setOnClickListener(v -> {
             if (viewModel != null) {
-                viewModel.onItemClick();
+                viewModel.onBiometricsClick();
             }
         });
     }

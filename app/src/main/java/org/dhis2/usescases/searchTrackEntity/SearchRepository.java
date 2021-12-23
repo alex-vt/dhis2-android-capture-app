@@ -10,7 +10,7 @@ import org.dhis2.data.tuples.Pair;
 import org.dhis2.form.model.FieldUiModel;
 import org.dhis2.usescases.searchTrackEntity.adapters.SearchTeiModel;
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.teievents.EventViewModel;
-import org.dhis2.utils.filters.sorting.SortingItem;
+import org.dhis2.commons.filters.sorting.SortingItem;
 import org.hisp.dhis.android.core.arch.call.D2Progress;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 import org.hisp.dhis.android.core.program.Program;
@@ -53,4 +53,8 @@ public interface SearchRepository {
     EventViewModel getEventInfo(String enrollmentUid);
 
     Observable<D2Progress> downloadTei(String teiUid);
+
+    void setCurrentProgram(@Nullable String currentProgram);
+    boolean programHasAnalytics();
+    boolean programHasCoordinates();
 }

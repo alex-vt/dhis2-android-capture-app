@@ -19,9 +19,9 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import org.dhis2.BR;
 import org.dhis2.R;
-import org.dhis2.utils.ColorUtils;
+import org.dhis2.commons.resources.ColorUtils;
 import org.dhis2.utils.Constants;
-import org.dhis2.utils.customviews.CustomDialog;
+import org.dhis2.commons.dialogs.CustomDialog;
 import org.dhis2.utils.customviews.FieldLayout;
 import org.hisp.dhis.android.core.common.ValueType;
 import org.hisp.dhis.android.core.common.ValueTypeRenderingType;
@@ -288,13 +288,13 @@ public class YesNoView extends FieldLayout {
     }
 
     public void setInitialValue(String value) {
-        if (value != null && Boolean.valueOf(value)) {
+        if (value != null && !value.isEmpty() && Boolean.valueOf(value)) {
             hasValue = true;
             radioGroup.check(R.id.yes);
             checkYes.setChecked(true);
             checkNo.setChecked(false);
             yesOnlyToggle.setChecked(true);
-        } else if (value != null) {
+        } else if (value != null && !value.isEmpty()) {
             hasValue = true;
             radioGroup.check(R.id.no);
             checkYes.setChecked(false);

@@ -1,6 +1,13 @@
-This is a patch version that fixes:
-- [ANDROAPP-4093](https://jira.dhis2.org/browse/ANDROAPP-4093) Sync error message in dashboard and home
-- [ANDROAPP-4084](https://jira.dhis2.org/browse/ANDROAPP-4084) Tracker Events sync fix
-- [ANDROAPP-4088](https://jira.dhis2.org/browse/ANDROAPP-4088) Date filter not returning correct number of records
-....
-You can find all the details on Jira and Github.
+This new version includes:
+- Offline In-App Program/Dataset Analytics
+- Dataset redesign
+- Export/Share QR and Bar codes
+- Improved render for icon-based data entry
+- Personalized Calendar View
+- Display reason for data non-editable
+- Adjust TEI Dashboard options to program configuration
+- General Maps User experience
+- Add support for Event - TEI relationships
+- NEW filter for TEIs marked as follow-up
+
+You can find all details in Jira and Github (github.com/dhis2/dhis2-android-capture-app)

@@ -23,6 +23,7 @@ import org.dhis2.data.forms.dataentry.FormView;
 import org.dhis2.data.location.LocationProvider;
 import org.dhis2.databinding.SectionSelectorFragmentBinding;
 import org.dhis2.form.data.FormRepository;
+import org.dhis2.form.model.DispatcherProvider;
 import org.dhis2.form.model.FieldUiModel;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity;
 import org.dhis2.usescases.general.FragmentGlobalAbstract;
@@ -39,7 +40,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentTransaction;
 import kotlin.Unit;
 
-public class EventCaptureFormFragment extends FragmentGlobalAbstract implements EventCaptureFormView {
+public class EventCaptureFormFragment extends FragmentGlobalAbstract implements EventCaptureFormView,
+        OnEditionListener {
 
     @Inject
     EventCaptureFormPresenter presenter;
@@ -49,6 +51,9 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
     @Inject
     LocationProvider locationProvider;
+
+    @Inject
+    DispatcherProvider coroutineDispatcher;
 
     private EventCaptureActivity activity;
     private SectionSelectorFragmentBinding binding;
@@ -97,8 +102,9 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     @Override
     public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         formView = new FormView.Builder()
-                .persistence(formRepository)
+                .repository(formRepository)
                 .locationProvider(locationProvider)
+                .dispatcher(coroutineDispatcher)
                 .onItemChangeListener(action -> {
                     activity.getPresenter().setValueChanged(action.getId());
                     activity.getPresenter().nextCalculation(true);
@@ -112,8 +118,13 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                     }
                     return Unit.INSTANCE;
                 })
+                .onFocused(() -> {
+                    activity.hideNavigationBar();
+                    return Unit.INSTANCE;
+                })
                 .factory(activity.getSupportFragmentManager())
                 .build();
+        activity.setFormEditionListener(this);
         super.onCreate(savedInstanceState);
     }
 
@@ -178,8 +189,8 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     }
 
     @Override
-    public void showFields(@NonNull List<FieldUiModel> updates) {
-        formView.render(updates);
+    public void showFields(@Nullable List<? extends FieldUiModel> fields) {
+        formView.processItems(fields);
     }
 
     private void animateFabButton(boolean sectionIsVisible) {
@@ -197,6 +208,11 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         } else {
             presenter.onActionButtonClick();
         }
+    }
+
+    @Override
+    public void onEditionListener() {
+        formView.onEditionFinish();
     }
 
     @Override

@@ -34,19 +34,6 @@ class MainTest : BaseTest() {
     }
 
     @Test
-    fun shouldRedirectToLoginIfClickOnLogOut() {
-        setupCredentials()
-        startActivity()
-        enableIntents()
-
-        homeRobot {
-            clickOnNavigationDrawerMenu()
-            clickOnLogout()
-            checkLogInIsLaunched()
-        }
-    }
-
-    @Test
     fun shouldNavigateToHomeWhenBackPressed() {
         setupCredentials()
         startActivity()
@@ -62,6 +49,7 @@ class MainTest : BaseTest() {
     @Test
     fun checkDateFilterSetInitialDateWhenOpenedAgain(){
         setupCredentials()
+        setDatePicker()
         startActivity()
 
         homeRobot {

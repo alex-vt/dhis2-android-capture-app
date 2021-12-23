@@ -5,20 +5,20 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import io.reactivex.Single
 import org.dhis2.Bindings.toSeconds
-import org.dhis2.data.prefs.Preference.Companion.DEFAULT_NUMBER_RV
-import org.dhis2.data.prefs.Preference.Companion.EVENT_MAX
-import org.dhis2.data.prefs.Preference.Companion.EVENT_MAX_DEFAULT
-import org.dhis2.data.prefs.Preference.Companion.LIMIT_BY_ORG_UNIT
-import org.dhis2.data.prefs.Preference.Companion.LIMIT_BY_PROGRAM
-import org.dhis2.data.prefs.Preference.Companion.NUMBER_RV
-import org.dhis2.data.prefs.Preference.Companion.TEI_MAX
-import org.dhis2.data.prefs.Preference.Companion.TEI_MAX_DEFAULT
-import org.dhis2.data.prefs.Preference.Companion.TIME_15M
-import org.dhis2.data.prefs.Preference.Companion.TIME_DAILY
-import org.dhis2.data.prefs.Preference.Companion.TIME_DATA
-import org.dhis2.data.prefs.Preference.Companion.TIME_META
-import org.dhis2.data.prefs.Preference.Companion.TIME_WEEKLY
-import org.dhis2.data.prefs.PreferenceProvider
+import org.dhis2.commons.prefs.Preference.Companion.DEFAULT_NUMBER_RV
+import org.dhis2.commons.prefs.Preference.Companion.EVENT_MAX
+import org.dhis2.commons.prefs.Preference.Companion.EVENT_MAX_DEFAULT
+import org.dhis2.commons.prefs.Preference.Companion.LIMIT_BY_ORG_UNIT
+import org.dhis2.commons.prefs.Preference.Companion.LIMIT_BY_PROGRAM
+import org.dhis2.commons.prefs.Preference.Companion.NUMBER_RV
+import org.dhis2.commons.prefs.Preference.Companion.TEI_MAX
+import org.dhis2.commons.prefs.Preference.Companion.TEI_MAX_DEFAULT
+import org.dhis2.commons.prefs.Preference.Companion.TIME_15M
+import org.dhis2.commons.prefs.Preference.Companion.TIME_DAILY
+import org.dhis2.commons.prefs.Preference.Companion.TIME_DATA
+import org.dhis2.commons.prefs.Preference.Companion.TIME_META
+import org.dhis2.commons.prefs.Preference.Companion.TIME_WEEKLY
+import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.data.server.UserManager
 import org.dhis2.utils.Constants
 import org.hisp.dhis.android.core.D2
@@ -355,7 +355,22 @@ class SettingsRepositoryTest {
         ) doReturn mock()
         whenever(
             d2.eventModule().events()
-                .byEnrollmentUid().isNull.byDeleted().isFalse.blockingCount()
+                .byEnrollmentUid().isNull
+                .byDeleted().isFalse
+                .bySyncState()
+        ) doReturn mock()
+        whenever(
+            d2.eventModule().events()
+                .byEnrollmentUid().isNull
+                .byDeleted().isFalse
+                .bySyncState().neq(State.RELATIONSHIP)
+        ) doReturn mock()
+        whenever(
+            d2.eventModule().events()
+                .byEnrollmentUid().isNull
+                .byDeleted().isFalse
+                .bySyncState().neq(State.RELATIONSHIP)
+                .blockingCount()
         ) doReturn 0
     }
 

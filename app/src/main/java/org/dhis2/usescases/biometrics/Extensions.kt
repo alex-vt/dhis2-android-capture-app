@@ -1,13 +1,11 @@
 package org.dhis2.usescases.biometrics
 
-import android.app.Activity
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import org.dhis2.R
+import org.dhis2.commons.prefs.PreferenceProviderImpl
 import org.dhis2.data.biometrics.BiometricsPreference
 import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel
 import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel
-import org.dhis2.data.prefs.PreferenceProviderImpl
 import org.dhis2.form.model.FieldUiModel
 import org.hisp.dhis.android.core.program.ProgramTrackedEntityAttribute
 
