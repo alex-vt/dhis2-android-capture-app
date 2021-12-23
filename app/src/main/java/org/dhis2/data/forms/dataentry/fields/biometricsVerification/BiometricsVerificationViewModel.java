@@ -22,47 +22,47 @@ public abstract class BiometricsVerificationViewModel extends FieldViewModel {
     public abstract BiometricsVerificationView.BiometricsVerificationStatus status();
 
     public static FieldViewModel create(String id, int layoutId, String label, Boolean mandatory, String value, String section, Boolean editable, String description, ObjectStyle objectStyle, FormUiModelStyle style,String url, BiometricsVerificationView.BiometricsVerificationStatus status) {
-        return new AutoValue_BiometricsVerificationViewModel(id, layoutId, label, mandatory, value, section, null, editable, null, null, null, description, objectStyle, null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style,null, false, ValueType.BIOMETRICS_VERIFICATION, url, status);
+        return new AutoValue_BiometricsVerificationViewModel(id, layoutId, label, mandatory, value, section, null, editable, null, null, null, description, objectStyle, null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style,null, false, ValueType.TEXT, url, status);
     }
 
     @Override
     public FieldViewModel setMandatory() {
-        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), true,value(),  programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.BIOMETRICS_VERIFICATION, url(), status());
+        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), true,value(),  programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.TEXT, url(), status());
     }
 
     @NonNull
     @Override
     public FieldViewModel withError(@NonNull String error) {
-        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),value(),  programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error, description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.BIOMETRICS_VERIFICATION, url(), status());
+        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),value(),  programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error, description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.TEXT, url(), status());
     }
 
     @NonNull
     @Override
     public FieldViewModel withWarning(@NonNull String warning) {
-        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),value(),  programStageSection(), allowFutureDate(), editable(), optionSet(), warning, error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.BIOMETRICS_VERIFICATION, url(), status());
+        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),value(),  programStageSection(), allowFutureDate(), editable(), optionSet(), warning, error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.TEXT, url(), status());
     }
 
     @NonNull
     @Override
     public FieldViewModel withValue(String value) {
-        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),value,  programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.BIOMETRICS_VERIFICATION, url(), status());
+        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),value,  programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.TEXT, url(), status());
     }
 
     @NonNull
     @Override
     public FieldViewModel withEditMode(boolean isEditable) {
-        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),value(),  programStageSection(), allowFutureDate(), isEditable, optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.BIOMETRICS_VERIFICATION, url(), status());
+        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),value(),  programStageSection(), allowFutureDate(), isEditable, optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.TEXT, url(), status());
     }
 
     @NonNull
     @Override
     public FieldViewModel withFocus(boolean isFocused) {
-        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),value(),  programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, isFocused, ValueType.BIOMETRICS_VERIFICATION, url(), status());
+        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),value(),  programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, isFocused, ValueType.TEXT, url(), status());
     }
 
     @Nonnull
     public FieldViewModel withValueAndStatus(String data,  BiometricsVerificationView.BiometricsVerificationStatus status){
-        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),data, programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.BIOMETRICS_VERIFICATION, url(), status);
+        return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),data, programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.TEXT, url(), status);
     }
 
 }

@@ -23,7 +23,7 @@ public abstract class BiometricsViewModel extends FieldViewModel {
             ObjectStyle objectStyle, FormUiModelStyle style, String url) {
         return new AutoValue_BiometricsViewModel(id, layoutId, label, mandatory, value, section,
                 null, editable, null, null, null, description, objectStyle, null,
-                DataEntryViewHolderTypes.BIOMETRICS, style, null, false, ValueType.BIOMETRICS, url);
+                DataEntryViewHolderTypes.BIOMETRICS, style, null, false, ValueType.TEXT, url);
     }
 
     @Override
@@ -31,7 +31,7 @@ public abstract class BiometricsViewModel extends FieldViewModel {
         return new AutoValue_BiometricsViewModel(uid(), layoutId(), label(), true, value(),
                 programStageSection(), allowFutureDate(), editable(), optionSet(), warning(),
                 error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS,
-                style(), null, activated(), ValueType.BIOMETRICS, url());
+                style(), null, activated(), ValueType.TEXT, url());
     }
 
     @NonNull
@@ -40,7 +40,7 @@ public abstract class BiometricsViewModel extends FieldViewModel {
         return new AutoValue_BiometricsViewModel(uid(), layoutId(), label(), mandatory(), value(),
                 programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error,
                 description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS, style(),
-                null, activated(), ValueType.BIOMETRICS, url());
+                null, activated(), ValueType.TEXT, url());
     }
 
     @NonNull
@@ -49,7 +49,7 @@ public abstract class BiometricsViewModel extends FieldViewModel {
         return new AutoValue_BiometricsViewModel(uid(), layoutId(), label(), mandatory(), value(),
                 programStageSection(), allowFutureDate(), editable(), optionSet(), warning, error(),
                 description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS, style(),
-                null, activated(), ValueType.BIOMETRICS, url());
+                null, activated(), ValueType.TEXT, url());
     }
 
     @NonNull
@@ -58,7 +58,7 @@ public abstract class BiometricsViewModel extends FieldViewModel {
         return new AutoValue_BiometricsViewModel(uid(), layoutId(), label(), mandatory(), value,
                 programStageSection(), allowFutureDate(), editable(), optionSet(), warning(),
                 error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS,
-                style(), null, activated(), ValueType.BIOMETRICS, url());
+                style(), null, activated(), ValueType.TEXT, url());
     }
 
     @NonNull
@@ -67,7 +67,7 @@ public abstract class BiometricsViewModel extends FieldViewModel {
         return new AutoValue_BiometricsViewModel(uid(), layoutId(), label(), mandatory(), value(),
                 programStageSection(), allowFutureDate(), isEditable, optionSet(), warning(),
                 error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS,
-                style(), null, activated(), ValueType.BIOMETRICS, url());
+                style(), null, activated(), ValueType.TEXT, url());
     }
 
     @NonNull
@@ -76,6 +76,6 @@ public abstract class BiometricsViewModel extends FieldViewModel {
         return new AutoValue_BiometricsViewModel(uid(), layoutId(), label(), mandatory(), value(),
                 programStageSection(), allowFutureDate(), editable(), optionSet(), warning(),
                 error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS,
-                style(), null, activated(), ValueType.BIOMETRICS, url());
+                style(), null, activated(), ValueType.TEXT, url());
     }
 }
