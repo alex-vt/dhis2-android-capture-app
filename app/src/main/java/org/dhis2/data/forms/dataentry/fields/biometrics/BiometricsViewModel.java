@@ -78,4 +78,23 @@ public abstract class BiometricsViewModel extends FieldViewModel {
                 error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS,
                 style(), null, activated(), ValueType.TEXT, url());
     }
+
+    // We don't use the FieldUiModel onItemClick() to avoid infrastructure to listen in FormViewModel
+    // because we need listen in enrollmentPresenterImpl to register biometrics
+    public void onBiometricsClick() {
+        if (listener != null){
+            listener.OnClick();
+        }
+    }
+
+    private BiometricsOnRegisterClickListener listener;
+
+    @NonNull
+    public void setBiometricsRegisterListener(BiometricsOnRegisterClickListener listener) {
+        this.listener = listener;
+    }
+
+    public interface BiometricsOnRegisterClickListener {
+        void OnClick();
+    }
 }

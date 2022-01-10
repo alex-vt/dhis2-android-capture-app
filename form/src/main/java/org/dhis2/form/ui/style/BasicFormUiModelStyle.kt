@@ -40,7 +40,5 @@ data class BasicFormUiModelStyle(
             ValueType.AGE -> TODO()
             ValueType.URL -> TODO()
             ValueType.IMAGE -> TODO()
-            ValueType.BIOMETRICS -> TODO()
-            ValueType.BIOMETRICS_VERIFICATION -> TODO()
         }
 }

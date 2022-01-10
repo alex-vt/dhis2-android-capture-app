@@ -5,6 +5,7 @@ import com.google.auto.value.AutoValue;
 import org.dhis2.R;
 import org.dhis2.data.forms.dataentry.DataEntryViewHolderTypes;
 import org.dhis2.data.forms.dataentry.fields.FieldViewModel;
+import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel;
 import org.dhis2.form.model.RowAction;
 import org.dhis2.form.ui.style.FormUiModelStyle;
 import org.hisp.dhis.android.core.common.ObjectStyle;
@@ -63,6 +64,25 @@ public abstract class BiometricsVerificationViewModel extends FieldViewModel {
     @Nonnull
     public FieldViewModel withValueAndStatus(String data,  BiometricsVerificationView.BiometricsVerificationStatus status){
         return new AutoValue_BiometricsVerificationViewModel(uid(), layoutId(), label(), mandatory(),data, programStageSection(), allowFutureDate(), editable(), optionSet(), warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.BIOMETRICS_VERIFICATION, style(), null, activated(), ValueType.TEXT, url(), status);
+    }
+
+    // We don't use the FieldUiModel onItemClick() to avoid infrastructure to listen in FormViewModel
+    // because we need listen in EventCaptureFormPresenter to retry verification
+    public void onRetryVerificationClick() {
+        if (listener != null){
+            listener.onRetryClick();
+        }
+    }
+
+    private BiometricsReTryOnClickListener listener;
+
+    @NonNull
+    public void setBiometricsRetryListener(BiometricsReTryOnClickListener listener) {
+        this.listener = listener;
+    }
+
+    public interface BiometricsReTryOnClickListener {
+        void onRetryClick();
     }
 
 }

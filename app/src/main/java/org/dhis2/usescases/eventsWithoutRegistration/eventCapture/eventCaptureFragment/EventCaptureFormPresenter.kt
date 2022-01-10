@@ -44,19 +44,9 @@ class EventCaptureFormPresenter(
                         if (BIOMETRICS_ENABLED) {
                             val biometricsVerificationViewModel = getBiometricVerificationViewModel()
 
-                            val callback = object : FieldUiModel.Callback {
-                                override fun recyclerViewUiEvents(uiEvent: RecyclerViewUiEvents) {
-                                }
-
-                                override fun intent(intent: FormIntent) {
-                                    if (intent is FormIntent.OnFocus) {
-                                        view.verifyBiometrics(biometricsGuid, teiOrgUnit)
-
-                                    }
-                                }
+                            biometricsVerificationViewModel?.setBiometricsRetryListener {
+                                view.verifyBiometrics(biometricsGuid, teiOrgUnit)
                             }
-
-                            biometricsVerificationViewModel?.setCallback(callback)
                         }
                     },
                     { Timber.e(it) }

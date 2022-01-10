@@ -81,6 +81,7 @@ class EnrollmentPresenterImpl(
     private var showErrors: Pair<Boolean, Boolean> = Pair(first = false, second = false)
     private var hasShownIncidentDateEditionWarning = false
     private var hasShownEnrollmentDateEditionWarning = false
+    private var fields: List<FieldUiModel> = listOf()
 
     fun init() {
         view.setSaveButtonVisible(false)
@@ -143,7 +144,7 @@ class EnrollmentPresenterImpl(
                 )
         )
 
-        val fields = getFieldFlowable()
+        var fields = getFieldFlowable()
 
         disposable.add(
             dataEntryRepository.enrollmentSectionUids()
@@ -159,26 +160,17 @@ class EnrollmentPresenterImpl(
                 }
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
-                .subscribe({
+                .subscribe({ it ->
                     populateList(it)
 
                     if (BIOMETRICS_ENABLED) {
-                        val biometricsViewModel = getBiometricViewModel().blockingFirst()
+                        val biometricsViewModel = getBiometricViewModel()
 
-                        val callback = object : FieldUiModel.Callback {
-                            override fun recyclerViewUiEvents(uiEvent: RecyclerViewUiEvents) {
-                            }
-
-                            override fun intent(intent: FormIntent) {
-                                if (intent is FormIntent.OnFocus) {
-                                    val orgUnit = enrollmentObjectRepository.get().blockingGet()
-                                        .organisationUnit()!!
-                                    view.registerBiometrics(orgUnit)
-                                }
-                            }
+                        (biometricsViewModel as BiometricsViewModel).setBiometricsRegisterListener {
+                            val orgUnit = enrollmentObjectRepository.get().blockingGet()
+                                .organisationUnit()!!
+                            view.registerBiometrics(orgUnit)
                         }
-
-                        biometricsViewModel?.setCallback(callback)
                     }
 
                     view.setSaveButtonVisible(true)
