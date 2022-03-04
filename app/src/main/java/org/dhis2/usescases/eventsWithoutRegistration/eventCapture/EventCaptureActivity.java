@@ -75,6 +75,7 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
     public String eventUid;
     private LiveData<Boolean> relationshipMapButton = new MutableLiveData<>(false);
     private OnEditionListener onEditionListener;
+    private EventCapturePagerAdapter adapter;
 
     public static Bundle getActivityBundle(@NonNull String eventUid, @NonNull String programUid, @NonNull EventMode eventMode) {
         Bundle bundle = new Bundle();
@@ -118,7 +119,8 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
 
     private void setUpViewPagerAdapter() {
         binding.eventViewPager.setUserInputEnabled(false);
-        binding.eventViewPager.setAdapter(getAdapter(getIntent().getIntExtra(BIOMETRICS_VERIFICATION_STATUS, -1)));
+        this.adapter = getAdapter(getIntent().getIntExtra(BIOMETRICS_VERIFICATION_STATUS, -1));
+        binding.eventViewPager.setAdapter(adapter);
         ViewExtensionsKt.clipWithRoundedCorners(binding.eventViewPager, ExtensionsKt.getDp(16));
     }
 
@@ -139,23 +141,10 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
     private void setUpNavigationBar() {
         binding.navigationBar.pageConfiguration(pageConfigurator);
         binding.navigationBar.setOnNavigationItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.navigation_details:
-                    goToInitialScreen();
-                    break;
-                case R.id.navigation_data_entry:
-                    binding.eventViewPager.setCurrentItem(0);
-                    break;
-                case R.id.navigation_analytics:
-                    binding.eventViewPager.setCurrentItem(1);
-                    break;
-                case R.id.navigation_relationships:
-                    binding.eventViewPager.setCurrentItem(2);
-                    break;
-                case R.id.navigation_notes:
-                default:
-                    binding.eventViewPager.setCurrentItem(3);
-                    break;
+            if (item.getItemId() == R.id.navigation_details){
+                goToInitialScreen();
+            } else {
+                binding.eventViewPager.setCurrentItem(adapter.getDynamicTabIndex(item.getItemId()));
             }
             return true;
         });

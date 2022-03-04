@@ -40,7 +40,6 @@ class EventCaptureFormPresenter(
                 .observeOn(schedulerProvider.ui())
                 .subscribe(
                     { fields ->
-
                         val updatedFields = updateBiometricsField(fields)
                         populateList(updatedFields)
                         this.fields = fields

@@ -193,9 +193,9 @@ class SyncPresenterImpl(
     }
 
     override fun checkSyncStatus(): SyncResult {
-        val eventsOk =
-            d2.eventModule().events().byState().notIn(State.SYNCED).blockingGet().isEmpty()
-        val teiOk = d2.trackedEntityModule().trackedEntityInstances().byState()
+        val eventsOk = d2.eventModule().events()
+            .byAggregatedSyncState().notIn(State.SYNCED).blockingGet().isEmpty()
+        val teiOk = d2.trackedEntityModule().trackedEntityInstances().byAggregatedSyncState()
             .notIn(State.SYNCED, State.RELATIONSHIP).blockingGet().isEmpty()
 
         if (eventsOk && teiOk) {
@@ -204,11 +204,11 @@ class SyncPresenterImpl(
 
         val anyEventsToPostOrToUpdate = d2.eventModule()
             .events()
-            .byState().`in`(State.TO_POST, State.TO_UPDATE)
+            .byAggregatedSyncState().`in`(State.TO_POST, State.TO_UPDATE)
             .blockingGet().isNotEmpty()
         val anyTeiToPostOrToUpdate = d2.trackedEntityModule()
             .trackedEntityInstances()
-            .byState().`in`(State.TO_POST, State.TO_UPDATE)
+            .byAggregatedSyncState().`in`(State.TO_POST, State.TO_UPDATE)
             .blockingGet().isNotEmpty()
 
         if (anyEventsToPostOrToUpdate || anyTeiToPostOrToUpdate) {
@@ -390,7 +390,7 @@ class SyncPresenterImpl(
     override fun checkSyncEventStatus(uid: String): SyncResult {
         val eventsOk = d2.eventModule().events()
             .byUid().eq(uid)
-            .byState().notIn(State.SYNCED)
+            .byAggregatedSyncState().notIn(State.SYNCED)
             .blockingGet().isEmpty()
 
         if (eventsOk) {
@@ -400,7 +400,7 @@ class SyncPresenterImpl(
         val anyEventsToPostOrToUpdate = d2.eventModule()
             .events()
             .byUid().eq(uid)
-            .byState().`in`(State.TO_POST, State.TO_UPDATE)
+            .byAggregatedSyncState().`in`(State.TO_POST, State.TO_UPDATE)
             .blockingGet().isNotEmpty()
 
         if (anyEventsToPostOrToUpdate) {
@@ -413,7 +413,7 @@ class SyncPresenterImpl(
     override fun checkSyncTEIStatus(uid: String): SyncResult {
         val teiOk = d2.trackedEntityModule().trackedEntityInstances()
             .byUid().eq(uid)
-            .byState().notIn(State.SYNCED, State.RELATIONSHIP)
+            .byAggregatedSyncState().notIn(State.SYNCED, State.RELATIONSHIP)
             .blockingGet().isEmpty()
 
         if (teiOk) {
@@ -422,7 +422,7 @@ class SyncPresenterImpl(
 
         val anyTeiToPostOrToUpdate = d2.trackedEntityModule().trackedEntityInstances()
             .byUid().eq(uid)
-            .byState().`in`(State.TO_POST, State.TO_UPDATE)
+            .byAggregatedSyncState().`in`(State.TO_POST, State.TO_UPDATE)
             .blockingGet().isNotEmpty()
 
         if (anyTeiToPostOrToUpdate) {
@@ -440,7 +440,7 @@ class SyncPresenterImpl(
         return d2.dataValueModule().dataValues().byPeriod().eq(period)
             .byOrganisationUnitUid().eq(orgUnit)
             .byAttributeOptionComboUid().eq(attributeOptionCombo)
-            .byState().notIn(State.SYNCED)
+            .bySyncState().notIn(State.SYNCED)
             .blockingGet().isEmpty()
     }
 
@@ -450,11 +450,11 @@ class SyncPresenterImpl(
         return if (program!!.programType() == ProgramType.WITH_REGISTRATION) {
             d2.trackedEntityModule().trackedEntityInstances()
                 .byProgramUids(listOf(uid))
-                .byState().notIn(State.SYNCED, State.RELATIONSHIP)
+                .byAggregatedSyncState().notIn(State.SYNCED, State.RELATIONSHIP)
                 .blockingGet().isEmpty()
         } else {
             d2.eventModule().events().byProgramUid().eq(uid)
-                .byState().notIn(State.SYNCED)
+                .byAggregatedSyncState().notIn(State.SYNCED)
                 .blockingGet().isEmpty()
         }
     }
@@ -467,7 +467,7 @@ class SyncPresenterImpl(
             .byOrganisationUnitUid().eq(dataSetReport!!.organisationUnitUid())
             .byPeriod().eq(dataSetReport.period())
             .byAttributeOptionComboUid().eq(dataSetReport.attributeOptionComboUid())
-            .byState().notIn(State.SYNCED)
+            .bySyncState().notIn(State.SYNCED)
             .blockingGet().isEmpty()
     }
 

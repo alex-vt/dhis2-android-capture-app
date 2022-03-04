@@ -841,7 +841,6 @@ public class SearchRepositoryImpl implements SearchRepository {
 
     @Override
     public boolean programHasCoordinates() {
-
         String programUid = currentProgram();
 
         if (programUid == null) return false;
