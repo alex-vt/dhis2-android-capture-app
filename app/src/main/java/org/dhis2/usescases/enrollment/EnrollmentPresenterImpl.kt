@@ -81,6 +81,7 @@ class EnrollmentPresenterImpl(
     private var showErrors: Pair<Boolean, Boolean> = Pair(first = false, second = false)
     private var hasShownIncidentDateEditionWarning = false
     private var hasShownEnrollmentDateEditionWarning = false
+    private var biometricsViewModel: BiometricsViewModel? = null
 
     fun init() {
         view.setSaveButtonVisible(false)
@@ -143,7 +144,7 @@ class EnrollmentPresenterImpl(
                 )
         )
 
-        val fields = getFieldFlowable()
+        var fields = getFieldFlowable()
 
         disposable.add(
             dataEntryRepository.enrollmentSectionUids()
@@ -159,26 +160,19 @@ class EnrollmentPresenterImpl(
                 }
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
-                .subscribe({
+                .subscribe({ it ->
                     populateList(it)
 
                     if (BIOMETRICS_ENABLED) {
-                        val biometricsViewModel = getBiometricViewModel().blockingFirst()
+                        biometricsViewModel = it.firstOrNull {
+                            it.isBiometricModel()
+                        }?.let { it as BiometricsViewModel }
 
-                        val callback = object : FieldUiModel.Callback {
-                            override fun recyclerViewUiEvents(uiEvent: RecyclerViewUiEvents) {
-                            }
-
-                            override fun intent(intent: FormIntent) {
-                                if (intent is FormIntent.OnFocus) {
-                                    val orgUnit = enrollmentObjectRepository.get().blockingGet()
-                                        .organisationUnit()!!
-                                    view.registerBiometrics(orgUnit)
-                                }
-                            }
+                        biometricsViewModel?.setBiometricsRegisterListener {
+                            val orgUnit = enrollmentObjectRepository.get().blockingGet()
+                                .organisationUnit()!!
+                            view.registerBiometrics(orgUnit)
                         }
-
-                        biometricsViewModel?.setCallback(callback)
                     }
 
                     view.setSaveButtonVisible(true)
@@ -547,50 +541,22 @@ class EnrollmentPresenterImpl(
     }
 
     private fun checkIfBiometricValueValid() {
-        disposable.add(
-            getBiometricViewModel()
-                .subscribe(
-                    { viewModel ->
-                        if (viewModel.value().equals(BIOMETRICS_FAILURE_PATTERN)) {
-                            valueStore.save(viewModel.uid(), null).blockingFirst()
-                        }
-                    },
-                    { Timber.tag(TAG).e(it) }
-                ))
-    }
 
-    private fun getBiometricViewModel(): Flowable<BiometricsViewModel> {
-        return dataEntryRepository
-            .list()
-            .map { fieldViewModels ->
-                val biometricViewModel = fieldViewModels.firstOrNull {
-                    it.isBiometricModel()
-                }
-
-                if (biometricViewModel == null) {
-                    throw IllegalStateException("Shouldn't have been allowed to start Simprints without Biometrics ViewModel")
-                } else {
-                    return@map biometricViewModel as BiometricsViewModel
-                }
-            }
+        if (biometricsViewModel != null && biometricsViewModel!!.value().equals(BIOMETRICS_FAILURE_PATTERN)) {
+            valueStore.save(biometricsViewModel!!.uid(), null).blockingFirst()
+        }
     }
 
     private fun saveBiometricValue(value: String) {
-        disposable.add(
-            getBiometricViewModel()
-                .subscribe(
-                    { viewModel ->
-                        valueStore.save(viewModel.uid(), value)
-                            .blockingFirst()
-                        updateFields()
-                    },
-                    { Timber.tag(TAG).e(it) }
-                ))
+        if(biometricsViewModel != null) {
+            valueStore.save(biometricsViewModel!!.uid(), value).blockingFirst()
+            updateFields()
+        }
     }
 
     fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
         val program = getProgram().uid()
-        val biometricsAttUid = getBiometricViewModel().blockingSingle().uid
+        val biometricsAttUid = biometricsViewModel!!.uid
         val teiUid = getEnrollment()!!.trackedEntityInstance()
 
         val teiTypeUid = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
