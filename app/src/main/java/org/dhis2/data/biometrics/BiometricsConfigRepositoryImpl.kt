@@ -15,7 +15,8 @@ class BiometricsConfigRepositoryImpl(
         try {
             val response = biometricsConfigApi.getData().execute()
 
-            val config = response.body()
+            val configOptions = response.body()
+            val config = configOptions?.find { it.orgUnitGroup.toLowerCase() == "default" }
 
             if (response.isSuccessful && config != null) {
 
