@@ -1,12 +1,16 @@
 package org.dhis2.data.biometrics
 
 import org.dhis2.commons.prefs.PreferenceProvider
+import org.dhis2.usescases.biometrics.BiometricsConfig
 import org.dhis2.usescases.biometrics.BiometricsConfigRepository
 import org.dhis2.usescases.biometrics.BiometricsIcon
+import org.hisp.dhis.android.core.D2
+import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
 import timber.log.Timber
 import java.lang.Exception
 
 class BiometricsConfigRepositoryImpl(
+    private val d2: D2,
     private val preferenceProvider: PreferenceProvider,
     private val biometricsConfigApi: BiometricsConfigApi
 ) : BiometricsConfigRepository {
@@ -16,14 +20,14 @@ class BiometricsConfigRepositoryImpl(
             val response = biometricsConfigApi.getData().execute()
 
             val configOptions = response.body()
-            val config = configOptions?.find { it.orgUnitGroup.toLowerCase() == "default" }
 
-            if (response.isSuccessful && config != null) {
+            if (response.isSuccessful && configOptions != null) {
+                val config = getSelectedConfig(configOptions)
 
                 preferenceProvider.setValue(BiometricsPreference.PROJECT_ID, config.projectId)
                 preferenceProvider.setValue(
                     BiometricsPreference.CONFIDENCE_SCORE_FILTER,
-                    config.confidenceScoreFilter?:0
+                    config.confidenceScoreFilter ?: 0
                 )
 
                 val icon =
@@ -32,10 +36,13 @@ class BiometricsConfigRepositoryImpl(
                         ?: BiometricsIcon.FINGERPRINT.name
 
                 preferenceProvider.setValue(BiometricsPreference.ICON, icon)
-                preferenceProvider.setValue(BiometricsPreference.LAST_VERIFICATION_DURATION, config.lastVerificationDuration?:0)
-
+                preferenceProvider.setValue(
+                    BiometricsPreference.LAST_VERIFICATION_DURATION,
+                    config.lastVerificationDuration ?: 0
+                )
 
                 Timber.d("downloadBiometricsConfig!")
+                Timber.d("orgUnitGroup: ${config.orgUnitGroup}")
                 Timber.d("projectId: ${config.projectId}")
                 Timber.d("confidenceScoreFilter: ${config.confidenceScoreFilter}")
                 Timber.d("icon: $icon")
@@ -46,5 +53,30 @@ class BiometricsConfigRepositoryImpl(
         } catch (e: Exception) {
             Timber.e(e)
         }
+    }
+
+    private fun getSelectedConfig(configOptions: List<BiometricsConfig>): BiometricsConfig {
+        val organisationUnitGroups =
+            d2.organisationUnitModule().organisationUnits()
+                .byOrganisationUnitScope(OrganisationUnit.Scope.SCOPE_DATA_CAPTURE)
+                .withOrganisationUnitGroups()
+                .blockingGet().flatMap { ou ->
+                    if (ou.organisationUnitGroups() != null) ou.organisationUnitGroups()!!
+                        .map { ouGroup -> ouGroup.uid() }
+                    else listOf()
+                }.distinct()
+
+        val defaultConfig =
+            configOptions.find { it.orgUnitGroup.toLowerCase() == "default" }
+
+        if (defaultConfig == null) {
+            val error = "There are not a default biometrics config"
+            Timber.e(error)
+            throw Exception(error)
+        }
+
+        return if (organisationUnitGroups.size != 1) defaultConfig else
+            configOptions.find { it.orgUnitGroup == organisationUnitGroups[0] }
+                ?: defaultConfig
     }
 }
