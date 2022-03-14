@@ -869,5 +869,6 @@
     <string name="biometrics_verification_match">Exitosa</string>
     <string name="biometrics_verification_no_match">Fallido</string>
     <string name="biometrics_verification_failed">Declinada</string>
+    <string name="biometrics_retake">Repetir</string>
     <!--endregion-->
 </resources>

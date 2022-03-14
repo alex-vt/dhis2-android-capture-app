@@ -517,5 +517,6 @@
     <string name="biometrics_verification_match">Succès</string>
     <string name="biometrics_verification_no_match">Échec</string>
     <string name="biometrics_verification_failed">Refusé</string>
+    <string name="biometrics_retake">Reprendre</string>
     <!--endregion-->
     </resources>
