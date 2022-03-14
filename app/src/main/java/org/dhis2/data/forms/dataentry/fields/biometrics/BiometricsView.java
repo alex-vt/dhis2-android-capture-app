@@ -90,7 +90,7 @@ public class BiometricsView extends FieldLayout {
         Timber.tag("BiometricsView value").d(value);
 
         if (value != null && value.length() > 0) {
-            if (value.equalsIgnoreCase(BIOMETRICS_FAILURE_PATTERN)) {
+            if (value.startsWith(BIOMETRICS_FAILURE_PATTERN)) {
                 Timber.tag("BiometricsView").d("onFailure");
                 onFailure();
             } else {
