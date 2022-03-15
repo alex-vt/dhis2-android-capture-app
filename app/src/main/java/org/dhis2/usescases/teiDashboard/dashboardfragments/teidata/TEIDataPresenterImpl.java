@@ -596,7 +596,7 @@ public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
     }
 
     private void refreshVerificationStatus() {
-        if (lastVerificationResult == null) {
+        if (lastVerificationResult == null && dashboardModel.isBiometricsEnabled()) {
             List<TrackedEntityAttributeValue> values =
                     dashboardRepository.getTEIAttributeValues(programUid, teiUid).blockingSingle();
 
