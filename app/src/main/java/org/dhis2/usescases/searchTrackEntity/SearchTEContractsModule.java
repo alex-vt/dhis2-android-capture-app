@@ -110,6 +110,7 @@ public class SearchTEContractsModule {
         void hideIdentificationPlusButton();
 
         void activeBiometricsSearch(boolean active);
+        void setBiometricsVisibility(boolean visible);
     }
 
     public interface Presenter {

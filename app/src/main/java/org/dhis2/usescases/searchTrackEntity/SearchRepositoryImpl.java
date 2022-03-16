@@ -30,6 +30,9 @@ import org.dhis2.data.tuples.Pair;
 import org.dhis2.data.tuples.Trio;
 import org.dhis2.form.model.FieldUiModel;
 import org.dhis2.form.model.StoreResult;
+
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
+import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricAttribute;
 import org.dhis2.usescases.searchTrackEntity.adapters.SearchTeiModel;
 import org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipDirection;
 import org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipOwnerType;
@@ -837,6 +840,26 @@ public class SearchRepositoryImpl implements SearchRepository {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public Observable<Boolean> programHasBiometrics() {
+        String programUid = currentProgram();
+
+        if (programUid != null) {
+            List<ProgramTrackedEntityAttribute> attributeList =
+                    d2.programModule().programTrackedEntityAttributes().byProgram().eq(
+                            programUid).blockingGet();
+
+            for (ProgramTrackedEntityAttribute attribute : attributeList) {
+                if (isBiometricAttribute(attribute) && BIOMETRICS_ENABLED) {
+                    return Observable.just(true);
+                }
+            }
+
+        }
+
+        return  Observable.just(false);
     }
 
     @Override
