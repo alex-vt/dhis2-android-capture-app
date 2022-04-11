@@ -11,8 +11,6 @@ import org.dhis2.usescases.teiDashboard.DashboardProgramModel;
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.teievents.EventViewModel;
 import org.dhis2.utils.filters.FilterItem;
 import org.dhis2.utils.filters.FilterManager;
-import org.hisp.dhis.android.core.category.CategoryCombo;
-import org.hisp.dhis.android.core.category.CategoryOptionCombo;
 import org.hisp.dhis.android.core.enrollment.Enrollment;
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus;
 import org.hisp.dhis.android.core.event.Event;
@@ -38,7 +36,7 @@ public class TEIDataContracts {
 
         void hideDueDate();
 
-        Consumer<List<EventViewModel>> setEvents();
+        void setEvents(List<EventViewModel> events, boolean canAddEvents);
 
         Consumer<ProgramStage> displayGenerateEvent();
 

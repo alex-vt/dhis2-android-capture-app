@@ -157,7 +157,7 @@ class BiometricsClient(
             val refusalForm: RefusalForm? =
                 data.getParcelableExtra(Constants.SIMPRINTS_REFUSAL_FORM)
 
-            val sessionId: String = data.getStringExtra(Constants.SIMPRINTS_SESSION_ID)
+            val sessionId: String = data.getStringExtra(Constants.SIMPRINTS_SESSION_ID).toString()
 
             return if (identifications == null && refusalForm != null) {
                 IdentifyResult.BiometricsDeclined

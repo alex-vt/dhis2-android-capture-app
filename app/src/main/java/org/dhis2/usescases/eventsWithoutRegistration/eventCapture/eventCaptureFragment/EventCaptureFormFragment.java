@@ -14,6 +14,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.FragmentTransaction;
 
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
@@ -23,14 +27,13 @@ import org.dhis2.data.forms.dataentry.FormView;
 import org.dhis2.data.location.LocationProvider;
 import org.dhis2.databinding.SectionSelectorFragmentBinding;
 import org.dhis2.form.data.FormRepository;
+import org.dhis2.form.model.DispatcherProvider;
 import org.dhis2.form.model.FieldUiModel;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity;
 import org.dhis2.usescases.general.FragmentGlobalAbstract;
 import org.dhis2.utils.Constants;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
-
 import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
@@ -39,7 +42,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentTransaction;
 import kotlin.Unit;
 
-public class EventCaptureFormFragment extends FragmentGlobalAbstract implements EventCaptureFormView {
+public class EventCaptureFormFragment extends FragmentGlobalAbstract implements EventCaptureFormView,
+        OnEditionListener {
 
     @Inject
     EventCaptureFormPresenter presenter;
@@ -49,6 +53,9 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
     @Inject
     LocationProvider locationProvider;
+
+    @Inject
+    DispatcherProvider coroutineDispatcher;
 
     private EventCaptureActivity activity;
     private SectionSelectorFragmentBinding binding;
@@ -99,6 +106,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         formView = new FormView.Builder()
                 .persistence(formRepository)
                 .locationProvider(locationProvider)
+                .dispatcher(coroutineDispatcher)
                 .onItemChangeListener(action -> {
                     activity.getPresenter().setValueChanged(action.getId());
                     activity.getPresenter().nextCalculation(true);
@@ -114,6 +122,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                 })
                 .factory(activity.getSupportFragmentManager())
                 .build();
+        activity.setFormEditionListener(this);
         super.onCreate(savedInstanceState);
     }
 
@@ -197,6 +206,11 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         } else {
             presenter.onActionButtonClick();
         }
+    }
+
+    @Override
+    public void onEditionListener() {
+        formView.onEditionFinish();
     }
 
     @Override

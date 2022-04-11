@@ -3,9 +3,9 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureF
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.FlowableProcessor
+import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView
 import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel
-import org.dhis2.data.schedulers.SchedulerProvider
 import org.dhis2.form.data.FormRepository
 import org.dhis2.form.model.ActionType
 import org.dhis2.form.model.FieldUiModel
@@ -48,18 +48,20 @@ class EventCaptureFormPresenter(
                 .subscribe(
                     { result ->
                         result.valueStoreResult?.let {
-                            if (result.valueStoreResult == ValueStoreResult.VALUE_CHANGED
-                            ) {
-                                activityPresenter.setValueChanged(result.uid)
-                                activityPresenter.nextCalculation(true)
-                            } else {
-                                populateList()
+                            when (result.valueStoreResult) {
+                                ValueStoreResult.VALUE_CHANGED -> {
+                                    activityPresenter.setValueChanged(result.uid)
+                                    activityPresenter.nextCalculation(true)
+                                }
+                                else -> {
+                                    populateList()
 
-                                if (BIOMETRICS_ENABLED) {
-                                    val biometricsViewModel = getBiometricVerificationViewModel()
+                                    if (BIOMETRICS_ENABLED) {
+                                        val biometricsViewModel = getBiometricVerificationViewModel()
 
-                                    if (result.uid == biometricsViewModel?.uid) {
-                                        view.verifyBiometrics(this.biometricsGuid, this.teiOrgUnit)
+                                        if (result.uid == biometricsViewModel?.uid) {
+                                            view.verifyBiometrics(this.biometricsGuid, this.teiOrgUnit)
+                                        }
                                     }
                                 }
                             }
@@ -74,9 +76,7 @@ class EventCaptureFormPresenter(
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
                 .subscribe(
-                    { fields ->
-                        populateList(fields)
-                    },
+                    { fields -> populateList(fields) },
                     { Timber.e(it) }
                 )
         )
@@ -163,7 +163,7 @@ class EventCaptureFormPresenter(
     }
 
     fun onActionButtonClick() {
-        activityPresenter.attempFinish()
+        activityPresenter.attemptFinish()
     }
 
     private fun mapVerificationStatus(biometricsVerificationStatus: Int): BiometricsVerificationView.BiometricsVerificationStatus {
@@ -181,7 +181,7 @@ class EventCaptureFormPresenter(
         finishing = true
     }
 
-    private fun saveValue(uid: String, value: String?) {
+    fun saveValue(uid: String, value: String?) {
         onFieldActionProcessor.onNext(
             RowAction(
                 id = uid,

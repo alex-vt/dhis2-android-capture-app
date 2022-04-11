@@ -10,12 +10,12 @@ import io.reactivex.processors.FlowableProcessor
 import io.reactivex.processors.PublishProcessor
 import org.dhis2.Bindings.profilePicturePath
 import org.dhis2.R
+import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.forms.dataentry.EnrollmentRepository
 import org.dhis2.data.forms.dataentry.ValueStore
 import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel
 import org.dhis2.data.forms.dataentry.fields.display.DisplayViewModel
 import org.dhis2.data.forms.dataentry.fields.section.SectionViewModel
-import org.dhis2.data.schedulers.SchedulerProvider
 import org.dhis2.form.data.FormRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
@@ -38,6 +38,7 @@ import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.`object`.ReadOnlyOneObjectRepositoryFinalImpl
 import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.common.Geometry
+import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.enrollment.Enrollment
 import org.hisp.dhis.android.core.enrollment.EnrollmentObjectRepository
@@ -487,7 +488,11 @@ class EnrollmentPresenterImpl(
     }
 
     fun deleteAllSavedData() {
-        teiRepository.blockingDelete()
+        if (teiRepository.blockingGet().syncState() == State.TO_POST) {
+            teiRepository.blockingDelete()
+        } else {
+            enrollmentObjectRepository.blockingDelete()
+        }
         analyticsHelper.setEvent(DELETE_AND_BACK, CLICK, DELETE_AND_BACK)
     }
 
