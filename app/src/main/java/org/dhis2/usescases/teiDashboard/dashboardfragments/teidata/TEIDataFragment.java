@@ -354,9 +354,6 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == REQ_DETAILS) {
-            if(requestCode == BIOMETRICS_VERIFY_REQUEST){
-                onBiometricsAppResponse(data);
-            } else if (requestCode == REQ_DETAILS) {
                 activity.getPresenter().init();
             }
         }else if(requestCode == BIOMETRICS_VERIFY_REQUEST){
