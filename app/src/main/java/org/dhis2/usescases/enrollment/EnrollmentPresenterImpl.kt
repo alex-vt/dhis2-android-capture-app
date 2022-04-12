@@ -48,6 +48,7 @@ import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstanceObjectRepository
 import org.hisp.dhis.rules.models.RuleEffect
 import timber.log.Timber
+import java.util.UUID
 
 private const val TAG = "EnrollmentPresenter"
 
@@ -537,18 +538,21 @@ class EnrollmentPresenterImpl(
     }
 
     fun onBiometricsFailure() {
-        saveBiometricValue(BIOMETRICS_FAILURE_PATTERN)
+        val uuid: UUID = UUID.randomUUID()
+        saveBiometricValue("${BIOMETRICS_FAILURE_PATTERN}_${uuid}")
     }
 
     private fun checkIfBiometricValueValid() {
 
-        if (biometricsViewModel != null && biometricsViewModel!!.value().equals(BIOMETRICS_FAILURE_PATTERN)) {
+        if (biometricsViewModel != null && biometricsViewModel!!.value() != null &&
+            biometricsViewModel!!.value()!!.startsWith(BIOMETRICS_FAILURE_PATTERN)
+        ) {
             valueStore.save(biometricsViewModel!!.uid(), null).blockingFirst()
         }
     }
 
     private fun saveBiometricValue(value: String) {
-        if(biometricsViewModel != null) {
+        if (biometricsViewModel != null) {
             valueStore.save(biometricsViewModel!!.uid(), value).blockingFirst()
             updateFields()
         }

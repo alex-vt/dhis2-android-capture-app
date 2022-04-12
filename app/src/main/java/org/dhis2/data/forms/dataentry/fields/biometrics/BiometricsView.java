@@ -11,6 +11,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -30,6 +31,7 @@ public class BiometricsView extends FieldLayout {
     private BiometricsViewModel viewModel;
 
     LinearLayout biometricsButton;
+    LinearLayout retakeButton;
     TextView biometricsButtonText;
     ImageView biometricsButtonIcon;
     LinearLayout rootView;
@@ -60,10 +62,17 @@ public class BiometricsView extends FieldLayout {
 
         rootView = findViewById(R.id.rootView);
         biometricsButton = findViewById(R.id.biometrics_button);
+        retakeButton = findViewById(R.id.biometrics_retake_button);
         biometricsButtonText = findViewById(R.id.biometrics_button_text);
         biometricsButtonIcon = findViewById(R.id.biometrics_button_icon);
 
         biometricsButton.setOnClickListener(v -> {
+            if (viewModel != null) {
+                viewModel.onBiometricsClick();
+            }
+        });
+
+        retakeButton.setOnClickListener(v -> {
             if (viewModel != null) {
                 viewModel.onBiometricsClick();
             }
@@ -81,7 +90,7 @@ public class BiometricsView extends FieldLayout {
         Timber.tag("BiometricsView value").d(value);
 
         if (value != null && value.length() > 0) {
-            if (value.equalsIgnoreCase(BIOMETRICS_FAILURE_PATTERN)) {
+            if (value.startsWith(BIOMETRICS_FAILURE_PATTERN)) {
                 Timber.tag("BiometricsView").d("onFailure");
                 onFailure();
             } else {
@@ -95,16 +104,21 @@ public class BiometricsView extends FieldLayout {
     }
 
     void onInitial() {
+        retakeButton.setVisibility(View.GONE);
+        biometricsButton.setEnabled(true);
         biometricsButtonIcon.setImageDrawable(
                 AppCompatResources.getDrawable(rootView.getContext(),
                         getBioIconNew(rootView.getContext())));
     }
 
     void onSuccess() {
+        retakeButton.setVisibility(View.VISIBLE);
         biometricsButton.setBackground(ContextCompat.getDrawable(
                 rootView.getContext(),
                 R.drawable.button_round_success
         ));
+
+        biometricsButton.setEnabled(false);
 
         biometricsButtonText.setText(R.string.biometrics_completed);
 
@@ -114,10 +128,13 @@ public class BiometricsView extends FieldLayout {
     }
 
     void onFailure() {
+        retakeButton.setVisibility(View.VISIBLE);
         biometricsButton.setBackground(ContextCompat.getDrawable(
                 rootView.getContext(),
                 R.drawable.button_round_warning
         ));
+
+        biometricsButton.setEnabled(false);
 
         biometricsButtonText.setText(R.string.biometrics_declined);
 
