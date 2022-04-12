@@ -1,5 +1,7 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture;
 
+import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
 
 import org.dhis2.data.forms.FormSectionViewModel;
@@ -111,6 +113,9 @@ public class EventCaptureContract {
 
         void saveImage(String uuid, String filePath);
 
+        @SuppressLint("CheckResult")
+        void saveValue(String uuid, String value);
+
         void initNoteCounter();
 
         void refreshTabCounters();
@@ -181,8 +186,6 @@ public class EventCaptureContract {
         Observable<Boolean> isCompletedEventExpired(String eventUid);
 
         Single<Integer> getNoteCount();
-
-        List<String> getOptionsFromGroups(List<String> optionGroupUids);
 
         boolean showCompletionPercentage();
 

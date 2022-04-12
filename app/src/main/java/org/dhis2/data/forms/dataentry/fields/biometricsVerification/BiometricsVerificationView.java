@@ -59,7 +59,7 @@ public class BiometricsVerificationView extends FieldLayout {
 
         tryAgainButton.setOnClickListener(v -> {
             if (viewModel != null) {
-                viewModel.onItemClick();
+                viewModel.onRetryVerificationClick();
             }
         });
     }

@@ -14,10 +14,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.FragmentTransaction;
 
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
@@ -33,7 +29,9 @@ import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureAc
 import org.dhis2.usescases.general.FragmentGlobalAbstract;
 import org.dhis2.utils.Constants;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
+
 import javax.inject.Inject;
 
 import androidx.annotation.NonNull;
@@ -104,7 +102,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     @Override
     public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         formView = new FormView.Builder()
-                .persistence(formRepository)
+                .repository(formRepository)
                 .locationProvider(locationProvider)
                 .dispatcher(coroutineDispatcher)
                 .onItemChangeListener(action -> {
@@ -118,6 +116,10 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                     } else{
                         activity.hideProgress();
                     }
+                    return Unit.INSTANCE;
+                })
+                .onFocused(() -> {
+                    activity.hideNavigationBar();
                     return Unit.INSTANCE;
                 })
                 .factory(activity.getSupportFragmentManager())
@@ -187,8 +189,8 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     }
 
     @Override
-    public void showFields(@NonNull List<FieldUiModel> updates) {
-        formView.render(updates);
+    public void showFields(@Nullable List<? extends FieldUiModel> fields) {
+        formView.processItems(fields);
     }
 
     private void animateFabButton(boolean sectionIsVisible) {

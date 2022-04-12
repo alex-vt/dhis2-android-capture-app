@@ -3,6 +3,8 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Toast;
 
@@ -73,6 +75,7 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
     public String eventUid;
     private LiveData<Boolean> relationshipMapButton = new MutableLiveData<>(false);
     private OnEditionListener onEditionListener;
+    private EventCapturePagerAdapter adapter;
 
     public static Bundle getActivityBundle(@NonNull String eventUid, @NonNull String programUid, @NonNull EventMode eventMode) {
         Bundle bundle = new Bundle();
@@ -109,36 +112,39 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
         eventMode = (EventMode) getIntent().getSerializableExtra(Constants.EVENT_MODE);
         setUpViewPagerAdapter();
         setUpNavigationBar();
+        showProgress();
         presenter.initNoteCounter();
         presenter.init();
     }
 
     private void setUpViewPagerAdapter() {
         binding.eventViewPager.setUserInputEnabled(false);
-        binding.eventViewPager.setAdapter(getAdapter(getIntent().getIntExtra(BIOMETRICS_VERIFICATION_STATUS, -1)));
+        this.adapter = getAdapter(getIntent().getIntExtra(BIOMETRICS_VERIFICATION_STATUS, -1));
+        binding.eventViewPager.setAdapter(adapter);
         ViewExtensionsKt.clipWithRoundedCorners(binding.eventViewPager, ExtensionsKt.getDp(16));
+    }
+
+    @NotNull
+    private EventCapturePagerAdapter getAdapter(int verificationStatus) {
+        return new EventCapturePagerAdapter(
+                this,
+                getIntent().getStringExtra(PROGRAM_UID),
+                getIntent().getStringExtra(Constants.EVENT_UID),
+                pageConfigurator.displayAnalytics(),
+                pageConfigurator.displayRelationships(),
+                getIntent().getStringExtra(BIOMETRICS_GUID),
+                verificationStatus,
+                getIntent().getStringExtra(BIOMETRICS_TEI_ORGANISATION_UNIT)
+        );
     }
 
     private void setUpNavigationBar() {
         binding.navigationBar.pageConfiguration(pageConfigurator);
         binding.navigationBar.setOnNavigationItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.navigation_details:
-                    goToInitialScreen();
-                    break;
-                case R.id.navigation_data_entry:
-                    binding.eventViewPager.setCurrentItem(0);
-                    break;
-                case R.id.navigation_analytics:
-                    binding.eventViewPager.setCurrentItem(1);
-                    break;
-                case R.id.navigation_relationships:
-                    binding.eventViewPager.setCurrentItem(2);
-                    break;
-                case R.id.navigation_notes:
-                default:
-                    binding.eventViewPager.setCurrentItem(3);
-                    break;
+            if (item.getItemId() == R.id.navigation_details){
+                goToInitialScreen();
+            } else {
+                binding.eventViewPager.setCurrentItem(adapter.getDynamicTabIndex(item.getItemId()));
             }
             return true;
         });
@@ -234,20 +240,6 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                 }
                 break;
         }
-    }
-
-    @NotNull
-    private EventCapturePagerAdapter getAdapter(int verificationStatus) {
-        return new EventCapturePagerAdapter(
-                this,
-                getIntent().getStringExtra(PROGRAM_UID),
-                getIntent().getStringExtra(Constants.EVENT_UID),
-                pageConfigurator.displayAnalytics(),
-                pageConfigurator.displayRelationships(),
-                getIntent().getStringExtra(BIOMETRICS_GUID),
-                verificationStatus,
-                getIntent().getStringExtra(BIOMETRICS_TEI_ORGANISATION_UNIT)
-        );
     }
 
     @Override
@@ -406,7 +398,8 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
     public void showMoreOptions(View view) {
         new AppMenuHelper.Builder().menu(this, R.menu.event_menu).anchor(view)
                 .onMenuInflated(popupMenu -> {
-                    popupMenu.getMenu().getItem(0).setVisible(presenter.canWrite() && presenter.isEnrollmentOpen());
+                    popupMenu.getMenu().findItem(R.id.menu_delete).setVisible(presenter.canWrite() && presenter.isEnrollmentOpen());
+                    popupMenu.getMenu().findItem(R.id.menu_share).setVisible(false);
                     return Unit.INSTANCE;
                 })
                 .onMenuItemClicked(itemId -> {
@@ -493,20 +486,15 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
 
     @Override
     public void showProgress() {
-        runOnUiThread(() -> {
-            binding.toolbarProgress.setVisibility(View.VISIBLE);
-            binding.toolbarProgress.show();
-        });
-
+        runOnUiThread(() -> binding.toolbarProgress.show());
     }
 
     @Override
     public void hideProgress() {
-        runOnUiThread(() -> {
-            binding.toolbarProgress.hide();
-            binding.toolbarProgress.setVisibility(View.GONE);
-        });
-
+        new Handler(Looper.getMainLooper()).postDelayed(() ->
+                        runOnUiThread(() ->
+                                binding.toolbarProgress.hide()),
+                1000);
     }
 
     @Override

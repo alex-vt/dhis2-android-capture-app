@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import org.dhis2.commons.di.dagger.PerService;
 import org.dhis2.commons.prefs.PreferenceProvider;
 import org.dhis2.data.biometrics.BiometricsConfigApi;
-import org.dhis2.data.biometrics.BiometricsConfigRepositoryImpl;
+import org.dhis2.data.biometrics.BiometricsConfigRepositoryImpl;;
 import org.dhis2.data.service.workManager.WorkManagerController;
 import org.dhis2.usescases.biometrics.BiometricsConfigRepository;
 import org.dhis2.utils.analytics.AnalyticsHelper;
