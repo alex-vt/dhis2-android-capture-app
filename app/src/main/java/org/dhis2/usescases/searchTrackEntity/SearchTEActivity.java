@@ -381,6 +381,15 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     @Override
+    public void setBiometricsVisibility(boolean visible) {
+        if (visible){
+            binding.biometricSearch.setVisibility(VISIBLE);
+        } else {
+            binding.biometricSearch.setVisibility(GONE);
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         FilterManager.getInstance().clearUnsupportedFilters();
@@ -832,7 +841,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     public void setFiltersVisibility(boolean showFilters) {
         binding.filterCounter.setVisibility(showFilters ? View.VISIBLE : GONE);
         binding.searchFilterGeneral.setVisibility(showFilters ? View.VISIBLE : GONE);
-        binding.biometricSearch.setVisibility(BIOMETRICS_ENABLED ? View.VISIBLE : View.GONE);
     }
 
     @Override

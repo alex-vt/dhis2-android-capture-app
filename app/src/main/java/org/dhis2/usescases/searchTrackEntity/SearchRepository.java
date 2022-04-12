@@ -57,4 +57,5 @@ public interface SearchRepository {
     void setCurrentProgram(@Nullable String currentProgram);
     boolean programHasAnalytics();
     boolean programHasCoordinates();
+    Observable<Boolean> programHasBiometrics();
 }

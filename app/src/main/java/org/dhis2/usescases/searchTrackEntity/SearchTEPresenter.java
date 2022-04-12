@@ -253,6 +253,11 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                         Timber::d)
         );
 
+        compositeDisposable.add(searchRepository.programHasBiometrics()
+                .subscribeOn(schedulerProvider.io())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(view::setBiometricsVisibility, Timber::d));
+
         compositeDisposable.add(fieldProcessor
                 .subscribeOn(schedulerProvider.ui())
                 .observeOn(schedulerProvider.ui())

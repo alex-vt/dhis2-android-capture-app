@@ -2,14 +2,10 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureF
 
 import io.reactivex.disposables.CompositeDisposable
 import org.dhis2.commons.schedulers.SchedulerProvider
-import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel
 import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView
 import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel
 import org.dhis2.form.model.FieldUiModel
-import org.dhis2.form.ui.event.RecyclerViewUiEvents
-import org.dhis2.form.ui.intent.FormIntent
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
-import org.dhis2.usescases.biometrics.isBiometricModel
 import org.dhis2.usescases.biometrics.isBiometricsVerificationModel
 import org.dhis2.usescases.biometrics.isBiometricsVerificationText
 import org.dhis2.usescases.biometrics.isLastVerificationValid
@@ -41,8 +37,6 @@ class EventCaptureFormPresenter(
                 .subscribe(
                     { fields ->
                         val updatedFields = updateBiometricsField(fields)
-                        populateList(updatedFields)
-                        this.fields = fields
 
                         if (BIOMETRICS_ENABLED) {
                             biometricsVerificationViewModel = updatedFields.firstOrNull {
@@ -53,6 +47,9 @@ class EventCaptureFormPresenter(
                                 view.verifyBiometrics(biometricsGuid, teiOrgUnit)
                             }
                         }
+
+                        populateList(updatedFields)
+                        this.fields = fields
                     },
                     { Timber.e(it) }
                 )
@@ -60,7 +57,7 @@ class EventCaptureFormPresenter(
     }
 
     private fun populateList(fields: List<FieldUiModel>) {
-        if (BIOMETRICS_ENABLED) {
+        if (BIOMETRICS_ENABLED && biometricsVerificationViewModel != null) {
             launchBiometricsVerificationIfRequired(fields)
         }
 

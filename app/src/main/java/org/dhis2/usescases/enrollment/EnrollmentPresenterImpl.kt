@@ -17,13 +17,9 @@ import org.dhis2.data.forms.dataentry.fields.display.DisplayViewModel
 import org.dhis2.data.forms.dataentry.fields.section.SectionViewModel
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
-import org.dhis2.form.model.ValueStoreResult
-import org.dhis2.form.ui.event.RecyclerViewUiEvents
-import org.dhis2.form.ui.intent.FormIntent
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.usescases.biometrics.isBiometricModel
-import org.dhis2.utils.DhisTextUtils
 import org.dhis2.utils.Result
 import org.dhis2.utils.RulesUtilsProviderConfigurationError
 import org.dhis2.utils.RulesUtilsProviderImpl
@@ -478,7 +474,7 @@ class EnrollmentPresenterImpl(
     }
 
     fun dataIntegrityCheck(): Boolean {
-        if (BIOMETRICS_ENABLED && dataEntryRepository.list() != null) {
+        if (BIOMETRICS_ENABLED && biometricsViewModel != null && dataEntryRepository.list() != null) {
             checkIfBiometricValueValid()
         }
 
