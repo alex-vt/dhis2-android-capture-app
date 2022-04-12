@@ -25,7 +25,7 @@ public class SyncGranularRxModule {
             @NonNull PreferenceProvider preferences
     ) {
         BiometricsConfigApi biometricsConfigApi = d2.retrofit().create(BiometricsConfigApi.class);
-        return new BiometricsConfigRepositoryImpl(preferences, biometricsConfigApi);
+        return new BiometricsConfigRepositoryImpl(d2, preferences, biometricsConfigApi);
     }
 
     @Provides
