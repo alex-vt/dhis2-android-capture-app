@@ -2,6 +2,8 @@ package org.dhis2.data.service;
 
 import androidx.annotation.NonNull;
 
+import org.dhis2.data.biometrics.BiometricsConfigApi;
+import org.dhis2.data.biometrics.BiometricsConfigRepositoryImpl;
 import org.dhis2.commons.di.dagger.PerService;
 import org.dhis2.commons.prefs.PreferenceProvider;
 import org.dhis2.data.biometrics.BiometricsConfigApi;
