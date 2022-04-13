@@ -562,7 +562,9 @@ class EnrollmentPresenterImpl(
         val teiTypeUid = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
             .trackedEntityType()!!
 
+        val finalGuids = guids.filter { it != biometricsViewModel!!.value  }
+
         view.hideProgress()
-        view.showPossibleDuplicatesDialog(guids, sessionId, program, teiTypeUid, biometricsAttUid)
+        view.showPossibleDuplicatesDialog(finalGuids, sessionId, program, teiTypeUid, biometricsAttUid)
     }
 }
