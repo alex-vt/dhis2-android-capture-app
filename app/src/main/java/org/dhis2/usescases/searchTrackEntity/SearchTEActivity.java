@@ -703,6 +703,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private List<FieldUiModel> removeBiometricsAttribute(List<FieldUiModel> data) {
         List<FieldUiModel> finalData = new ArrayList<>();
 
+        if (data == null) return finalData;
+
         for (int i = data.size() - 1; i >= 0; i--) {
             String label = data.get(i).getLabel();
             if (!isBiometricText(label)) {
