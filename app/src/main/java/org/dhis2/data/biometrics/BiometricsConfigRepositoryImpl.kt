@@ -56,7 +56,7 @@ class BiometricsConfigRepositoryImpl(
     }
 
     private fun getSelectedConfig(configOptions: List<BiometricsConfig>): BiometricsConfig {
-        val organisationUnitGroups =
+        val userOrgUnitGroups =
             d2.organisationUnitModule().organisationUnits()
                 .byOrganisationUnitScope(OrganisationUnit.Scope.SCOPE_DATA_CAPTURE)
                 .withOrganisationUnitGroups()
@@ -65,6 +65,9 @@ class BiometricsConfigRepositoryImpl(
                         .map { ouGroup -> ouGroup.uid() }
                     else listOf()
                 }.distinct()
+
+        val userOrgUnitGroupsInConfig =
+            userOrgUnitGroups.filter{ouGroup -> configOptions.any{config -> config.orgUnitGroup == ouGroup}}
 
         val defaultConfig =
             configOptions.find { it.orgUnitGroup.toLowerCase() == "default" }
@@ -75,8 +78,8 @@ class BiometricsConfigRepositoryImpl(
             throw Exception(error)
         }
 
-        return if (organisationUnitGroups.size != 1) defaultConfig else
-            configOptions.find { it.orgUnitGroup == organisationUnitGroups[0] }
+        return if (userOrgUnitGroupsInConfig.size != 1) defaultConfig else
+            configOptions.find { it.orgUnitGroup == userOrgUnitGroupsInConfig[0] }
                 ?: defaultConfig
     }
 }
