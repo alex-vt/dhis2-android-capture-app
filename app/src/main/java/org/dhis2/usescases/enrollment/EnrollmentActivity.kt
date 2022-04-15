@@ -239,19 +239,20 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                     }
                 }
                 BIOMETRICS_ENROLL_LAST_REQUEST -> {
-                if (resultCode == RESULT_OK) {
-                    if (data != null) {
-                        when (val result = BiometricsClientFactory.get(this).handleRegisterResponse(data)) {
-                            is RegisterResult.Completed -> {
-                                presenter.onBiometricsCompleted(result.guid)
-                            }
-                            else -> {
-                                presenter.onBiometricsFailure()
+                    if (resultCode == RESULT_OK) {
+                        if (data != null) {
+                            when (val result =
+                                BiometricsClientFactory.get(this).handleRegisterResponse(data)) {
+                                is RegisterResult.Completed -> {
+                                    presenter.onBiometricsCompleted(result.guid)
+                                }
+                                else -> {
+                                    presenter.onBiometricsFailure()
+                                }
                             }
                         }
                     }
                 }
-            }
                 RQ_EVENT -> openDashboard(presenter.getEnrollment()!!.uid()!!)
             }
         }
@@ -544,7 +545,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
             biometricsAttributeUid
         )
 
-        dialog.setOnOpenTeiDashboardListener{ teiUid: String, programUid: String, enrollmentUid: String ->
+        dialog.setOnOpenTeiDashboardListener { teiUid: String, programUid: String, enrollmentUid: String ->
             presenter.deleteAllSavedData()
             finish()
             startActivity(
@@ -557,7 +558,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
             )
         }
 
-        dialog.setOnEnrollNewListener{ biometricsSessionId ->
+        dialog.setOnEnrollNewListener { biometricsSessionId ->
             BiometricsClientFactory.get(this).registerLast(this, biometricsSessionId)
         }
 
@@ -565,5 +566,9 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
             supportFragmentManager,
             BiometricsDuplicatesDialog.TAG
         )
+    }
+
+    override fun registerLast(sessionId: String) {
+        BiometricsClientFactory.get(this).registerLast(this, sessionId)
     }
 }
