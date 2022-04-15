@@ -10,6 +10,7 @@ import org.dhis2.Bindings.profilePicturePath
 import org.dhis2.R
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.schedulers.defaultSubscribe
+import org.dhis2.data.biometrics.BiometricsClientFactory
 import org.dhis2.data.forms.dataentry.EnrollmentRepository
 import org.dhis2.data.forms.dataentry.ValueStore
 import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel
@@ -562,9 +563,13 @@ class EnrollmentPresenterImpl(
         val teiTypeUid = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
             .trackedEntityType()!!
 
-        val finalGuids = guids.filter { it != biometricsViewModel!!.value  }
+        if (guids.size == 1 && guids[0] == biometricsViewModel!!.value){
+            view.registerLast(sessionId)
+        } else {
+            val finalGuids = guids.filter { it != biometricsViewModel!!.value  }
 
-        view.hideProgress()
-        view.showPossibleDuplicatesDialog(finalGuids, sessionId, program, teiTypeUid, biometricsAttUid)
+            view.hideProgress()
+            view.showPossibleDuplicatesDialog(finalGuids, sessionId, program, teiTypeUid, biometricsAttUid)
+        }
     }
 }
