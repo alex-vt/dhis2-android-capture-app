@@ -1,5 +1,6 @@
 package org.dhis2.usescases.enrollment
 
+import org.dhis2.data.biometrics.BiometricsClientFactory
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.usescases.general.AbstractActivityContracts
 import org.dhis2.utils.RulesUtilsProviderConfigurationError
@@ -39,4 +40,6 @@ interface EnrollmentView : AbstractActivityContracts.View {
         trackedEntityTypeUid: String,
         biometricsAttributeUid: String
     )
+
+    fun registerLast(sessionId: String)
 }
