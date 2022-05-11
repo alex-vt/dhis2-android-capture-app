@@ -1,14 +1,17 @@
 package org.dhis2.usescases.teiDashboard.dashboardfragments.indicators
 
 import dhis2.org.analytics.charts.Charts
+import dhis2.org.analytics.charts.ui.AnalyticsModel
+import dhis2.org.analytics.charts.ui.ChartModel
+import dhis2.org.analytics.charts.ui.OrgUnitFilterType
 import io.reactivex.Flowable
 import io.reactivex.functions.Function3
-import org.dhis2.data.analytics.AnalyticsModel
-import org.dhis2.data.analytics.ChartModel
+import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.forms.dataentry.RuleEngineRepository
 import org.dhis2.utils.DhisTextUtils
-import org.dhis2.utils.resources.ResourceManager
 import org.hisp.dhis.android.core.D2
+import org.hisp.dhis.android.core.common.RelativePeriod
+import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
 
 class TrackerAnalyticsRepository(
     d2: D2,
@@ -51,11 +54,27 @@ class TrackerAnalyticsRepository(
             },
             getRulesIndicators(),
             Flowable.just(
-                charts?.getCharts(enrollmentUid)?.map { ChartModel(it) }
+                charts?.geEnrollmentCharts(enrollmentUid)?.map { ChartModel(it) }
             ),
             Function3 { indicators, ruleIndicators, charts ->
                 arrangeSections(indicators, ruleIndicators, charts)
             }
         )
+    }
+
+    override fun filterByPeriod(chartModel: ChartModel, selectedPeriods: List<RelativePeriod>) {
+        chartModel.graph.visualizationUid?.let { visualizationUid ->
+            charts?.setVisualizationPeriods(visualizationUid, selectedPeriods)
+        }
+    }
+
+    override fun filterByOrgUnit(
+        chartModel: ChartModel,
+        selectedOrgUnits: List<OrganisationUnit>,
+        filterType: OrgUnitFilterType
+    ) {
+        chartModel.graph.visualizationUid?.let { visualizationUid ->
+            charts?.setVisualizationOrgUnits(visualizationUid, selectedOrgUnits, filterType)
+        }
     }
 }

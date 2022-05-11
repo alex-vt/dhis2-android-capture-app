@@ -3,12 +3,11 @@ package org.dhis2.usescases.programEventDetail;
 import androidx.annotation.NonNull;
 
 import org.dhis2.animations.CarouselViewAnimations;
-import org.dhis2.data.dagger.PerActivity;
+import org.dhis2.commons.di.dagger.PerActivity;
 import org.dhis2.data.dhislogic.DhisMapUtils;
-import org.dhis2.data.filter.FilterPresenter;
-import org.dhis2.data.filter.FilterRepository;
-import org.dhis2.data.schedulers.SchedulerProvider;
-import org.dhis2.uicomponents.map.ExternalMapNavigation;
+import org.dhis2.commons.filters.data.FilterPresenter;
+import org.dhis2.commons.filters.data.FilterRepository;
+import org.dhis2.commons.schedulers.SchedulerProvider;
 import org.dhis2.uicomponents.map.geometry.bound.GetBoundingBox;
 import org.dhis2.uicomponents.map.geometry.mapper.MapGeometryToFeature;
 import org.dhis2.uicomponents.map.geometry.mapper.feature.MapCoordinateFieldToFeature;
@@ -19,14 +18,16 @@ import org.dhis2.uicomponents.map.geometry.mapper.featurecollection.MapEventToFe
 import org.dhis2.uicomponents.map.geometry.point.MapPointToFeature;
 import org.dhis2.uicomponents.map.geometry.polygon.MapPolygonToFeature;
 import org.dhis2.utils.analytics.matomo.MatomoAnalyticsController;
-import org.dhis2.utils.filters.DisableHomeFiltersFromSettingsApp;
-import org.dhis2.utils.filters.FilterManager;
-import org.dhis2.utils.filters.FiltersAdapter;
-import org.dhis2.utils.filters.workingLists.EventFilterToWorkingListItemMapper;
+import org.dhis2.commons.filters.DisableHomeFiltersFromSettingsApp;
+import org.dhis2.commons.filters.FilterManager;
+import org.dhis2.commons.filters.FiltersAdapter;
+import org.dhis2.commons.filters.workingLists.EventFilterToWorkingListItemMapper;
+import org.dhis2.utils.customviews.navigationbar.NavigationPageConfigurator;
 import org.hisp.dhis.android.core.D2;
 
 import dagger.Module;
 import dagger.Provides;
+import dhis2.org.analytics.charts.Charts;
 
 @PerActivity
 @Module
@@ -93,8 +94,9 @@ public class ProgramEventDetailModule {
                                                        MapEventToFeatureCollection mapEventToFeatureCollection,
                                                        MapCoordinateFieldToFeatureCollection mapCoordinateFieldToFeatureCollection,
                                                        DhisMapUtils dhisMapUtils,
-                                                       FilterPresenter filterPresenter) {
-        return new ProgramEventDetailRepositoryImpl(programUid, d2, mapper, mapEventToFeatureCollection, mapCoordinateFieldToFeatureCollection, dhisMapUtils, filterPresenter);
+                                                       FilterPresenter filterPresenter,
+                                                       Charts charts) {
+        return new ProgramEventDetailRepositoryImpl(programUid, d2, mapper, mapEventToFeatureCollection, mapCoordinateFieldToFeatureCollection, dhisMapUtils, filterPresenter, charts);
     }
 
     @Provides
@@ -107,5 +109,11 @@ public class ProgramEventDetailModule {
     @PerActivity
     FiltersAdapter provideNewFiltersAdapter() {
         return new FiltersAdapter();
+    }
+
+    @Provides
+    @PerActivity
+    NavigationPageConfigurator providesPageConfigurator(ProgramEventDetailRepository repository) {
+        return new ProgramEventPageConfigurator(repository);
     }
 }

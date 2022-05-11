@@ -2,10 +2,10 @@ package org.dhis2.usescases.jira
 
 import dagger.Module
 import dagger.Provides
-import org.dhis2.data.dagger.PerFragment
-import org.dhis2.data.prefs.PreferenceProvider
-import org.dhis2.data.schedulers.SchedulerProvider
-import org.dhis2.utils.resources.ResourceManager
+import org.dhis2.commons.di.dagger.PerFragment
+import org.dhis2.commons.prefs.PreferenceProvider
+import org.dhis2.commons.resources.ResourceManager
+import org.dhis2.commons.schedulers.SchedulerProvider
 
 @Module
 class JiraModule {

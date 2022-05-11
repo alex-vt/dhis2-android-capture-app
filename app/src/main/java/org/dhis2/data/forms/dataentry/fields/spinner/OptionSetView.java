@@ -25,9 +25,9 @@ import org.dhis2.databinding.CustomCellViewBinding;
 import org.dhis2.databinding.FormSpinnerAccentBinding;
 import org.dhis2.databinding.FormSpinnerBinding;
 import org.dhis2.usescases.datasets.dataSetTable.dataSetSection.DataSetTableAdapter;
-import org.dhis2.utils.ColorUtils;
+import org.dhis2.commons.resources.ColorUtils;
 import org.dhis2.utils.Constants;
-import org.dhis2.utils.customviews.CustomDialog;
+import org.dhis2.commons.dialogs.CustomDialog;
 import org.dhis2.utils.customviews.FieldLayout;
 import org.dhis2.utils.customviews.OptionSetOnClickListener;
 import org.dhis2.utils.customviews.OptionSetPopUp;
@@ -121,7 +121,7 @@ public class OptionSetView extends FieldLayout implements OptionSetOnClickListen
     }
 
     public void deleteSelectedOption() {
-        setValueOption(null, null);
+        viewModel.onOptionClear();
     }
 
     public void setOnSelectedOptionListener(OnSelectedOption listener) {
@@ -224,7 +224,6 @@ public class OptionSetView extends FieldLayout implements OptionSetOnClickListen
     public void onClick(View v) {
         requestFocus();
         closeKeyboard(v);
-        viewModel.onItemClick();
         OptionSetDialog dialog = new OptionSetDialog();
         dialog.create(getContext());
         dialog.setOptionSet(viewModel);
@@ -235,9 +234,17 @@ public class OptionSetView extends FieldLayout implements OptionSetOnClickListen
             dialog.show(((FragmentActivity) binding.getRoot().getContext()).getSupportFragmentManager(), OptionSetDialog.Companion.getTAG());
         } else {
             dialog.dismiss();
-            new OptionSetPopUp(getContext(), v, viewModel,
+            new OptionSetPopUp(getContext(), editText, viewModel,
                     this);
         }
+
+        if(viewModel.isBackgroundTransparent()){
+            viewModel.onItemClick();
+        }
+    }
+
+    public TextView textView() {
+        return editText;
     }
 
     public interface OnSelectedOption {

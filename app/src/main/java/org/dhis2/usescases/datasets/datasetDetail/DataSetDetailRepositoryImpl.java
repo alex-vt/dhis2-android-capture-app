@@ -2,7 +2,6 @@ package org.dhis2.usescases.datasets.datasetDetail;
 
 
 import org.dhis2.data.dhislogic.DhisPeriodUtils;
-import org.dhis2.utils.DateUtils;
 import org.hisp.dhis.android.core.D2;
 import org.hisp.dhis.android.core.arch.helpers.UidsHelper;
 import org.hisp.dhis.android.core.category.CategoryOption;
@@ -20,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import dhis2.org.analytics.charts.Charts;
 import io.reactivex.Flowable;
 
 import static org.dhis2.data.dhislogic.AuthoritiesKt.AUTH_DATAVALUE_ADD;
@@ -29,11 +29,13 @@ public class DataSetDetailRepositoryImpl implements DataSetDetailRepository {
     private final D2 d2;
     private final String dataSetUid;
     private final DhisPeriodUtils periodUtils;
+    private final Charts charts;
 
-    public DataSetDetailRepositoryImpl(String dataSetUid, D2 d2,DhisPeriodUtils periodUtils) {
+    public DataSetDetailRepositoryImpl(String dataSetUid, D2 d2,DhisPeriodUtils periodUtils, Charts charts) {
         this.d2 = d2;
         this.dataSetUid = dataSetUid;
         this.periodUtils = periodUtils;
+        this.charts = charts;
     }
 
     @Override
@@ -143,5 +145,10 @@ public class DataSetDetailRepositoryImpl implements DataSetDetailRepository {
     @Override
     public CategoryOptionCombo getCatOptCombo(String selectedCatOptionCombo) {
         return d2.categoryModule().categoryOptionCombos().uid(selectedCatOptionCombo).blockingGet();
+    }
+
+    @Override
+    public boolean dataSetHasAnalytics() {
+        return charts != null && !charts.getDataSetVisualizations(null, dataSetUid).isEmpty();
     }
 }

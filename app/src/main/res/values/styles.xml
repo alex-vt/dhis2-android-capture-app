@@ -1,51 +1,6 @@
 <resources>
-
-    <style name="DatePickerThemeRed" parent="Base.Theme.AppCompat.Light.Dialog">
-        <item name="colorAccent">@color/colorGreyDefault</item>
-        <item name="android:colorAccent">@color/colorGreyDefault</item>
-    </style>
-
     <style name="ErrorActivityTheme" parent="AppTheme">
         <item name="colorAccent">@color/text_black_4d4d4d</item>
-    </style>
-
-    <style name="DatePickerTheme" parent="Base.Theme.AppCompat.Light.Dialog">
-        <item name="colorAccent">@color/colorGreyDefault</item>
-        <item name="android:colorAccent">@color/colorGreyDefault</item>
-    </style>
-
-    <style name="DatePickerThemeGreen" parent="Base.Theme.AppCompat.Light.Dialog">
-        <item name="colorAccent">@color/colorGreyDefault</item>
-        <item name="android:colorAccent">@color/colorGreyDefault</item>
-    </style>
-
-    <style name="DatePickerThemeOrange" parent="Base.Theme.AppCompat.Light.Dialog">
-        <item name="colorAccent">@color/colorGreyDefault</item>
-        <item name="android:colorAccent">@color/colorGreyDefault</item>
-    </style>
-
-    <style name="TimePickerTheme" parent="Base.Theme.AppCompat.Light.Dialog">
-        <item name="android:textColor">@color/colorGreyDefault</item>
-        <item name="colorAccent">@color/colorGreyDefault</item>
-        <item name="android:colorAccent">@color/colorGreyDefault</item>
-    </style>
-
-    <style name="TimePickerThemeRed" parent="Base.Theme.AppCompat.Light.Dialog">
-        <item name="android:textColor">@color/colorGreyDefault</item>
-        <item name="colorAccent">@color/colorGreyDefault</item>
-        <item name="android:colorAccent">@color/colorGreyDefault</item>
-    </style>
-
-    <style name="TimePickerThemeGreen" parent="Base.Theme.AppCompat.Light.Dialog">
-        <item name="android:textColor">@color/colorGreyDefault</item>
-        <item name="colorAccent">@color/colorGreyDefault</item>
-        <item name="android:colorAccent">@color/colorGreyDefault</item>
-    </style>
-
-    <style name="TimePickerThemeOrange" parent="Base.Theme.AppCompat.Light.Dialog">
-        <item name="android:textColor">@color/colorGreyDefault</item>
-        <item name="colorAccent">@color/colorGreyDefault</item>
-        <item name="android:colorAccent">@color/colorGreyDefault</item>
     </style>
 
     <style name="DhisTabLayout" parent="Base.Widget.Design.TabLayout">
@@ -196,6 +151,7 @@
         <item name="android:textSize">14sp</item>
         <item name="android:textAlignment">textStart</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/textPrimary</item>
     </style>
 
     <style name="BottomDialogItem" parent="Widget.AppCompat.TextView">
@@ -240,14 +196,6 @@
         <item name="android:clickable">true</item>
     </style>
 
-    <style name="warning_appearance" parent="@android:style/TextAppearance">
-        <item name="android:textColor">@color/warning_color</item>
-    </style>
-
-    <style name="error_appearance" parent="@android:style/TextAppearance">
-        <item name="android:textColor">@color/error_color</item>
-    </style>
-
     <style name="Theme.AppCompat.Translucent" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:background">#00000000</item>
         <item name="android:windowNoTitle">true</item>
@@ -268,17 +216,6 @@
 
     <style name="radioPrimary">
         <item name="colorAccent">?colorPrimaryLight</item>
-    </style>
-
-    <style name="filterPeriodRadioButton" parent="Widget.AppCompat.CompoundButton.RadioButton">
-        <item name="android:textColor">@color/white</item>
-        <item name="android:textSize">11sp</item>
-        <item name="buttonTint">@color/white</item>
-        <item name="android:fontFamily">@font/rubik_regular</item>
-    </style>
-
-    <style name="filterCheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
-        <item name="buttonTint">@color/white</item>
     </style>
 
     <style name="primaryCheckBox" parent="Widget.AppCompat.CompoundButton.CheckBox">
@@ -319,35 +256,8 @@
         <item name="android:windowExitAnimation">@anim/pin_dialog_anim_exit</item>
     </style>
 
-    <style name="FieldLabel">
-        <item name="android:textSize">@dimen/field_label_size</item>
-        <item name="android:layout_marginStart">16dp</item>
-        <item name="android:layout_marginEnd">8dp</item>
-        <item name="android:textColor">@color/text_black_A63</item>
-    </style>
-
-    <style name="DescriptionFieldLabel" parent="FieldLabel">
-        <item name="android:textSize">10sp</item>
-        <item name="android:textColor">@color/placeholder</item>
-    </style>
-
     <style name="settingsHint">
         <item name="android:textSize">10sp</item>
-    </style>
-
-    <style name="CustomBottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
-        <item name="bottomSheetStyle">@style/CustomBottomSheetStyle</item>
-    </style>
-    <style name="BreakTheGlassBottomSheetDialogTheme"  parent="ThemeOverlay.MaterialComponents.BottomSheetDialog">
-        <item name="bottomSheetStyle">@style/CustomBottomSheetStyle</item>
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:windowSoftInputMode">adjustResize</item>
-        <item name="colorControlActivated">?colorPrimary</item>
-        <item name="colorControlHighlight">?colorPrimary</item>
-    </style>
-
-    <style name="CustomBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
-        <item name="android:background">@android:color/transparent</item>
     </style>
 
     <style name="roundedCornerImage" parent="">

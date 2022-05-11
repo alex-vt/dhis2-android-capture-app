@@ -3,8 +3,9 @@ package org.dhis2.usescases.settings;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.ExistingWorkPolicy;
 
-import org.dhis2.data.prefs.PreferenceProvider;
-import org.dhis2.data.schedulers.SchedulerProvider;
+import org.dhis2.commons.filters.FilterManager;
+import org.dhis2.commons.prefs.PreferenceProvider;
+import org.dhis2.commons.schedulers.SchedulerProvider;
 import org.dhis2.data.server.UserManager;
 import org.dhis2.data.service.workManager.WorkManagerController;
 import org.dhis2.data.service.workManager.WorkerItem;
@@ -232,6 +233,11 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
                                 }
                         )
         );
+    }
+
+    @Override
+    public void resetFilters() {
+        FilterManager.getInstance().clearAllFilters();
     }
 
     @Override

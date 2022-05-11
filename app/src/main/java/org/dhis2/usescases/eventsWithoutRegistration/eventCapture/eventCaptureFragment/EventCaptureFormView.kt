@@ -4,7 +4,7 @@ import org.dhis2.form.model.FieldUiModel
 
 interface EventCaptureFormView {
 
-    fun showFields(fields: MutableList<FieldUiModel>)
+    fun showFields(fields: List<FieldUiModel>?)
     fun performSaveClick()
     fun verifyBiometrics(biometricsGuid: String?, teiOrgUnit: String?)
 }

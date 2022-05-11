@@ -216,12 +216,11 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/ic_add_accent" />
 
-            <org.dhis2.utils.customviews.DhisBottomNavigationBar
+            <org.dhis2.utils.customviews.navigationbar.NavigationBottomBar
                 android:id="@+id/navigationBar"
                 style="@style/DhisBottomNavigationView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:menu="@menu/navigation_event_list"
                 tools:visibility="visible" />

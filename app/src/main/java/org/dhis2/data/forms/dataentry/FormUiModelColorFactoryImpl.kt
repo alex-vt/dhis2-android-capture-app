@@ -2,9 +2,9 @@ package org.dhis2.data.forms.dataentry
 
 import android.content.Context
 import androidx.core.content.ContextCompat
+import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.form.ui.style.FormUiColorFactory
 import org.dhis2.form.ui.style.FormUiColorType
-import org.dhis2.utils.ColorUtils
 
 class FormUiModelColorFactoryImpl(
     val context: Context,
@@ -22,7 +22,9 @@ class FormUiModelColorFactoryImpl(
                 FormUiColorType.WARNING to
                     ContextCompat.getColor(context, org.dhis2.R.color.warning_color),
                 FormUiColorType.ERROR to
-                    ContextCompat.getColor(context, org.dhis2.R.color.error_color)
+                    ContextCompat.getColor(context, org.dhis2.R.color.error_color),
+                FormUiColorType.ACTION_ICON to
+                    ContextCompat.getColor(context, org.dhis2.R.color.colorGreyDefault)
             )
         }
         return mapOf(
@@ -35,7 +37,9 @@ class FormUiModelColorFactoryImpl(
             FormUiColorType.WARNING to
                 ContextCompat.getColor(context, org.dhis2.R.color.warning_color),
             FormUiColorType.ERROR to
-                ContextCompat.getColor(context, org.dhis2.R.color.error_color)
+                ContextCompat.getColor(context, org.dhis2.R.color.error_color),
+            FormUiColorType.ACTION_ICON to
+                ColorUtils.getPrimaryColor(context, ColorUtils.ColorType.ACCENT)
         )
     }
 }

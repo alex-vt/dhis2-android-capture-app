@@ -1,32 +1,26 @@
 package org.dhis2.data.forms.dataentry.fields.coordinate;
 
+import static android.text.TextUtils.isEmpty;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.ObservableField;
 
 import com.google.auto.value.AutoValue;
 
-import org.dhis2.Bindings.DoubleExtensionsKt;
 import org.dhis2.Bindings.StringExtensionsKt;
-import org.dhis2.R;
 import org.dhis2.data.forms.dataentry.DataEntryViewHolderTypes;
 import org.dhis2.data.forms.dataentry.fields.FieldViewModel;
-import org.dhis2.form.model.ActionType;
-import org.dhis2.form.model.RowAction;
-import org.dhis2.form.ui.RecyclerViewUiEvents;
+import org.dhis2.form.ui.event.RecyclerViewUiEvents;
+import org.dhis2.form.ui.intent.FormIntent;
 import org.dhis2.form.ui.style.FormUiModelStyle;
 import org.dhis2.uicomponents.map.geometry.LngLatValidatorKt;
 import org.hisp.dhis.android.core.arch.helpers.GeometryHelper;
 import org.hisp.dhis.android.core.common.FeatureType;
 import org.hisp.dhis.android.core.common.Geometry;
 import org.hisp.dhis.android.core.common.ObjectStyle;
+import org.hisp.dhis.android.core.common.ValueType;
 import org.hisp.dhis.android.core.maintenance.D2Error;
-
-import io.reactivex.processors.FlowableProcessor;
-import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
-
-import static android.text.TextUtils.isEmpty;
 
 @AutoValue
 public abstract class CoordinateViewModel extends FieldViewModel {
@@ -41,61 +35,51 @@ public abstract class CoordinateViewModel extends FieldViewModel {
 
     public abstract boolean isBackgroundTransparent();
 
-    public static CoordinateViewModel create(String id, String label, Boolean mandatory, String value, String section, Boolean editable, String description, ObjectStyle objectStyle, FeatureType featureType, boolean isBackgroundTransparent, boolean isSearchMode, FlowableProcessor<RowAction> processor, FormUiModelStyle style, String url) {
-        return new AutoValue_CoordinateViewModel(id, label, mandatory, value, section, null, editable, null, null, null, description, objectStyle, null, DataEntryViewHolderTypes.COORDINATES, processor, style, false, url, featureType, isBackgroundTransparent, isSearchMode);
+    public static CoordinateViewModel create(String id, int layoutId, String label, Boolean mandatory, String value, String section, Boolean editable, String description, ObjectStyle objectStyle, FeatureType featureType, boolean isBackgroundTransparent, boolean isSearchMode, FormUiModelStyle style, String url) {
+        return new AutoValue_CoordinateViewModel(id, layoutId, label, mandatory, value, section, null, editable, null, null, null, description, objectStyle, null, DataEntryViewHolderTypes.COORDINATES, style, null, false, ValueType.COORDINATE, url, featureType, isBackgroundTransparent, isSearchMode);
     }
 
     @Override
     public FieldViewModel setMandatory() {
-        return new AutoValue_CoordinateViewModel(uid(), label(), true, value(), programStageSection(), null, editable(), null, warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, processor(), style(), activated(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_CoordinateViewModel(uid(), layoutId(), label(), true, value(), programStageSection(), null, editable(), null, warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, style(), hint(), activated(), valueType(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
     }
 
     @NonNull
     @Override
     public FieldViewModel withWarning(@NonNull String warning) {
-        return new AutoValue_CoordinateViewModel(uid(), label(), mandatory(), value(), programStageSection(), null, editable(), null, warning, error(), description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, processor(), style(), activated(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_CoordinateViewModel(uid(), layoutId(), label(), mandatory(), value(), programStageSection(), null, editable(), null, warning, error(), description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, style(), hint(), activated(), valueType(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
     }
 
     @NonNull
     @Override
     public FieldViewModel withError(@NonNull String error) {
-        return new AutoValue_CoordinateViewModel(uid(), label(), mandatory(), value(), programStageSection(), null, editable(), null, warning(), error, description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, processor(), style(), activated(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_CoordinateViewModel(uid(), layoutId(), label(), mandatory(), value(), programStageSection(), null, editable(), null, warning(), error, description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, style(), hint(), activated(), valueType(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
     }
 
     @NonNull
     @Override
     public FieldViewModel withValue(String data) {
-        return new AutoValue_CoordinateViewModel(uid(), label(), mandatory(), data, programStageSection(), null, editable(), null, warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, processor(), style(), activated(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_CoordinateViewModel(uid(), layoutId(), label(), mandatory(), data, programStageSection(), null, editable(), null, warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, style(), hint(), activated(), valueType(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
     }
 
     @NonNull
     @Override
     public FieldViewModel withEditMode(boolean isEditable) {
-        return new AutoValue_CoordinateViewModel(uid(), label(), mandatory(), value(), programStageSection(), null, isEditable, null, warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, processor(), style(), activated(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
+        return new AutoValue_CoordinateViewModel(uid(), layoutId(), label(), mandatory(), value(), programStageSection(), null, isEditable, null, warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, style(), hint(), activated(), valueType(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
     }
 
     @NonNull
     @Override
     public FieldViewModel withFocus(boolean isFocused) {
-        return new AutoValue_CoordinateViewModel(uid(), label(), mandatory(), value(), programStageSection(), null, editable(), null, warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, processor(), style(), isFocused, url(), featureType(), isBackgroundTransparent(), isSearchMode());
-    }
-
-    @Override
-    public int getLayoutId() {
-        return R.layout.custom_form_coordinate;
+        return new AutoValue_CoordinateViewModel(uid(), layoutId(), label(), mandatory(), value(), programStageSection(), null, editable(), null, warning(), error(), description(), objectStyle(), null, DataEntryViewHolderTypes.COORDINATES, style(), hint(), isFocused, valueType(), url(), featureType(), isBackgroundTransparent(), isSearchMode());
     }
 
     public void onCurrentLocationClick(Geometry geometry) {
         if (callback == null) return;
-        callback.onItemAction(new RowAction(
+        callback.intent(new FormIntent.SaveCurrentLocation(
                 uid(),
                 geometry == null ? null : geometry.coordinates(),
-                false,
-                null,
-                null,
-                featureType().name(),
-                null,
-                ActionType.ON_SAVE
+                getFeatureType().name()
         ));
     }
 
@@ -119,10 +103,6 @@ public abstract class CoordinateViewModel extends FieldViewModel {
 
     public boolean isPoint() {
         return featureType() == FeatureType.POINT;
-    }
-
-    public void onDescriptionClick() {
-        callback.recyclerViewUiEvents(new RecyclerViewUiEvents.ShowDescriptionLabelDialog(label(), description()));
     }
 
     public Geometry currentGeometry() {
@@ -180,6 +160,7 @@ public abstract class CoordinateViewModel extends FieldViewModel {
                     onCurrentLocationClick(GeometryHelper.createPointGeometry(lon, lat));
                 } else {
                     observableErrorMessage.set(coordinatesErrorMessage);
+                    return false;
                 }
             } else {
                 onCurrentLocationClick(null);
@@ -199,34 +180,20 @@ public abstract class CoordinateViewModel extends FieldViewModel {
     }
 
     public void requestCurrentLocation() {
-        callback.onItemAction(
-                new RowAction(
-                        uid(),
-                        value(),
-                        false,
-                        null,
-                        null,
-                        null,
-                        null,
-                        ActionType.ON_FOCUS
-                )
-        );
-        callback.currentLocation(uid());
+        onItemClick();
+        callback.recyclerViewUiEvents(new RecyclerViewUiEvents.RequestCurrentLocation(uid()));
     }
 
     public void requestMapLocation() {
-        callback.onItemAction(
-                new RowAction(
-                        uid(),
-                        value(),
-                        false,
-                        null,
-                        null,
-                        null,
-                        null,
-                        ActionType.ON_FOCUS
-                )
-        );
-        callback.mapRequest(uid(), featureType().name(), value());
+        onItemClick();
+        callback.recyclerViewUiEvents(new RecyclerViewUiEvents.RequestLocationByMap(uid(), getFeatureType(), value()));
+    }
+
+    private FeatureType getFeatureType() {
+        FeatureType featureType = featureType();
+        if (featureType == null) {
+            featureType = FeatureType.NONE;
+        }
+        return featureType;
     }
 }

@@ -6,5 +6,5 @@ import retrofit2.http.GET
 
 interface BiometricsConfigApi {
     @GET("dataStore/simprints/config")
-    fun getData(): Call<BiometricsConfig>
+    fun getData(): Call<List<BiometricsConfig>>
 }

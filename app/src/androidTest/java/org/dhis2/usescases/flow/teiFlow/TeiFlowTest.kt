@@ -3,12 +3,14 @@ package org.dhis2.usescases.flow.teiFlow
 import android.content.Intent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.ActivityTestRule
+import org.dhis2.commons.prefs.Preference
 import org.dhis2.usescases.BaseTest
 import org.dhis2.usescases.searchTrackEntity.SearchTEActivity
 import org.dhis2.usescases.teiDashboard.TeiDashboardMobileActivity
 import org.dhis2.usescases.flow.teiFlow.entity.DateRegistrationUIModel
 import org.dhis2.usescases.flow.teiFlow.entity.EnrollmentListUIModel
 import org.dhis2.usescases.flow.teiFlow.entity.RegisterTEIUIModel
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,6 +32,7 @@ class TeiFlowTest: BaseTest() {
     private val currentDate = getCurrentDate()
 
     @Test
+    @Ignore
     fun shouldEnrollToSameProgramAfterClosedIt() {
         val totalEventsPerEnrollment = 3
         val pastProgramPosition = 4
@@ -37,6 +40,7 @@ class TeiFlowTest: BaseTest() {
         val registerTeiDetails = createRegisterTEI()
 
         setupCredentials()
+        setDatePicker()
         prepareWomanProgrammeIntentAndLaunchActivity(ruleSearch)
 
         teiFlowRobot {

@@ -25,7 +25,7 @@
 
 package org.dhis2.Bindings
 
-import org.dhis2.data.analytics.LOCATION_FEEDBACK_WIDGET
+import dhis2.org.analytics.charts.ui.LOCATION_FEEDBACK_WIDGET
 import org.dhis2.data.forms.RuleActionUnsupported
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.common.ValueType
@@ -172,12 +172,7 @@ fun ProgramRuleAction.toRuleEngineObject(): RuleAction {
                     name() ?: uid()
                 )
             } else {
-                data()?.let {
-                    RuleActionAssign.create(content(), it, field)
-                } ?: RuleActionUnsupported.create(
-                    "ASSIGN RULE IS MISSING DATA",
-                    name() ?: uid()
-                )
+                RuleActionAssign.create(content(), data() ?: "", field)
             }
         }
         ProgramRuleActionType.SHOWWARNING -> RuleActionShowWarning.create(content(), data(), field)

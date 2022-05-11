@@ -158,5 +158,8 @@
             </intent-filter>
         </activity>
     </application>
+    <queries>
+        <package android:name="com.simprints.id" />
+    </queries>
 
 </manifest>

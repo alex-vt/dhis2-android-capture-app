@@ -9,18 +9,18 @@ import io.reactivex.Observable
 import java.util.Calendar
 import kotlin.math.ceil
 import org.dhis2.Bindings.toSeconds
-import org.dhis2.data.prefs.Preference.Companion.DATA
-import org.dhis2.data.prefs.Preference.Companion.EVENT_MAX
-import org.dhis2.data.prefs.Preference.Companion.EVENT_MAX_DEFAULT
-import org.dhis2.data.prefs.Preference.Companion.LIMIT_BY_ORG_UNIT
-import org.dhis2.data.prefs.Preference.Companion.LIMIT_BY_PROGRAM
-import org.dhis2.data.prefs.Preference.Companion.META
-import org.dhis2.data.prefs.Preference.Companion.TEI_MAX
-import org.dhis2.data.prefs.Preference.Companion.TEI_MAX_DEFAULT
-import org.dhis2.data.prefs.Preference.Companion.TIME_DAILY
-import org.dhis2.data.prefs.Preference.Companion.TIME_DATA
-import org.dhis2.data.prefs.Preference.Companion.TIME_META
-import org.dhis2.data.prefs.PreferenceProvider
+import org.dhis2.commons.prefs.Preference.Companion.DATA
+import org.dhis2.commons.prefs.Preference.Companion.EVENT_MAX
+import org.dhis2.commons.prefs.Preference.Companion.EVENT_MAX_DEFAULT
+import org.dhis2.commons.prefs.Preference.Companion.LIMIT_BY_ORG_UNIT
+import org.dhis2.commons.prefs.Preference.Companion.LIMIT_BY_PROGRAM
+import org.dhis2.commons.prefs.Preference.Companion.META
+import org.dhis2.commons.prefs.Preference.Companion.TEI_MAX
+import org.dhis2.commons.prefs.Preference.Companion.TEI_MAX_DEFAULT
+import org.dhis2.commons.prefs.Preference.Companion.TIME_DAILY
+import org.dhis2.commons.prefs.Preference.Companion.TIME_DATA
+import org.dhis2.commons.prefs.Preference.Companion.TIME_META
+import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.data.service.workManager.WorkManagerController
 import org.dhis2.data.service.workManager.WorkerItem
 import org.dhis2.data.service.workManager.WorkerType
@@ -193,9 +193,9 @@ class SyncPresenterImpl(
     }
 
     override fun checkSyncStatus(): SyncResult {
-        val eventsOk =
-            d2.eventModule().events().byState().notIn(State.SYNCED).blockingGet().isEmpty()
-        val teiOk = d2.trackedEntityModule().trackedEntityInstances().byState()
+        val eventsOk = d2.eventModule().events()
+            .byAggregatedSyncState().notIn(State.SYNCED).blockingGet().isEmpty()
+        val teiOk = d2.trackedEntityModule().trackedEntityInstances().byAggregatedSyncState()
             .notIn(State.SYNCED, State.RELATIONSHIP).blockingGet().isEmpty()
 
         if (eventsOk && teiOk) {
@@ -204,11 +204,11 @@ class SyncPresenterImpl(
 
         val anyEventsToPostOrToUpdate = d2.eventModule()
             .events()
-            .byState().`in`(State.TO_POST, State.TO_UPDATE)
+            .byAggregatedSyncState().`in`(State.TO_POST, State.TO_UPDATE)
             .blockingGet().isNotEmpty()
         val anyTeiToPostOrToUpdate = d2.trackedEntityModule()
             .trackedEntityInstances()
-            .byState().`in`(State.TO_POST, State.TO_UPDATE)
+            .byAggregatedSyncState().`in`(State.TO_POST, State.TO_UPDATE)
             .blockingGet().isNotEmpty()
 
         if (anyEventsToPostOrToUpdate || anyTeiToPostOrToUpdate) {
@@ -219,7 +219,9 @@ class SyncPresenterImpl(
     }
 
     override fun syncGranularEvent(eventUid: String): Observable<D2Progress> {
-        return d2.eventModule().events().byUid().eq(eventUid).upload()
+        Completable.fromObservable(d2.eventModule().events().byUid().eq(eventUid).upload())
+            .blockingAwait()
+        return d2.eventModule().eventDownloader().byUid().eq(eventUid).download()
     }
 
     override fun blockSyncGranularProgram(programUid: String): ListenableWorker.Result {
@@ -316,17 +318,28 @@ class SyncPresenterImpl(
         return d2.programModule().programs().uid(uid).get().toObservable()
             .flatMap { program ->
                 if (program.programType() == ProgramType.WITH_REGISTRATION) {
-                    d2.trackedEntityModule().trackedEntityInstances().byProgramUids(
-                        listOf(uid)
-                    ).upload()
+                    Completable.fromObservable(
+                        d2.trackedEntityModule().trackedEntityInstances().byProgramUids(listOf(uid))
+                            .upload()
+                    ).blockingAwait()
+
+                    d2.trackedEntityModule().trackedEntityInstanceDownloader().byProgramUid(uid)
+                        .download()
                 } else {
-                    d2.eventModule().events().byProgramUid().eq(uid).upload()
+                    Completable.fromObservable(
+                        d2.eventModule().events().byProgramUid().eq(uid).upload()
+                    ).blockingAwait()
+                    d2.eventModule().eventDownloader().byProgramUid(uid).download()
                 }
             }
     }
 
     override fun syncGranularTEI(uid: String): Observable<D2Progress> {
-        return d2.trackedEntityModule().trackedEntityInstances().byUid().eq(uid).upload()
+        Completable.fromObservable(
+            d2.trackedEntityModule().trackedEntityInstances().byUid().eq(uid).upload()
+        ).blockingAwait()
+        return d2.trackedEntityModule().trackedEntityInstanceDownloader().byUid().eq(uid)
+            .download()
     }
 
     override fun syncGranularDataSet(uid: String): Observable<D2Progress> {
@@ -377,7 +390,7 @@ class SyncPresenterImpl(
     override fun checkSyncEventStatus(uid: String): SyncResult {
         val eventsOk = d2.eventModule().events()
             .byUid().eq(uid)
-            .byState().notIn(State.SYNCED)
+            .byAggregatedSyncState().notIn(State.SYNCED)
             .blockingGet().isEmpty()
 
         if (eventsOk) {
@@ -387,7 +400,7 @@ class SyncPresenterImpl(
         val anyEventsToPostOrToUpdate = d2.eventModule()
             .events()
             .byUid().eq(uid)
-            .byState().`in`(State.TO_POST, State.TO_UPDATE)
+            .byAggregatedSyncState().`in`(State.TO_POST, State.TO_UPDATE)
             .blockingGet().isNotEmpty()
 
         if (anyEventsToPostOrToUpdate) {
@@ -400,7 +413,7 @@ class SyncPresenterImpl(
     override fun checkSyncTEIStatus(uid: String): SyncResult {
         val teiOk = d2.trackedEntityModule().trackedEntityInstances()
             .byUid().eq(uid)
-            .byState().notIn(State.SYNCED, State.RELATIONSHIP)
+            .byAggregatedSyncState().notIn(State.SYNCED, State.RELATIONSHIP)
             .blockingGet().isEmpty()
 
         if (teiOk) {
@@ -409,7 +422,7 @@ class SyncPresenterImpl(
 
         val anyTeiToPostOrToUpdate = d2.trackedEntityModule().trackedEntityInstances()
             .byUid().eq(uid)
-            .byState().`in`(State.TO_POST, State.TO_UPDATE)
+            .byAggregatedSyncState().`in`(State.TO_POST, State.TO_UPDATE)
             .blockingGet().isNotEmpty()
 
         if (anyTeiToPostOrToUpdate) {
@@ -427,7 +440,7 @@ class SyncPresenterImpl(
         return d2.dataValueModule().dataValues().byPeriod().eq(period)
             .byOrganisationUnitUid().eq(orgUnit)
             .byAttributeOptionComboUid().eq(attributeOptionCombo)
-            .byState().notIn(State.SYNCED)
+            .bySyncState().notIn(State.SYNCED)
             .blockingGet().isEmpty()
     }
 
@@ -437,11 +450,11 @@ class SyncPresenterImpl(
         return if (program!!.programType() == ProgramType.WITH_REGISTRATION) {
             d2.trackedEntityModule().trackedEntityInstances()
                 .byProgramUids(listOf(uid))
-                .byState().notIn(State.SYNCED, State.RELATIONSHIP)
+                .byAggregatedSyncState().notIn(State.SYNCED, State.RELATIONSHIP)
                 .blockingGet().isEmpty()
         } else {
             d2.eventModule().events().byProgramUid().eq(uid)
-                .byState().notIn(State.SYNCED)
+                .byAggregatedSyncState().notIn(State.SYNCED)
                 .blockingGet().isEmpty()
         }
     }
@@ -454,7 +467,7 @@ class SyncPresenterImpl(
             .byOrganisationUnitUid().eq(dataSetReport!!.organisationUnitUid())
             .byPeriod().eq(dataSetReport.period())
             .byAttributeOptionComboUid().eq(dataSetReport.attributeOptionComboUid())
-            .byState().notIn(State.SYNCED)
+            .bySyncState().notIn(State.SYNCED)
             .blockingGet().isEmpty()
     }
 

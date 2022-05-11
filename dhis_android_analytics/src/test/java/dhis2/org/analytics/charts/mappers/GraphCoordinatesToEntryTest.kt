@@ -18,7 +18,7 @@ class GraphCoordinatesToEntryTest {
 
     @Test
     fun `Should return mapped list`() {
-        val result = graphToLineData.map(mockedGraph(), mockedCoordinates())
+        val result = graphToLineData.map(mockedGraph(), mockedCoordinates(), "serieLabel")
         val expectedEntryPosition = listOf(0f, 1f, 3f, 6f)
         assertTrue(result.size == 4)
         result.forEachIndexed { index, entry ->
@@ -31,16 +31,15 @@ class GraphCoordinatesToEntryTest {
 
     @Test
     fun `Should return empty mapped list`() {
-        val result = graphToLineData.map(mockedGraph(emptyList()), emptyList())
+        val result = graphToLineData.map(mockedGraph(emptyList()), emptyList(), "serie Label")
         assertTrue(result.isEmpty())
     }
 
     private fun mockedGraph(coordinates: List<GraphPoint> = mockedCoordinates()): Graph {
         return Graph(
             "testGraph",
-            false,
             coordinates.map { SerieData("fieldName", coordinates) },
-            "periodToDisplay",
+            null,
             PeriodType.Daily,
             dailyPeriodPeriod
         )
