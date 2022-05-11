@@ -39,7 +39,7 @@ import org.dhis2.usescases.general.ActivityGlobalAbstract;
 import org.dhis2.utils.ActivityResultObservable;
 import org.dhis2.utils.ActivityResultObserver;
 import org.dhis2.utils.Constants;
-import org.dhis2.utils.customviews.CustomDialog;
+import org.dhis2.commons.dialogs.CustomDialog;
 import org.dhis2.utils.customviews.FieldLayout;
 import org.dhis2.utils.customviews.ImageDetailBottomDialog;
 import org.hisp.dhis.android.core.arch.helpers.FileResourceDirectoryHelper;
@@ -52,8 +52,6 @@ import kotlin.Pair;
 
 import static android.app.Activity.RESULT_OK;
 import static android.text.TextUtils.isEmpty;
-import static org.dhis2.utils.Constants.CAMERA_REQUEST;
-import static org.dhis2.utils.Constants.GALLERY_REQUEST;
 
 public class PictureView extends FieldLayout implements View.OnClickListener, ActivityResultObserver {
 
@@ -154,22 +152,18 @@ public class PictureView extends FieldLayout implements View.OnClickListener, Ac
                 ).show());
     }
 
-    public void setWarning(String msg) {
-        if (!isEmpty(msg)) {
-            errorView.setTextColor(ContextCompat.getColor(getContext(), R.color.warning_color));
-            errorView.setText(msg);
-            errorView.setVisibility(VISIBLE);
-        } else
-            errorView.setVisibility(GONE);
-    }
-
-    public void setError(String msg) {
-        if (!isEmpty(msg)) {
+    public void setWarningErrorMessage(String warning, String error) {
+        if (!isEmpty(error)) {
             errorView.setTextColor(ContextCompat.getColor(getContext(), R.color.error_color));
-            errorView.setText(msg);
+            errorView.setText(error);
             errorView.setVisibility(VISIBLE);
-        } else
+        } else if (!isEmpty(warning)) {
+            errorView.setTextColor(ContextCompat.getColor(getContext(), R.color.warning_color));
+            errorView.setText(warning);
+            errorView.setVisibility(VISIBLE);
+        } else {
             errorView.setVisibility(GONE);
+        }
     }
 
     public void setIsBgTransparent(boolean isBgTransparent) {
@@ -305,8 +299,7 @@ public class PictureView extends FieldLayout implements View.OnClickListener, Ac
         setDescription(viewModel.description());
         setInitialValue(viewModel.value());
         setEditable(viewModel.editable());
-        setWarning(viewModel.warning());
-        setError(viewModel.error());
+        setWarningErrorMessage(viewModel.warning(), viewModel.error());
     }
 
     private void subscribe() {

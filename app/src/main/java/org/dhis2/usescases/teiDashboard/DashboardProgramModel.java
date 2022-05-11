@@ -161,7 +161,8 @@ public class DashboardProgramModel extends BaseObservable {
     }
 
     public boolean isBiometricsEnabled(){
-        return BIOMETRICS_ENABLED;
+        String biometricUid = getTrackedBiometricEntityAttributeUid();
+        return BIOMETRICS_ENABLED && biometricUid != null;
     }
 
     public boolean isTrackedBiometricEntityExistAndHasValue(){

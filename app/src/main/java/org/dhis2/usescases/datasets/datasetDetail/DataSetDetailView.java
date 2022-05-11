@@ -28,18 +28,13 @@
 
 package org.dhis2.usescases.datasets.datasetDetail;
 
-import org.dhis2.data.tuples.Pair;
 import org.dhis2.usescases.general.AbstractActivityContracts;
-import org.dhis2.utils.filters.FilterItem;
-import org.dhis2.utils.filters.FilterManager;
-import org.hisp.dhis.android.core.category.CategoryCombo;
-import org.hisp.dhis.android.core.category.CategoryOptionCombo;
+import org.dhis2.commons.filters.FilterItem;
+import org.dhis2.commons.filters.FilterManager;
 
 import java.util.List;
 
 interface DataSetDetailView extends AbstractActivityContracts.View {
-
-    void setData(List<DataSetDetailModel> dataSetDetailModels);
 
     void renderError(String message);
 
@@ -52,14 +47,6 @@ interface DataSetDetailView extends AbstractActivityContracts.View {
     void openOrgUnitTreeSelector();
 
     void showPeriodRequest(FilterManager.PeriodRequest periodRequest);
-
-    void setWritePermission(Boolean canWrite);
-
-    void startNewDataSet();
-
-    void openDataSet(DataSetDetailModel dataSet);
-
-    void showSyncDialog(DataSetDetailModel dataSet);
 
     void showCatOptComboDialog(String catComboUid);
 

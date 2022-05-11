@@ -1,6 +1,5 @@
 package org.dhis2.usescases.teiDashboard.teiProgramList;
 
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -15,8 +14,8 @@ import org.dhis2.databinding.ItemTeiProgramsEnrollmentBinding;
 import org.dhis2.databinding.ItemTeiProgramsEnrollmentInactiveBinding;
 import org.dhis2.databinding.ItemTeiProgramsProgramsBinding;
 import org.dhis2.usescases.main.program.ProgramViewModel;
-import org.dhis2.utils.ColorUtils;
-import org.dhis2.utils.resources.ResourceManager;
+import org.dhis2.commons.resources.ColorUtils;
+import org.dhis2.commons.resources.ResourceManager;
 
 import timber.log.Timber;
 
@@ -55,7 +54,7 @@ public class TeiProgramListEnrollmentViewHolder extends RecyclerView.ViewHolder 
             int icon = new ResourceManager(itemView.getContext())
                     .getObjectStyleDrawableResource(
                             enrollment.icon(),
-                            R.drawable.ic_program_default
+                            R.drawable.ic_default_outline
                     );
 
             Drawable iconImage = null;
@@ -91,7 +90,7 @@ public class TeiProgramListEnrollmentViewHolder extends RecyclerView.ViewHolder 
             int icon = new ResourceManager(itemView.getContext())
                     .getObjectStyleDrawableResource(
                             programModel.icon(),
-                            R.drawable.ic_program_default
+                            R.drawable.ic_default_outline
                     );
 
             Drawable iconImage = null;

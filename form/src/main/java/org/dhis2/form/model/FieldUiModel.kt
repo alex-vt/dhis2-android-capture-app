@@ -1,8 +1,10 @@
 package org.dhis2.form.model
 
-import org.dhis2.form.ui.RecyclerViewUiEvents
+import org.dhis2.form.ui.event.RecyclerViewUiEvents
+import org.dhis2.form.ui.event.UiEventFactory
 import org.dhis2.form.ui.intent.FormIntent
 import org.dhis2.form.ui.style.FormUiModelStyle
+import org.hisp.dhis.android.core.common.ValueType
 
 interface FieldUiModel {
 
@@ -24,9 +26,27 @@ interface FieldUiModel {
 
     val label: String
 
+    val formattedLabel: String
+
     val programStageSection: String?
 
     val style: FormUiModelStyle?
+
+    val hint: String?
+
+    val description: String?
+
+    val valueType: ValueType?
+
+    val legend: LegendValue?
+
+    val optionSet: String?
+
+    val allowFutureDates: Boolean?
+
+    val uiEventFactory: UiEventFactory?
+
+    val displayName: String?
 
     fun setCallback(callback: Callback)
 
@@ -38,6 +58,12 @@ interface FieldUiModel {
 
     fun onTextChange(value: String?)
 
+    fun onDescriptionClick()
+
+    fun onClear()
+
+    fun invokeUiEvent()
+
     fun setValue(value: String?): FieldUiModel
 
     fun setFocus(): FieldUiModel
@@ -46,26 +72,17 @@ interface FieldUiModel {
 
     fun setEditable(editable: Boolean): FieldUiModel
 
-    fun hasLegend(): Boolean
-
     fun setLegend(legendValue: LegendValue?): FieldUiModel
-
-    fun getOptionSet(): String?
 
     fun setWarning(warning: String): FieldUiModel
 
     fun setFieldMandatory(): FieldUiModel
 
+    fun setDisplayName(displayName: String?): FieldUiModel
+
+
     interface Callback {
-        fun onNext()
         fun intent(intent: FormIntent)
         fun recyclerViewUiEvents(uiEvent: RecyclerViewUiEvents)
-        fun onItemAction(action: RowAction)
-        fun currentLocation(coordinateFieldUid: String)
-        fun mapRequest(
-            coordinateFieldUid: String,
-            featureType: String,
-            initialCoordinates: String?
-        )
     }
 }

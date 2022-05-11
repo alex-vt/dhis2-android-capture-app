@@ -1,6 +1,8 @@
 This is a patch version that fixes:
-- [ANDROAPP-4093](https://jira.dhis2.org/browse/ANDROAPP-4093) Sync error message in dashboard and home
-- [ANDROAPP-4084](https://jira.dhis2.org/browse/ANDROAPP-4084) Tracker Events sync fix
-- [ANDROAPP-4088](https://jira.dhis2.org/browse/ANDROAPP-4088) Date filter not returning correct number of records
+- ANDROAPP-4544 Sync re-start if it takes more than 10 minutes
+- ANDROAPP-4260 App is selecting the wrong image for the profile picture
+- ANDROAPP-4383 App does not mark TEI with error when failing to upload image
+- ANDROAPP-4430 Display correct error message for wrong configured server in login
+- Fixed several crashes related to navigation and maps
 ....
 You can find all the details on Jira and Github.

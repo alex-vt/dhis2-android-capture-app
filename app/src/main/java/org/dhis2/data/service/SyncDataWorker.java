@@ -9,12 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.work.Data;
+import androidx.work.ForegroundInfo;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import org.dhis2.App;
 import org.dhis2.R;
-import org.dhis2.data.prefs.PreferenceProvider;
+import org.dhis2.commons.prefs.PreferenceProvider;
 import org.dhis2.utils.Constants;
 import org.dhis2.utils.DateUtils;
 
@@ -135,6 +136,12 @@ public class SyncDataWorker extends Worker {
         return Result.success(createOutputData(true));
     }
 
+    @Override
+    public void onStopped() {
+        cancelNotification();
+        super.onStopped();
+    }
+
     private Data createOutputData(boolean state) {
         return new Data.Builder()
                 .putBoolean("DATA_STATE", state)
@@ -160,7 +167,8 @@ public class SyncDataWorker extends Worker {
                         .setProgress(100, progress, false)
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
-        notificationManager.notify(SyncDataWorker.SYNC_DATA_ID, notificationBuilder.build());
+        setForegroundAsync(new ForegroundInfo(SyncDataWorker.SYNC_DATA_ID, notificationBuilder.build()));
+
     }
 
     private void cancelNotification() {

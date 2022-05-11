@@ -6,6 +6,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.dhis2.Bindings.userFriendlyValue
 import org.dhis2.R
+import org.dhis2.data.forms.EventRepository
+import org.dhis2.data.forms.RulesRepository
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventRuleEngineRepository
 import org.dhis2.utils.JsonCheckResult
 import org.dhis2.utils.JsonChecker
 import org.hisp.dhis.android.core.D2
@@ -14,9 +17,14 @@ import org.hisp.dhis.android.core.attribute.AttributeValue
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.hisp.dhis.android.core.legendset.Legend
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityDataValue
+import org.hisp.dhis.rules.models.RuleActionSetMandatoryField
 import java.util.Locale
 
-class ValuesD2Repository(private val d2: D2, private val context: Context) : ValuesRepository {
+class ValuesD2Repository(
+    private val d2: D2,
+    private val context: Context,
+    private val rulesRepository: RulesRepository
+) : ValuesRepository {
     val dataElements: List<DataElement> = d2.dataElementModule().dataElements().get().blockingGet()
 
     override fun getByEvent(eventUid: String): List<Value> {
@@ -29,16 +37,27 @@ class ValuesD2Repository(private val d2: D2, private val context: Context) : Val
                 .get().blockingGet()
 
         val dataElementsWithFeedbackOrder =
-            getDataElementsWithFeedbackOrder(dataElements, feedbackOrderAttributeCode)
+            getDataElementsWithFeedbackOrder(feedbackOrderAttributeCode)
 
         val dataElementsWithMandatory =
             getDataElementsWithMandatoryFilter(eventUid, dataElementsWithFeedbackOrder)
 
-        return teiDataValues.filter { dataElementsWithFeedbackOrder.contains(it.dataElement()) }
+        val eventRuleEngineRepository = EventRuleEngineRepository(
+            d2,
+            EventRepository(rulesRepository, eventUid, d2),
+            eventUid
+        )
+
+        val rulesResult = eventRuleEngineRepository.calculate().blockingFirst()
+        val mandatoryFieldsByRules =
+            rulesResult.items().filter { it.ruleAction() is RuleActionSetMandatoryField }
+                .map { (it.ruleAction() as RuleActionSetMandatoryField).field() }
+
+        return teiDataValues.filter { dataElementsWithFeedbackOrder.keys.contains(it.dataElement()) }
             .map { teiValue ->
                 val dataElement =
                     dataElements.first { it.uid() == teiValue.dataElement() }
-                val assignedLegend = getAssignedLegend(teiValue.value()!!, teiValue.dataElement()!!)
+                val assignedLegend = getAssignedLegend(teiValue.value() ?:"", teiValue.dataElement()!!)
                 val deAttributeValues = getDataElementAttributeValues(teiValue.dataElement()!!)
 
                 val deFeedbackHelpRaw = deAttributeValues.firstOrNull {
@@ -54,16 +73,18 @@ class ValuesD2Repository(private val d2: D2, private val context: Context) : Val
                 val deName: String =
                     if (dataElement.displayFormName() == null) dataElement.displayName()!! else dataElement.displayFormName()!!
 
+                val mandatory = dataElementsWithMandatory.contains(teiValue.dataElement()) ||
+                    mandatoryFieldsByRules.contains(teiValue.dataElement())
 
                 Value(
                     teiValue.dataElement()!!,
                     deName,
-                    teiValue.userFriendlyValue(d2)!!,
+                    teiValue.userFriendlyValue(d2) ?: "",
                     FeedbackOrder(deFeedbackOrder!!.value()),
                     assignedLegend?.color(),
                     deFeedbackHelp,
                     assignedLegend?.name()?.split("_")?.last() != failLegendSuffix,
-                    dataElementsWithMandatory.contains(teiValue.dataElement()!!),
+                    mandatory,
                     eventUid,
                     isNumeric(teiValue)
                 )
@@ -112,25 +133,28 @@ class ValuesD2Repository(private val d2: D2, private val context: Context) : Val
         }
     }
 
-    private fun getDataElementsWithFeedbackOrder(
-        dataElements: List<DataElement>,
-        feedbackOrderAttributeCode: String
-    ): List<String> {
-        return dataElements.map {
-            val deAttributeValues = getDataElementAttributeValues(it.uid())
+    private fun getDataElementsWithFeedbackOrder(feedbackOrderAttributeCode: String): Map<String, String> {
+        var result = mutableMapOf<String, String>()
 
-            it.toBuilder().attributeValues(deAttributeValues).build()
-        }.filter {
-            if (it.attributeValues() == null) false else it.attributeValues()!!
-                .any { attributeValue ->
-                    attributeValue.attribute().code() == feedbackOrderAttributeCode
+        val select = "SELECT dataElement, value  FROM DataElementAttributeValueLink  \n" +
+            "LEFT JOIN Attribute ON DataElementAttributeValueLink.Attribute = Attribute.uid\n" +
+            "where Attribute.code = ?"
+
+        d2.databaseAdapter().rawQuery(select, feedbackOrderAttributeCode)
+            .use { cursor ->
+                if (cursor != null) {
+                    while (cursor.moveToNext()) {
+                        result[cursor.getString(0)] = cursor.getString(1)
+                    }
                 }
-        }.map { it.uid() }
+            }
+
+        return result
     }
 
     private fun getDataElementsWithMandatoryFilter(
         eventUid: String,
-        dataElementsWithFeedbackOrder: List<String>
+        dataElementsWithFeedbackOrder: Map<String, String>
     ): List<String> {
         val event = d2.eventModule().events().byUid().eq(eventUid)
             .one().blockingGet()
@@ -143,7 +167,7 @@ class ValuesD2Repository(private val d2: D2, private val context: Context) : Val
             d2.dataElementModule().dataElements()
                 .uid(programStageDE.dataElement()?.uid()).blockingGet().uid()
         }.filter { deUid ->
-            dataElementsWithFeedbackOrder.contains(deUid)
+            dataElementsWithFeedbackOrder.keys.contains(deUid)
         }
     }
 

@@ -9,10 +9,8 @@ import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.usescases.general.AbstractActivityContracts;
 import org.dhis2.usescases.teiDashboard.DashboardProgramModel;
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.teievents.EventViewModel;
-import org.dhis2.utils.filters.FilterItem;
-import org.dhis2.utils.filters.FilterManager;
-import org.hisp.dhis.android.core.category.CategoryCombo;
-import org.hisp.dhis.android.core.category.CategoryOptionCombo;
+import org.dhis2.commons.filters.FilterItem;
+import org.dhis2.commons.filters.FilterManager;
 import org.hisp.dhis.android.core.enrollment.Enrollment;
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus;
 import org.hisp.dhis.android.core.event.Event;
@@ -38,7 +36,7 @@ public class TEIDataContracts {
 
         void hideDueDate();
 
-        Consumer<List<EventViewModel>> setEvents();
+        void setEvents(List<EventViewModel> events, boolean canAddEvents);
 
         Consumer<ProgramStage> displayGenerateEvent();
 
@@ -144,6 +142,8 @@ public class TEIDataContracts {
         boolean enrollmentOrgUnitInCaptureScope(String enrollmentOrgUnit);
 
         void setOpeningFilterToNone();
+
+        void setOrgUnitFilters(List<OrganisationUnit> selectedOrgUnits);
 
         void launchEventCapture(String uid, String guid, int status);
 

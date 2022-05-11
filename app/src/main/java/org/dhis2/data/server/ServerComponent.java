@@ -2,21 +2,18 @@ package org.dhis2.data.server;
 
 import androidx.annotation.NonNull;
 
-import org.dhis2.data.dagger.PerServer;
+import org.dhis2.commons.di.dagger.PerServer;
 import org.dhis2.data.dhislogic.DhisPeriodUtils;
 import org.dhis2.data.user.UserComponent;
 import org.dhis2.data.user.UserModule;
-import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialogComponent;
-import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialogModule;
-import org.dhis2.usescases.orgunitselector.OUTreeComponent;
-import org.dhis2.usescases.orgunitselector.OUTreeModule;
+import org.dhis2.commons.orgunitselector.OUTreeComponent;
+import org.dhis2.commons.orgunitselector.OUTreeModule;
 import org.dhis2.utils.category.CategoryDialogComponent;
 import org.dhis2.utils.category.CategoryDialogModule;
 import org.dhis2.utils.customviews.CategoryComboDialogComponent;
 import org.dhis2.utils.customviews.CategoryComboDialogModule;
 import org.dhis2.utils.granularsync.GranularSyncComponent;
 import org.dhis2.utils.granularsync.GranularSyncModule;
-import org.jetbrains.annotations.NotNull;
 
 import dagger.Subcomponent;
 import dhis2.org.analytics.charts.Charts;

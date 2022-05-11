@@ -5,20 +5,20 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import io.reactivex.Single
 import org.dhis2.Bindings.toSeconds
-import org.dhis2.data.prefs.Preference.Companion.DEFAULT_NUMBER_RV
-import org.dhis2.data.prefs.Preference.Companion.EVENT_MAX
-import org.dhis2.data.prefs.Preference.Companion.EVENT_MAX_DEFAULT
-import org.dhis2.data.prefs.Preference.Companion.LIMIT_BY_ORG_UNIT
-import org.dhis2.data.prefs.Preference.Companion.LIMIT_BY_PROGRAM
-import org.dhis2.data.prefs.Preference.Companion.NUMBER_RV
-import org.dhis2.data.prefs.Preference.Companion.TEI_MAX
-import org.dhis2.data.prefs.Preference.Companion.TEI_MAX_DEFAULT
-import org.dhis2.data.prefs.Preference.Companion.TIME_15M
-import org.dhis2.data.prefs.Preference.Companion.TIME_DAILY
-import org.dhis2.data.prefs.Preference.Companion.TIME_DATA
-import org.dhis2.data.prefs.Preference.Companion.TIME_META
-import org.dhis2.data.prefs.Preference.Companion.TIME_WEEKLY
-import org.dhis2.data.prefs.PreferenceProvider
+import org.dhis2.commons.prefs.Preference.Companion.DEFAULT_NUMBER_RV
+import org.dhis2.commons.prefs.Preference.Companion.EVENT_MAX
+import org.dhis2.commons.prefs.Preference.Companion.EVENT_MAX_DEFAULT
+import org.dhis2.commons.prefs.Preference.Companion.LIMIT_BY_ORG_UNIT
+import org.dhis2.commons.prefs.Preference.Companion.LIMIT_BY_PROGRAM
+import org.dhis2.commons.prefs.Preference.Companion.NUMBER_RV
+import org.dhis2.commons.prefs.Preference.Companion.TEI_MAX
+import org.dhis2.commons.prefs.Preference.Companion.TEI_MAX_DEFAULT
+import org.dhis2.commons.prefs.Preference.Companion.TIME_15M
+import org.dhis2.commons.prefs.Preference.Companion.TIME_DAILY
+import org.dhis2.commons.prefs.Preference.Companion.TIME_DATA
+import org.dhis2.commons.prefs.Preference.Companion.TIME_META
+import org.dhis2.commons.prefs.Preference.Companion.TIME_WEEKLY
+import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.data.server.UserManager
 import org.dhis2.utils.Constants
 import org.hisp.dhis.android.core.D2
@@ -264,77 +264,85 @@ class SettingsRepositoryTest {
         whenever(d2.trackedEntityModule().trackedEntityInstances()) doReturn mock()
         whenever(d2.dataValueModule().dataValues()) doReturn mock()
 
-        whenever(d2.eventModule().events().byState()) doReturn mock()
-        whenever(d2.eventModule().events().byState().`in`(State.ERROR)) doReturn mock()
-        whenever(d2.eventModule().events().byState().`in`(State.WARNING)) doReturn mock()
-        whenever(d2.eventModule().events().byState().`in`(State.ERROR).blockingGet()) doReturn
+        whenever(d2.eventModule().events().byAggregatedSyncState()) doReturn mock()
+        whenever(
+            d2.eventModule().events().byAggregatedSyncState().`in`(State.ERROR)
+        ) doReturn mock()
+        whenever(
+            d2.eventModule().events().byAggregatedSyncState().`in`(State.WARNING)
+        ) doReturn mock()
+        whenever(
+            d2.eventModule().events().byAggregatedSyncState().`in`(State.ERROR).blockingGet()
+        ) doReturn
             emptyList()
-        whenever(d2.eventModule().events().byState().`in`(State.WARNING).blockingGet()) doReturn
+        whenever(
+            d2.eventModule().events().byAggregatedSyncState().`in`(State.WARNING).blockingGet()
+        ) doReturn
             emptyList()
 
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byState()
+                .byAggregatedSyncState()
         ) doReturn mock()
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byState().`in`(State.ERROR)
+                .byAggregatedSyncState().`in`(State.ERROR)
         ) doReturn mock()
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byState().`in`(State.WARNING)
+                .byAggregatedSyncState().`in`(State.WARNING)
         ) doReturn mock()
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byState().`in`(State.ERROR).blockingGet()
+                .byAggregatedSyncState().`in`(State.ERROR).blockingGet()
         ) doReturn emptyList()
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byState().`in`(State.WARNING).blockingGet()
+                .byAggregatedSyncState().`in`(State.WARNING).blockingGet()
         ) doReturn emptyList()
 
         whenever(
             d2.dataValueModule().dataValues()
-                .byState()
+                .bySyncState()
         ) doReturn mock()
         whenever(
             d2.dataValueModule().dataValues()
-                .byState().`in`(State.ERROR)
+                .bySyncState().`in`(State.ERROR)
         ) doReturn mock()
         whenever(
             d2.dataValueModule().dataValues()
-                .byState().`in`(State.WARNING)
+                .bySyncState().`in`(State.WARNING)
         ) doReturn mock()
         whenever(
             d2.dataValueModule().dataValues()
-                .byState().`in`(State.ERROR).blockingGet()
+                .bySyncState().`in`(State.ERROR).blockingGet()
         ) doReturn emptyList()
         whenever(
             d2.dataValueModule().dataValues()
-                .byState().`in`(State.WARNING).blockingGet()
+                .bySyncState().`in`(State.WARNING).blockingGet()
         ) doReturn emptyList()
     }
 
     private fun configureDataCount() {
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byState()
+                .byAggregatedSyncState()
         ) doReturn mock()
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byState().neq(State.RELATIONSHIP)
+                .byAggregatedSyncState().neq(State.RELATIONSHIP)
         ) doReturn mock()
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byState().neq(State.RELATIONSHIP).byDeleted()
+                .byAggregatedSyncState().neq(State.RELATIONSHIP).byDeleted()
         ) doReturn mock()
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byState().neq(State.RELATIONSHIP).byDeleted().isFalse
+                .byAggregatedSyncState().neq(State.RELATIONSHIP).byDeleted().isFalse
         ) doReturn mock()
         whenever(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byState().neq(State.RELATIONSHIP).byDeleted().isFalse.blockingCount()
+                .byAggregatedSyncState().neq(State.RELATIONSHIP).byDeleted().isFalse.blockingCount()
         ) doReturn 0
 
         whenever(
@@ -355,7 +363,22 @@ class SettingsRepositoryTest {
         ) doReturn mock()
         whenever(
             d2.eventModule().events()
-                .byEnrollmentUid().isNull.byDeleted().isFalse.blockingCount()
+                .byEnrollmentUid().isNull
+                .byDeleted().isFalse
+                .bySyncState()
+        ) doReturn mock()
+        whenever(
+            d2.eventModule().events()
+                .byEnrollmentUid().isNull
+                .byDeleted().isFalse
+                .bySyncState().neq(State.RELATIONSHIP)
+        ) doReturn mock()
+        whenever(
+            d2.eventModule().events()
+                .byEnrollmentUid().isNull
+                .byDeleted().isFalse
+                .bySyncState().neq(State.RELATIONSHIP)
+                .blockingCount()
         ) doReturn 0
     }
 

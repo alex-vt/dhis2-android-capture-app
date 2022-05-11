@@ -13,14 +13,23 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 import androidx.multidex.MultiDex;
 import androidx.multidex.MultiDexApplication;
 
+import org.dhis2.commons.dialogs.calendarpicker.di.CalendarPickerComponent;
+import org.dhis2.commons.dialogs.calendarpicker.di.CalendarPickerModule;
+import org.dhis2.commons.di.dagger.PerActivity;
+import org.dhis2.commons.di.dagger.PerServer;
+import org.dhis2.commons.di.dagger.PerUser;
+import org.dhis2.commons.featureconfig.di.FeatureConfigActivityComponent;
+import org.dhis2.commons.featureconfig.di.FeatureConfigActivityModule;
+import org.dhis2.commons.featureconfig.di.FeatureConfigModule;
+import org.dhis2.commons.orgunitselector.OUTreeComponent;
+import org.dhis2.commons.orgunitselector.OUTreeModule;
+import org.dhis2.commons.filters.data.FilterPresenter;
+import org.dhis2.commons.prefs.Preference;
+import org.dhis2.commons.prefs.PreferenceModule;
 import org.dhis2.data.appinspector.AppInspector;
-import org.dhis2.data.dagger.PerActivity;
-import org.dhis2.data.dagger.PerServer;
-import org.dhis2.data.dagger.PerUser;
-import org.dhis2.data.prefs.Preference;
-import org.dhis2.data.prefs.PreferenceModule;
-import org.dhis2.data.schedulers.SchedulerModule;
-import org.dhis2.data.schedulers.SchedulersProviderImpl;
+import org.dhis2.data.dispatcher.DispatcherModule;
+import org.dhis2.commons.schedulers.SchedulerModule;
+import org.dhis2.commons.schedulers.SchedulersProviderImpl;
 import org.dhis2.data.server.ServerComponent;
 import org.dhis2.data.server.ServerModule;
 import org.dhis2.data.server.UserManager;
@@ -34,6 +43,8 @@ import org.dhis2.usescases.login.LoginModule;
 import org.dhis2.usescases.teiDashboard.TeiDashboardComponent;
 import org.dhis2.usescases.teiDashboard.TeiDashboardModule;
 import org.dhis2.utils.analytics.AnalyticsModule;
+import org.dhis2.utils.reporting.CrashReportController;
+import org.dhis2.utils.reporting.CrashReportControllerImpl;
 import org.dhis2.utils.reporting.CrashReportModule;
 import org.dhis2.utils.session.PinModule;
 import org.dhis2.utils.session.SessionComponent;
@@ -49,6 +60,8 @@ import java.net.SocketException;
 import javax.inject.Singleton;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
+import dhis2.org.analytics.charts.ui.di.AnalyticsFragmentComponent;
+import dhis2.org.analytics.charts.ui.di.AnalyticsFragmentModule;
 import io.reactivex.Scheduler;
 import io.reactivex.android.plugins.RxAndroidPlugins;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -124,8 +137,13 @@ public class App extends MultiDexApplication implements Components, LifecycleObs
     }
 
     protected void setUpServerComponent() {
-        D2 d2Configuration = D2Manager.blockingInstantiateD2(ServerModule.getD2Configuration(this));
-        boolean isLogged = d2Configuration.userModule().isLogged().blockingGet();
+        boolean isLogged = false;
+        try {
+            D2 d2Configuration = D2Manager.blockingInstantiateD2(ServerModule.getD2Configuration(this));
+            isLogged = d2Configuration.userModule().isLogged().blockingGet();
+        } catch (Exception e) {
+            appComponent.injectCrashReportController().trackError(e, e.getMessage());
+        }
         serverComponent = appComponent.plus(new ServerModule());
 
         if (isLogged)
@@ -152,7 +170,9 @@ public class App extends MultiDexApplication implements Components, LifecycleObs
                 .analyticsModule(new AnalyticsModule())
                 .preferenceModule(new PreferenceModule())
                 .workManagerController(new WorkManagerModule())
-                .crashReportModule(new CrashReportModule());
+                .coroutineDispatchers(new DispatcherModule())
+                .crashReportModule(new CrashReportModule())
+                .featureConfigModule(new FeatureConfigModule());
     }
 
     @NonNull
@@ -309,5 +329,31 @@ public class App extends MultiDexApplication implements Components, LifecycleObs
 
     public AppInspector getAppInspector() {
         return appInspector;
+    }
+
+    @Override
+    public FeatureConfigActivityComponent provideFeatureConfigActivityComponent() {
+        return userComponent.plus(new FeatureConfigActivityModule());
+    }
+
+    @Override
+    public CalendarPickerComponent provideCalendarPickerComponent() {
+        return userComponent.plus(new CalendarPickerModule());
+    }
+
+    @Override
+    public AnalyticsFragmentComponent provideAnalyticsFragmentComponent(AnalyticsFragmentModule module) {
+        return userComponent.plus(module);
+    }
+
+    @Override
+    public FilterPresenter provideFilterPresenter() {
+        return userComponent.filterPresenter();
+    }
+
+    @org.jetbrains.annotations.Nullable
+    @Override
+    public OUTreeComponent provideOUTreeComponent(@NotNull OUTreeModule module) {
+        return serverComponent.plus(module);
     }
 }

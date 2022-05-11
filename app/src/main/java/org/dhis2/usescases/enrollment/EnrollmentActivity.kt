@@ -14,8 +14,8 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.dhis2.App
-import org.dhis2.Bindings.isKeyboardOpened
 import org.dhis2.R
+import org.dhis2.commons.dialogs.AlertBottomDialog
 import org.dhis2.data.biometrics.BiometricsClientFactory
 import org.dhis2.data.biometrics.RegisterResult
 import org.dhis2.data.forms.dataentry.FormView
@@ -25,6 +25,7 @@ import org.dhis2.databinding.EnrollmentActivityBinding
 import org.dhis2.form.data.FormRepository
 import org.dhis2.form.data.GeometryController
 import org.dhis2.form.data.GeometryParserImpl
+import org.dhis2.form.model.DispatcherProvider
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.uicomponents.map.views.MapSelectorActivity
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
@@ -44,7 +45,6 @@ import org.dhis2.utils.EventMode
 import org.dhis2.utils.FileResourcesUtil
 import org.dhis2.utils.ImageUtils
 import org.dhis2.utils.RulesUtilsProviderConfigurationError
-import org.dhis2.utils.customviews.AlertBottomDialog
 import org.dhis2.utils.customviews.ImageDetailBottomDialog
 import org.dhis2.utils.toMessage
 import org.hisp.dhis.android.core.arch.helpers.FileResourceDirectoryHelper
@@ -68,6 +68,9 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
 
     @Inject
     lateinit var locationProvider: LocationProvider
+
+    @Inject
+    lateinit var dispatchers: DispatcherProvider
 
     lateinit var binding: EnrollmentActivityBinding
     lateinit var mode: EnrollmentMode
@@ -104,20 +107,25 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
     /*region LIFECYCLE*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val enrollmentUid = intent.getStringExtra(ENROLLMENT_UID_EXTRA) ?: ""
+        val programUid = intent.getStringExtra(PROGRAM_UID_EXTRA) ?: ""
+        val enrollmentMode = intent.getStringExtra(MODE_EXTRA)?.let { EnrollmentMode.valueOf(it) }
+            ?: EnrollmentMode.NEW
         (applicationContext as App).userComponent()!!.plus(
             EnrollmentModule(
                 this,
-                intent.getStringExtra(ENROLLMENT_UID_EXTRA),
-                intent.getStringExtra(PROGRAM_UID_EXTRA),
-                EnrollmentMode.valueOf(intent.getStringExtra(MODE_EXTRA)),
+                enrollmentUid,
+                programUid,
+                enrollmentMode,
                 context
             )
         ).inject(this)
 
         formView = FormView.Builder()
-            .persistence(formRepository)
+            .repository(formRepository)
             .locationProvider(locationProvider)
-            .onItemChangeListener { presenter.updateFields() }
+            .dispatcher(dispatchers)
+            .onItemChangeListener { action -> presenter.updateFields(action) }
             .onLoadingListener { loading ->
                 if (loading) {
                     showProgress()
@@ -140,7 +148,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
         binding = DataBindingUtil.setContentView(this, R.layout.enrollment_activity)
         binding.view = this
 
-        mode = EnrollmentMode.valueOf(intent.getStringExtra(MODE_EXTRA))
+        mode = enrollmentMode
 
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.formViewContainer, formView)
@@ -168,12 +176,14 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
                 RQ_INCIDENT_GEOMETRY, RQ_ENROLLMENT_GEOMETRY -> {
-                    handleGeometry(
-                        FeatureType.valueOfFeatureType(
-                            data!!.getStringExtra(MapSelectorActivity.LOCATION_TYPE_EXTRA)
-                        ),
-                        data.getStringExtra(MapSelectorActivity.DATA_EXTRA), requestCode
-                    )
+                    if (data?.hasExtra(MapSelectorActivity.DATA_EXTRA) == true) {
+                        handleGeometry(
+                            FeatureType.valueOfFeatureType(
+                                data.getStringExtra(MapSelectorActivity.LOCATION_TYPE_EXTRA)
+                            ),
+                            data.getStringExtra(MapSelectorActivity.DATA_EXTRA)!!, requestCode
+                        )
+                    }
                 }
                 GALLERY_REQUEST -> {
                     try {
@@ -229,19 +239,20 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                     }
                 }
                 BIOMETRICS_ENROLL_LAST_REQUEST -> {
-                if (resultCode == RESULT_OK) {
-                    if (data != null) {
-                        when (val result = BiometricsClientFactory.get(this).handleRegisterResponse(data)) {
-                            is RegisterResult.Completed -> {
-                                presenter.onBiometricsCompleted(result.guid)
-                            }
-                            else -> {
-                                presenter.onBiometricsFailure()
+                    if (resultCode == RESULT_OK) {
+                        if (data != null) {
+                            when (val result =
+                                BiometricsClientFactory.get(this).handleRegisterResponse(data)) {
+                                is RegisterResult.Completed -> {
+                                    presenter.onBiometricsCompleted(result.guid)
+                                }
+                                else -> {
+                                    presenter.onBiometricsFailure()
+                                }
                             }
                         }
                     }
                 }
-            }
                 RQ_EVENT -> openDashboard(presenter.getEnrollment()!!.uid()!!)
             }
         }
@@ -300,32 +311,37 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
         emptyMandatoryFields: MutableMap<String, String>
     ) {
         AlertBottomDialog.instance
-            .setTitle(getString(R.string.unable_to_complete))
+            .setTitle(getString(R.string.unable_to_save))
             .setMessage(getString(R.string.missing_mandatory_fields))
-            .setEmptyMandatoryFields(emptyMandatoryFields.keys.toList())
+            .setFieldsToDisplay(emptyMandatoryFields.keys.toList())
             .show(supportFragmentManager, AlertBottomDialog::class.java.simpleName)
     }
 
     override fun showErrorFieldsMessage(errorFields: List<String>) {
         AlertBottomDialog.instance
-            .setTitle(getString(R.string.unable_to_complete))
+            .setTitle(getString(R.string.unable_to_save))
             .setMessage(getString(R.string.field_errors))
-            .setEmptyMandatoryFields(errorFields)
+            .setFieldsToDisplay(errorFields)
+            .show(supportFragmentManager, AlertBottomDialog::class.java.simpleName)
+    }
+
+    override fun showWarningFieldsMessage(warningFields: List<String>) {
+        AlertBottomDialog.instance
+            .setTitle(getString(R.string.warnings_in_form))
+            .setMessage(getString(R.string.what_to_do))
+            .setFieldsToDisplay(warningFields)
+            .setNegativeButton(getString(R.string.review))
+            .setPositiveButton(getString(R.string.save)) { presenter.finish(mode) }
             .show(supportFragmentManager, AlertBottomDialog::class.java.simpleName)
     }
 
     override fun goBack() {
-        hideKeyboard()
-        attemptFinish()
+        onBackPressed()
     }
 
     override fun onBackPressed() {
-        if (!isKeyboardOpened()) {
-            attemptFinish()
-        } else {
-            currentFocus?.apply { clearFocus() }
-            hideKeyboard()
-        }
+        formView.onEditionFinish()
+        attemptFinish()
     }
 
     private fun attemptFinish() {
@@ -447,12 +463,12 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
     /*endregion*/
 
     /*region DATA ENTRY*/
-    override fun showFields(fields: List<FieldUiModel>) {
-        fields.filter {
+    override fun showFields(fields: List<FieldUiModel>?) {
+        fields?.filter {
             it !is DisplayViewModel
         }
 
-        formView.render(fields)
+        formView.processItems(fields)
     }
 
     /*endregion*/
@@ -529,7 +545,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
             biometricsAttributeUid
         )
 
-        dialog.setOnOpenTeiDashboardListener{ teiUid: String, programUid: String, enrollmentUid: String ->
+        dialog.setOnOpenTeiDashboardListener { teiUid: String, programUid: String, enrollmentUid: String ->
             presenter.deleteAllSavedData()
             finish()
             startActivity(
@@ -542,7 +558,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
             )
         }
 
-        dialog.setOnEnrollNewListener{ biometricsSessionId ->
+        dialog.setOnEnrollNewListener { biometricsSessionId ->
             BiometricsClientFactory.get(this).registerLast(this, biometricsSessionId)
         }
 
@@ -550,5 +566,9 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
             supportFragmentManager,
             BiometricsDuplicatesDialog.TAG
         )
+    }
+
+    override fun registerLast(sessionId: String) {
+        BiometricsClientFactory.get(this).registerLast(this, sessionId)
     }
 }

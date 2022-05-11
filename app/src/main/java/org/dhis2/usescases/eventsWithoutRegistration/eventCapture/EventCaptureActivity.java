@@ -1,20 +1,18 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture;
 
-import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
-import android.widget.DatePicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -22,27 +20,27 @@ import com.google.android.material.snackbar.Snackbar;
 import org.dhis2.Bindings.ExtensionsKt;
 import org.dhis2.Bindings.ViewExtensionsKt;
 import org.dhis2.R;
+import org.dhis2.commons.dialogs.CustomDialog;
+import org.dhis2.commons.dialogs.DialogClickListener;
+import org.dhis2.commons.popupmenu.AppMenuHelper;
 import org.dhis2.databinding.ActivityEventCaptureBinding;
-import org.dhis2.databinding.WidgetDatepickerBinding;
 import org.dhis2.form.model.FieldUiModel;
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment.OnEditionListener;
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity;
 import org.dhis2.usescases.general.ActivityGlobalAbstract;
-import org.dhis2.utils.AppMenuHelper;
+import org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.MapButtonObservable;
 import org.dhis2.utils.Constants;
-import org.dhis2.utils.DateUtils;
-import org.dhis2.utils.DialogClickListener;
 import org.dhis2.utils.EventMode;
 import org.dhis2.utils.FileResourcesUtil;
 import org.dhis2.utils.ImageUtils;
 import org.dhis2.utils.RuleUtilsProviderResultKt;
 import org.dhis2.utils.RulesUtilsProviderConfigurationError;
-import org.dhis2.utils.customviews.CustomDialog;
 import org.dhis2.utils.customviews.FormBottomDialog;
+import org.dhis2.utils.customviews.navigationbar.NavigationPageConfigurator;
 import org.hisp.dhis.android.core.arch.helpers.FileResourceDirectoryHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +56,7 @@ import static org.dhis2.utils.analytics.AnalyticsConstants.CLICK;
 import static org.dhis2.utils.analytics.AnalyticsConstants.DELETE_EVENT;
 import static org.dhis2.utils.analytics.AnalyticsConstants.SHOW_HELP;
 
-public class EventCaptureActivity extends ActivityGlobalAbstract implements EventCaptureContract.View {
+public class EventCaptureActivity extends ActivityGlobalAbstract implements EventCaptureContract.View, MapButtonObservable {
 
     private static final int RQ_GO_BACK = 1202;
     private static final int NOTES_TAB_POSITION = 1;
@@ -66,12 +64,18 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
     private ActivityEventCaptureBinding binding;
     @Inject
     EventCaptureContract.Presenter presenter;
+    @Inject
+    NavigationPageConfigurator pageConfigurator;
+
     private String programStageUid;
     private Boolean isEventCompleted = false;
     private EventMode eventMode;
     public EventCaptureComponent eventCaptureComponent;
     public String programUid;
     public String eventUid;
+    private LiveData<Boolean> relationshipMapButton = new MutableLiveData<>(false);
+    private OnEditionListener onEditionListener;
+    private EventCapturePagerAdapter adapter;
 
     public static Bundle getActivityBundle(@NonNull String eventUid, @NonNull String programUid, @NonNull EventMode eventMode) {
         Bundle bundle = new Bundle();
@@ -108,32 +112,39 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
         eventMode = (EventMode) getIntent().getSerializableExtra(Constants.EVENT_MODE);
         setUpViewPagerAdapter();
         setUpNavigationBar();
+        showProgress();
         presenter.initNoteCounter();
         presenter.init();
     }
 
     private void setUpViewPagerAdapter() {
         binding.eventViewPager.setUserInputEnabled(false);
-        binding.eventViewPager.setAdapter(getAdapter(getIntent().getIntExtra(BIOMETRICS_VERIFICATION_STATUS, -1)));
+        this.adapter = getAdapter(getIntent().getIntExtra(BIOMETRICS_VERIFICATION_STATUS, -1));
+        binding.eventViewPager.setAdapter(adapter);
         ViewExtensionsKt.clipWithRoundedCorners(binding.eventViewPager, ExtensionsKt.getDp(16));
     }
 
+    @NotNull
+    private EventCapturePagerAdapter getAdapter(int verificationStatus) {
+        return new EventCapturePagerAdapter(
+                this,
+                getIntent().getStringExtra(PROGRAM_UID),
+                getIntent().getStringExtra(Constants.EVENT_UID),
+                pageConfigurator.displayAnalytics(),
+                pageConfigurator.displayRelationships(),
+                getIntent().getStringExtra(BIOMETRICS_GUID),
+                verificationStatus,
+                getIntent().getStringExtra(BIOMETRICS_TEI_ORGANISATION_UNIT)
+        );
+    }
+
     private void setUpNavigationBar() {
+        binding.navigationBar.pageConfiguration(pageConfigurator);
         binding.navigationBar.setOnNavigationItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.navigation_details:
-                    goToInitialScreen();
-                    break;
-                case R.id.navigation_data_entry:
-                    binding.eventViewPager.setCurrentItem(0);
-                    break;
-                case R.id.navigation_analytics:
-                    binding.eventViewPager.setCurrentItem(1);
-                    break;
-                case R.id.navigation_notes:
-                default:
-                    binding.eventViewPager.setCurrentItem(2);
-                    break;
+            if (item.getItemId() == R.id.navigation_details){
+                goToInitialScreen();
+            } else {
+                binding.eventViewPager.setCurrentItem(adapter.getDynamicTabIndex(item.getItemId()));
             }
             return true;
         });
@@ -154,17 +165,15 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
 
     @Override
     public void goBack() {
-        hideKeyboard();
-        finishEditMode();
+        onBackPressed();
     }
 
     @Override
     public void onBackPressed() {
-        if (!ExtensionsKt.isKeyboardOpened(this)) {
-            finishEditMode();
-        } else {
-            hideKeyboard();
+        if (onEditionListener != null) {
+            onEditionListener.onEditionListener();
         }
+        finishEditMode();
     }
 
     private void finishEditMode() {
@@ -211,7 +220,7 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                     try {
                         presenter.saveImage(uuid, FileResourcesUtil.getFileFromGallery(this, imageUri).getPath());
                         presenter.nextCalculation(true);
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         crashReportController.logException(e);
                         Toast.makeText(this, getString(R.string.something_wrong), Toast.LENGTH_LONG).show();
                     }
@@ -231,18 +240,6 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                 }
                 break;
         }
-    }
-
-    @NotNull
-    private EventCapturePagerAdapter getAdapter(int verificationStatus) {
-        return new EventCapturePagerAdapter(
-                this,
-                getIntent().getStringExtra(PROGRAM_UID),
-                getIntent().getStringExtra(Constants.EVENT_UID),
-                getIntent().getStringExtra(BIOMETRICS_GUID),
-                verificationStatus,
-                getIntent().getStringExtra(BIOMETRICS_TEI_ORGANISATION_UNIT)
-        );
     }
 
     @Override
@@ -343,56 +340,6 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
     }
 
     private void reschedule() {
-
-    }
-
-    private void showNativeCalendar() {
-        Calendar calendar = DateUtils.getInstance().getCalendar();
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
-            Calendar chosenDate = Calendar.getInstance();
-            chosenDate.set(year, month, dayOfMonth);
-            presenter.rescheduleEvent(chosenDate.getTime());
-        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            datePickerDialog.setButton(DialogInterface.BUTTON_NEUTRAL, getContext().getResources().getString(R.string.change_calendar), (dialog, which) -> {
-                datePickerDialog.dismiss();
-                showCustomCalendar();
-            });
-        }
-
-        datePickerDialog.show();
-    }
-
-    private void showCustomCalendar() {
-        LayoutInflater layoutInflater = LayoutInflater.from(getContext());
-        WidgetDatepickerBinding widgetBinding = WidgetDatepickerBinding.inflate(layoutInflater);
-        final DatePicker datePicker = widgetBinding.widgetDatepicker;
-
-        Calendar c = DateUtils.getInstance().getCalendar();
-        int year = c.get(Calendar.YEAR);
-        int month = c.get(Calendar.MONTH);
-        int day = c.get(Calendar.DAY_OF_MONTH);
-
-        datePicker.updateDate(year, month, day);
-
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext(), R.style.DatePickerTheme);
-
-        alertDialog.setView(widgetBinding.getRoot());
-        Dialog dialog = alertDialog.create();
-
-        widgetBinding.changeCalendarButton.setOnClickListener(calendarButton -> {
-            showNativeCalendar();
-            dialog.dismiss();
-        });
-        widgetBinding.clearButton.setOnClickListener(clearButton -> dialog.dismiss());
-        widgetBinding.acceptButton.setOnClickListener(acceptButton -> {
-            Calendar chosenDate = Calendar.getInstance();
-            chosenDate.set(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth());
-            presenter.rescheduleEvent(chosenDate.getTime());
-            dialog.dismiss();
-        });
-        dialog.show();
     }
 
     @Override
@@ -451,7 +398,8 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
     public void showMoreOptions(View view) {
         new AppMenuHelper.Builder().menu(this, R.menu.event_menu).anchor(view)
                 .onMenuInflated(popupMenu -> {
-                    popupMenu.getMenu().getItem(0).setVisible(presenter.canWrite() && presenter.isEnrollmentOpen());
+                    popupMenu.getMenu().findItem(R.id.menu_delete).setVisible(presenter.canWrite() && presenter.isEnrollmentOpen());
+                    popupMenu.getMenu().findItem(R.id.menu_share).setVisible(false);
                     return Unit.INSTANCE;
                 })
                 .onMenuItemClicked(itemId -> {
@@ -538,20 +486,15 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
 
     @Override
     public void showProgress() {
-        runOnUiThread(() -> {
-            binding.toolbarProgress.setVisibility(View.VISIBLE);
-            binding.toolbarProgress.show();
-        });
-
+        runOnUiThread(() -> binding.toolbarProgress.show());
     }
 
     @Override
     public void hideProgress() {
-        runOnUiThread(() -> {
-            binding.toolbarProgress.hide();
-            binding.toolbarProgress.setVisibility(View.GONE);
-        });
-
+        new Handler(Looper.getMainLooper()).postDelayed(() ->
+                        runOnUiThread(() ->
+                                binding.toolbarProgress.hide()),
+                1000);
     }
 
     @Override
@@ -566,9 +509,9 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
 
     @Override
     public void displayConfigurationErrors(List<RulesUtilsProviderConfigurationError> configurationError) {
-        new MaterialAlertDialogBuilder(this,R.style.DhisMaterialDialog)
+        new MaterialAlertDialogBuilder(this, R.style.DhisMaterialDialog)
                 .setTitle(R.string.warning_on_complete_title)
-                .setMessage(RuleUtilsProviderResultKt.toMessage(configurationError,this))
+                .setMessage(RuleUtilsProviderResultKt.toMessage(configurationError, this))
                 .setPositiveButton(R.string.action_close, (dialogInterface, i) -> {
                 })
                 .setNegativeButton(R.string.action_do_not_show_again, (dialogInterface, i) -> {
@@ -576,6 +519,21 @@ public class EventCaptureActivity extends ActivityGlobalAbstract implements Even
                 })
                 .setCancelable(false)
                 .show();
+    }
+
+    @NotNull
+    @Override
+    public LiveData<Boolean> relationshipMap() {
+        return relationshipMapButton;
+    }
+
+    @Override
+    public void onRelationshipMapLoaded() {
+
+    }
+
+    public void setFormEditionListener(OnEditionListener onEditionListener) {
+        this.onEditionListener = onEditionListener;
     }
 
     @Override
