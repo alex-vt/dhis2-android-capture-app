@@ -4,6 +4,7 @@
     package="org.dhis2">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -47,7 +48,8 @@
 
         <activity
             android:name=".usescases.splash.SplashActivity"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/SplashTheme"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -96,7 +98,7 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:windowSoftInputMode="adjustResize" />
 
-        <receiver android:name=".widgets.DhisCustomLauncher">
+        <receiver android:name=".widgets.DhisCustomLauncher" android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -114,7 +116,7 @@
         <activity android:name=".usescases.sync.SyncActivity" />
         <activity android:name=".usescases.development.DevelopmentActivity" />
 
-        <service android:name=".usescases.sms.SmsSendingService" />
+        <service android:name=".usescases.sms.SmsSendingService" android:exported="false"/>
 
         <activity android:name=".usescases.teiDashboard.nfcdata.NfcDataWriteActivity" />
         <activity android:name=".usescases.about.PolicyView" />
@@ -155,6 +157,12 @@
         </activity>
         <activity android:name=".data.forms.ScanCaptureActivity"/>
         <activity android:name=".usescases.login.accounts.AccountsActivity" />
+
+        <activity
+            android:name="com.squareup.leakcanary.internal.DisplayLeakActivity"
+            android:exported="true"
+            tools:node="merge">
+        </activity>
     </application>
 
 </manifest>

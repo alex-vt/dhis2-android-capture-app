@@ -1,8 +1,8 @@
 ext {
     versions = [
             ndk     : "21.4.7075529",
-            sdk     : 30,
-            tools   : "30.0.3",
+            sdk     : 31,
+            tools   : "31.0.0",
             minSdk  : 21,
             vCode: 118,
             vName: "2.6.2-psi-fork-3"
@@ -55,7 +55,7 @@ ext {
             autovalueparcel           : "0.2.7",
 
             //Mapbox
-            mapboxsdk                 : "9.6.1",
+            mapboxsdk                 : "10.10.0",
             mapboxmarkerview          : "0.3.0",
             mapboxannotation          : "0.8.0",
 

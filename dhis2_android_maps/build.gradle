@@ -52,8 +52,8 @@ dependencies {
     implementation project(":commons")
 
     //region Mapbox
-    api "com.mapbox.mapboxsdk:mapbox-android-sdk:${libraries.mapboxsdk}"
-    implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-markerview-v8:${libraries.mapboxmarkerview}"
-    implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:${libraries.mapboxannotation}"
+    api "com.mapbox.maps:android:${libraries.mapboxsdk}"
+/*    implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-markerview-v8:${libraries.mapboxmarkerview}"
+    implementation "com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v9:${libraries.mapboxannotation}"*/
     //endregion
 }
