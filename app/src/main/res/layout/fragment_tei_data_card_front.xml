@@ -76,7 +76,7 @@
             android:gravity="center"
             android:onClick="@{() -> presenter.verifyBiometrics()}"
             android:visibility="@{dashboardModel.isBiometricsEnabled &amp;&amp; dashboardModel.isTrackedBiometricEntityExistAndHasValue()?View.VISIBLE:View.GONE}"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/detailsButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
