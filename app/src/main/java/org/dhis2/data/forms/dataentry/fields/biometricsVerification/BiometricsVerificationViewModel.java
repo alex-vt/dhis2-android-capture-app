@@ -1,5 +1,6 @@
 package org.dhis2.data.forms.dataentry.fields.biometricsVerification;
-
+//TODO: simprints
+/*
 import com.google.auto.value.AutoValue;
 
 import org.dhis2.R;
@@ -86,3 +87,4 @@ public abstract class BiometricsVerificationViewModel extends FieldViewModel {
     }
 
 }
+*/

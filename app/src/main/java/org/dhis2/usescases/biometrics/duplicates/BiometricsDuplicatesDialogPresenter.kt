@@ -52,7 +52,8 @@ class BiometricsDuplicatesDialogPresenter(
                 searchRepository.searchTrackedEntities(
                     SearchParametersModel(
                         program,
-                        trackedEntityTypeUid,
+                        // TODO: simprints
+                        //trackedEntityTypeUid,
                         hashMapOf(biometricsAttributeUid to biometricsGuids.joinToString(separator = ";"))
                     ),
                     NetworkUtils.isOnline(view.getContext())

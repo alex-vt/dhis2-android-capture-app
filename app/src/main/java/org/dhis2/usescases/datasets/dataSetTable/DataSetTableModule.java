@@ -1,6 +1,7 @@
 package org.dhis2.usescases.datasets.dataSetTable;
 
 import org.dhis2.commons.di.dagger.PerActivity;
+import org.dhis2.commons.resources.ResourceManager;
 import org.dhis2.commons.schedulers.SchedulerProvider;
 import org.dhis2.usescases.datasets.datasetInitial.DataSetInitialRepository;
 import org.dhis2.usescases.datasets.datasetInitial.DataSetInitialRepositoryImpl;
@@ -9,8 +10,10 @@ import org.hisp.dhis.android.core.D2;
 
 import dagger.Module;
 import dagger.Provides;
+import io.reactivex.processors.FlowableProcessor;
+import io.reactivex.processors.PublishProcessor;
+import kotlin.Unit;
 
-@PerActivity
 @Module
 public class DataSetTableModule {
 
@@ -33,20 +36,29 @@ public class DataSetTableModule {
     DataSetTableContract.Presenter providesPresenter(
             DataSetTableRepositoryImpl dataSetTableRepository,
             SchedulerProvider schedulerProvider,
-            AnalyticsHelper analyticsHelper) {
-        return new DataSetTablePresenter(view, dataSetTableRepository, schedulerProvider, analyticsHelper);
+            AnalyticsHelper analyticsHelper,
+            FlowableProcessor<Unit> updateProcessor) {
+        return new DataSetTablePresenter(view, dataSetTableRepository, schedulerProvider, analyticsHelper, updateProcessor);
     }
 
     @Provides
     @PerActivity
-    DataSetTableRepositoryImpl DataSetTableRepository(D2 d2) {
-        return new DataSetTableRepositoryImpl(d2, dataSetUid, periodId, orgUnitUid, catOptCombo);
+    DataSetTableRepositoryImpl DataSetTableRepository(
+            D2 d2,
+            ResourceManager resourceManager) {
+        return new DataSetTableRepositoryImpl(d2, dataSetUid, periodId, orgUnitUid, catOptCombo, resourceManager);
     }
 
     @Provides
     @PerActivity
     DataSetInitialRepository DataSetInitialRepository(D2 d2) {
         return new DataSetInitialRepositoryImpl(d2, dataSetUid);
+    }
+
+    @Provides
+    @PerActivity
+    FlowableProcessor<Unit> updateProcessor() {
+        return PublishProcessor.create();
     }
 
 }

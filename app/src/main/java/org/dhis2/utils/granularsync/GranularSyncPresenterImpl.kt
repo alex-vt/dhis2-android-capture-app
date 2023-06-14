@@ -25,65 +25,63 @@
 
 package org.dhis2.utils.granularsync
 
+import android.content.Context
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
-import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.functions.BiFunction
-import io.reactivex.observers.DisposableCompletableObserver
-import io.reactivex.schedulers.Schedulers
-import java.util.Collections
-import java.util.Date
+import org.dhis2.commons.Constants
+import org.dhis2.commons.Constants.ATTRIBUTE_OPTION_COMBO
+import org.dhis2.commons.Constants.CATEGORY_OPTION_COMBO
+import org.dhis2.commons.Constants.CONFLICT_TYPE
+import org.dhis2.commons.Constants.ORG_UNIT
+import org.dhis2.commons.Constants.PERIOD_ID
+import org.dhis2.commons.Constants.UID
+import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.commons.schedulers.SchedulerProvider
+import org.dhis2.commons.schedulers.defaultSubscribe
+import org.dhis2.commons.sync.ConflictType
+import org.dhis2.commons.sync.ConflictType.ALL
+import org.dhis2.commons.sync.ConflictType.DATA_SET
+import org.dhis2.commons.sync.ConflictType.DATA_VALUES
+import org.dhis2.commons.sync.ConflictType.EVENT
+import org.dhis2.commons.sync.ConflictType.PROGRAM
+import org.dhis2.commons.sync.ConflictType.TEI
+import org.dhis2.data.dhislogic.DhisProgramUtils
 import org.dhis2.data.service.workManager.WorkManagerController
 import org.dhis2.data.service.workManager.WorkerItem
 import org.dhis2.data.service.workManager.WorkerType
 import org.dhis2.usescases.settings.models.ErrorModelMapper
 import org.dhis2.usescases.settings.models.ErrorViewModel
 import org.dhis2.usescases.sms.SmsSendingService
-import org.dhis2.utils.Constants.ATTRIBUTE_OPTION_COMBO
-import org.dhis2.utils.Constants.CATEGORY_OPTION_COMBO
-import org.dhis2.utils.Constants.CONFLICT_TYPE
-import org.dhis2.utils.Constants.ORG_UNIT
-import org.dhis2.utils.Constants.PERIOD_ID
-import org.dhis2.utils.Constants.UID
-import org.dhis2.utils.granularsync.SyncStatusDialog.ConflictType.DATA_SET
-import org.dhis2.utils.granularsync.SyncStatusDialog.ConflictType.DATA_VALUES
-import org.dhis2.utils.granularsync.SyncStatusDialog.ConflictType.EVENT
-import org.dhis2.utils.granularsync.SyncStatusDialog.ConflictType.PROGRAM
-import org.dhis2.utils.granularsync.SyncStatusDialog.ConflictType.TEI
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.helpers.UidsHelper
-import org.hisp.dhis.android.core.common.BaseIdentifiableObject
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.imports.TrackerImportConflict
-import org.hisp.dhis.android.core.program.ProgramType
-import org.hisp.dhis.android.core.sms.domain.interactor.SmsSubmitCase
-import org.hisp.dhis.android.core.sms.domain.repository.SmsRepository
-import org.hisp.dhis.android.core.systeminfo.SMSVersion
 import timber.log.Timber
 
 class GranularSyncPresenterImpl(
     val d2: D2,
+    private val dhisProgramUtils: DhisProgramUtils,
     val schedulerProvider: SchedulerProvider,
-    private val conflictType: SyncStatusDialog.ConflictType,
+    private val conflictType: ConflictType,
     private val recordUid: String,
     private val dvOrgUnit: String?,
     private val dvAttrCombo: String?,
     private val dvPeriodId: String?,
     private val workManagerController: WorkManagerController,
-    private val errorMapper: ErrorModelMapper
+    private val errorMapper: ErrorModelMapper,
+    private val preferenceProvider: PreferenceProvider,
+    private val smsSyncProvider: SMSSyncProvider
 ) : GranularSyncContracts.Presenter {
 
     private var disposable: CompositeDisposable = CompositeDisposable()
     private lateinit var view: GranularSyncContracts.View
     private lateinit var states: MutableLiveData<List<SmsSendingService.SendingStatus>>
-    private lateinit var smsSender: SmsSubmitCase
     private lateinit var statesList: ArrayList<SmsSendingService.SendingStatus>
 
     override fun configure(view: GranularSyncContracts.View) {
@@ -91,22 +89,29 @@ class GranularSyncPresenterImpl(
 
         disposable.add(
             getTitle()
-                .subscribeOn(schedulerProvider.io())
-                .observeOn(schedulerProvider.ui())
-                .subscribe(
-                    { view.showTitle(it.displayName()!!) },
-                    { view.closeDialog() }
+                .defaultSubscribe(
+                    schedulerProvider,
+                    { title ->
+                        if (title.isNotEmpty()) {
+                            view.showTitle(title)
+                        } else {
+                            view.showRefreshTitle()
+                        }
+                    },
+                    { error ->
+                        Timber.e(error)
+                        view.closeDialog()
+                    }
                 )
         )
 
         disposable.add(
             Single.zip(
                 getState(),
-                getConflicts(conflictType),
-                BiFunction { state: State, conflicts: MutableList<TrackerImportConflict> ->
-                    Pair(state, conflicts)
-                }
-            ).subscribeOn(schedulerProvider.io())
+                getConflicts(conflictType)
+            ) { state: State, conflicts: MutableList<TrackerImportConflict> ->
+                Pair(state, conflicts)
+            }.subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
                 .subscribe(
                     { stateAndConflicts ->
@@ -115,26 +120,39 @@ class GranularSyncPresenterImpl(
                             stateAndConflicts.second
                         )
                     },
-                    { view.closeDialog() }
+                    { error ->
+                        Timber.e(error)
+                        view.closeDialog()
+                    }
                 )
+        )
+
+        disposable.add(
+            getLastSynced().defaultSubscribe(
+                schedulerProvider,
+                { result -> view.setLastUpdated(result) },
+                { error -> Timber.e(error) }
+            )
         )
     }
 
-    override fun isSMSEnabled(isTrackerSync: Boolean): Boolean {
-        val hasCorrectSmsVersion = if (isTrackerSync) {
-            d2.systemInfoModule().versionManager().smsVersion == SMSVersion.V2
-        } else {
-            true
+    override fun isSMSEnabled(showSms: Boolean): Boolean {
+        return smsSyncProvider.isSMSEnabled(conflictType == TEI) && showSms
+    }
+
+    override fun canSendSMS(): Boolean {
+        return when (conflictType) {
+            ALL,
+            PROGRAM,
+            DATA_SET -> false
+            TEI,
+            EVENT,
+            DATA_VALUES -> true
         }
-
-        val smsModuleIsEnabled =
-            d2.smsModule().configCase().smsModuleConfig.blockingGet().isModuleEnabled
-
-        return hasCorrectSmsVersion && smsModuleIsEnabled
     }
 
     override fun initGranularSync(): LiveData<List<WorkInfo>> {
-        var conflictTypeData: SyncStatusDialog.ConflictType? = null
+        var conflictTypeData: ConflictType? = null
         var dataToDataValues: Data? = null
         when (conflictType) {
             PROGRAM -> conflictTypeData = PROGRAM
@@ -152,139 +170,166 @@ class GranularSyncPresenterImpl(
                         getDataSetCatOptCombos().blockingGet().toTypedArray()
                     )
                     .build()
+            ALL -> {
+            }
         }
-        var uid = recordUid
-        if (dataToDataValues == null) {
-            dataToDataValues = Data.Builder()
-                .putString(UID, recordUid)
-                .putString(CONFLICT_TYPE, conflictTypeData!!.name)
-                .build()
+        var workName: String
+        if (conflictType != ALL) {
+            workName = recordUid
+            if (dataToDataValues == null) {
+                dataToDataValues = Data.Builder()
+                    .putString(UID, recordUid)
+                    .putString(CONFLICT_TYPE, conflictTypeData!!.name)
+                    .build()
+            } else {
+                workName = dvOrgUnit + "_" + dvPeriodId + "_" + dvAttrCombo
+            }
+
+            val workerItem =
+                WorkerItem(
+                    workName,
+                    WorkerType.GRANULAR,
+                    data = dataToDataValues,
+                    policy = ExistingWorkPolicy.KEEP
+                )
+
+            workManagerController.beginUniqueWork(workerItem)
         } else {
-            uid = dvOrgUnit + "_" + dvPeriodId + "_" + dvAttrCombo
+            workName = Constants.INITIAL_SYNC
+            workManagerController.syncDataForWorker(Constants.DATA_NOW, Constants.INITIAL_SYNC)
         }
-
-        val workerItem =
-            WorkerItem(
-                uid,
-                WorkerType.GRANULAR,
-                data = dataToDataValues,
-                policy = ExistingWorkPolicy.KEEP
-            )
-
-        workManagerController.beginUniqueWork(workerItem)
-        return workManagerController.getWorkInfosForUniqueWorkLiveData(uid)
+        return workManagerController.getWorkInfosForUniqueWorkLiveData(workName)
     }
 
+    // NO PLAY SERVICES
     override fun initSMSSync(): LiveData<List<SmsSendingService.SendingStatus>> {
-        smsSender = d2.smsModule().smsSubmitCase()
         statesList = ArrayList()
         states = MutableLiveData()
 
-        val convertTask = when (conflictType) {
-            EVENT -> smsSender.convertSimpleEvent(recordUid)
-            TEI -> {
-                // TODO: GET ALL ENROLLMENTS FROM TEI
-                val enrollmentUids = UidsHelper.getUidsList(
-                    d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(recordUid)
-                        .byAggregatedSyncState().`in`(
-                            State.TO_POST,
-                            State.TO_UPDATE,
-                            State.UPLOADING
-                        ).blockingGet()
-                )
-                if (enrollmentUids.isNotEmpty()) {
-                    smsSender.convertEnrollment(enrollmentUids[0])
-                } else if (!d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(
-                    recordUid
-                ).blockingIsEmpty()
-                ) {
-                    smsSender.convertEnrollment(
-                        d2.enrollmentModule().enrollments()
-                            .byTrackedEntityInstance().eq(recordUid)
-                            .one().blockingGet().uid()
-                    )
-                } else {
-                    Single.error(Exception(view.emptyEnrollmentError()))
-                }
-            }
-            DATA_VALUES -> smsSender.convertDataSet(recordUid, dvOrgUnit, dvPeriodId, dvAttrCombo)
-            else -> Single.error(Exception(view.unsupportedTask()))
-        }
-
         disposable.add(
-            convertTask
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
+            smsSyncProvider.getConvertTask()
+                .subscribeOn(schedulerProvider.io())
+                .observeOn(schedulerProvider.io())
                 .subscribe(
-                    { count ->
-                        reportState(SmsSendingService.State.CONVERTED, 0, count!!)
-                        reportState(
-                            SmsSendingService.State.WAITING_COUNT_CONFIRMATION,
-                            0,
-                            count
-                        )
+                    { countResult ->
+                        if (countResult is ConvertTaskResult.Count) {
+                            updateStateList(
+                                SmsSendingService.SendingStatus(
+                                    smsSyncProvider.smsSender.submissionId,
+                                    SmsSendingService.State.CONVERTED,
+                                    null,
+                                    0,
+                                    countResult.smsCount
+                                )
+                            )
+                            updateStateList(
+                                SmsSendingService.SendingStatus(
+                                    smsSyncProvider.smsSender.submissionId,
+                                    SmsSendingService.State.WAITING_COUNT_CONFIRMATION,
+                                    null,
+                                    0,
+                                    countResult.smsCount
+                                )
+                            )
+                        }
                     },
-                    { this.reportError(it) }
+                    {
+                        updateStateList(
+                            SmsSendingService.SendingStatus(
+                                smsSyncProvider.smsSender.submissionId,
+                                SmsSendingService.State.ERROR,
+                                it,
+                                0,
+                                0
+                            )
+                        )
+                    }
                 )
         )
 
         return states
     }
 
-    override fun sendSMS() {
-        val startDate = Date()
+    override fun restartSmsSender() {
+        smsSyncProvider.restartSmsSender()
+    }
+
+    // PLAY SERVICES
+    private fun initSMSSyncPlayServices() {
         disposable.add(
-            smsSender.send().doOnNext { state ->
-                if (!isLastSendingStateTheSame(state.sent, state.total)) {
-                    reportState(
-                        if (state.sent == 0) SmsSendingService.State.STARTED
-                        else SmsSendingService.State.SENDING,
-                        state.sent,
-                        state.total
-                    )
+            smsSyncProvider.getConvertTask()
+                .filter {
+                    it is ConvertTaskResult.Message
                 }
-            }.ignoreElements().doOnComplete {
-                reportState(
-                    SmsSendingService.State.SENT,
-                    0,
-                    0
+                .map { result ->
+                    (result as ConvertTaskResult.Message).smsMessage
+                }
+                .subscribeOn(schedulerProvider.io())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(
+                    { message ->
+                        view.openSmsApp(message, smsSyncProvider.getGatewayNumber())
+                    },
+                    { error -> Timber.e(error) }
                 )
-            }.andThen(
-                d2.smsModule().configCase().smsModuleConfig
-            ).flatMapCompletable { config ->
-                if (config.isWaitingForResult) {
-                    reportState(SmsSendingService.State.WAITING_RESULT, 0, 0)
-                    smsSender.checkConfirmationSms(startDate)
-                        .doOnError { throwable ->
-                            if (throwable is SmsRepository.ResultResponseException) {
-                                val reason = throwable.reason
-                                if (reason == SmsRepository.ResultResponseIssue.TIMEOUT) {
-                                    reportState(
-                                        SmsSendingService.State.WAITING_RESULT_TIMEOUT,
-                                        0,
-                                        0
-                                    )
-                                }
-                            }
-                        }.doOnComplete {
-                            reportState(SmsSendingService.State.RESULT_CONFIRMED, 0, 0)
-                        }
-                } else {
-                    Completable.complete()
+        )
+    }
+
+    override fun sendSMS() {
+        disposable.add(
+            smsSyncProvider.sendSms(
+                doOnNext = { sendingStatus: SmsSendingService.SendingStatus ->
+                    if (!isLastSendingStateTheSame(sendingStatus.sent, sendingStatus.total)) {
+                        updateStateList(sendingStatus)
+                    }
+                },
+                doOnNewState = {
+                    updateStateList(it)
                 }
-            }
+            )
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.io())
-                .subscribeWith(object : DisposableCompletableObserver() {
-                    override fun onError(e: Throwable) {
-                        reportError(e)
+                .subscribe(
+                    {
+                        updateStateList(
+                            SmsSendingService.SendingStatus(
+                                smsSyncProvider.smsSender.submissionId,
+                                SmsSendingService.State.COMPLETED,
+                                null,
+                                0,
+                                0
+                            )
+                        )
+                    },
+                    {
+                        updateStateList(
+                            SmsSendingService.SendingStatus(
+                                smsSyncProvider.smsSender.submissionId,
+                                SmsSendingService.State.ERROR,
+                                it,
+                                0,
+                                0
+                            )
+                        )
                     }
-
-                    override fun onComplete() {
-                        reportState(SmsSendingService.State.COMPLETED, 0, 0)
-                    }
-                })
+                )
         )
+    }
+
+    override fun onSmsNotAccepted() {
+        updateStateList(
+            smsSyncProvider.onSmsNotAccepted()
+        )
+    }
+
+    private fun updateStatusToSentBySMS() {
+        smsSyncProvider.smsSender.markAsSentViaSMS().blockingAwait()
+        view.updateState(State.SENT_VIA_SMS)
+    }
+
+    private fun updateStatusToSyncedWithSMS() {
+        smsSyncProvider.smsSender.markAsSentViaSMS().blockingAwait()
+        view.updateState(State.SYNCED_VIA_SMS)
     }
 
     private fun isLastSendingStateTheSame(sent: Int, total: Int): Boolean {
@@ -295,45 +340,95 @@ class GranularSyncPresenterImpl(
             last.total == total
     }
 
-    override fun reportState(state: SmsSendingService.State, sent: Int, total: Int) {
-        val submissionId = smsSender.submissionId
-        val currentStatus = SmsSendingService.SendingStatus(submissionId, state, null, sent, total)
-        statesList.clear()
+    private fun updateStateList(currentStatus: SmsSendingService.SendingStatus) {
+        if (currentStatus.state != SmsSendingService.State.ERROR) {
+            statesList.clear()
+        }
         statesList.add(currentStatus)
         states.postValue(statesList)
     }
 
-    override fun reportError(throwable: Throwable) {
-        Timber.tag(SmsSendingService::class.java.simpleName).e(throwable)
-        val submissionId = smsSender.submissionId
-        statesList.add(
-            SmsSendingService.SendingStatus(
-                submissionId,
-                SmsSendingService.State.ERROR,
-                throwable,
-                0,
-                0
+    override fun onSmsNotManuallySent(context: Context) {
+        view.logSmsNotSent()
+        smsSyncProvider.unregisterSMSReceiver(context)
+        restartSmsSender()
+    }
+
+    override fun onSmsSyncClick(
+        callback: (LiveData<List<SmsSendingService.SendingStatus>>) -> Unit
+    ) {
+        if (smsSyncProvider.isPlayServicesEnabled()) {
+            view.logOpeningSmsApp()
+            initSMSSyncPlayServices()
+        } else if (view.checkSmsPermission()) {
+            callback(initSMSSync())
+        }
+    }
+
+    override fun onSmsManuallySent(
+        context: Context,
+        confirmationCallback: (LiveData<Boolean?>) -> Unit
+    ) {
+        if (smsSyncProvider.expectsResponseSMS()) {
+            view.logWaitingForServerResponse()
+            smsSyncProvider.waitForSMSResponse(
+                context,
+                smsSyncProvider.getGatewayNumber(),
+                onSuccess = {
+                    confirmationCallback(smsSyncProvider.observeConfirmationNumber())
+                },
+                onFailure = {
+                    view.logSmsReachedServerError()
+                    updateStatusToSentBySMS()
+                    restartSmsSender()
+                }
             )
-        )
-        states.postValue(statesList)
+        } else {
+            view.logSmsSent()
+            updateStatusToSentBySMS()
+            restartSmsSender()
+        }
+    }
+
+    override fun onConfirmationMessageStateChanged(messageReceived: Boolean?) {
+        messageReceived?.let {
+            when (it) {
+                true -> {
+                    view.logSmsReachedServer()
+                    updateStatusToSyncedWithSMS()
+                }
+                false -> {
+                    view.logSmsReachedServerError()
+                    updateStatusToSentBySMS()
+                }
+            }
+        }
+        restartSmsSender()
     }
 
     @VisibleForTesting
-    fun getTitle(): Single<out BaseIdentifiableObject> {
+    fun getTitle(): Single<String> {
         return when (conflictType) {
-            PROGRAM -> d2.programModule().programs().uid(recordUid).get()
-            TEI ->
+            ALL -> Single.just("")
+            PROGRAM -> d2.programModule().programs().uid(recordUid).get().map { it.displayName() }
+            TEI -> {
+                val enrollment =
+                    d2.enrollmentModule().enrollments().uid(recordUid).blockingGet()
                 d2.trackedEntityModule().trackedEntityTypes().uid(
-                    d2.trackedEntityModule().trackedEntityInstances().uid(recordUid)
+                    d2.trackedEntityModule().trackedEntityInstances()
+                        .uid(enrollment.trackedEntityInstance()!!)
                         .blockingGet().trackedEntityType()
                 )
-                    .get()
+                    .get().map { it.displayName() }
+            }
             EVENT ->
                 d2.programModule().programStages().uid(
                     d2.eventModule().events().uid(recordUid).blockingGet().programStage()
-                ).get()
-            DATA_SET -> d2.dataSetModule().dataSets().withDataSetElements().uid(recordUid).get()
-            DATA_VALUES -> d2.dataSetModule().dataSets().withDataSetElements().uid(recordUid).get()
+                ).get().map { it.displayName() }
+            DATA_SET, DATA_VALUES ->
+                d2.dataSetModule().dataSets().withDataSetElements()
+                    .uid(recordUid).get()
+                    .map { it.displayName() }
         }
     }
 
@@ -342,18 +437,17 @@ class GranularSyncPresenterImpl(
             PROGRAM ->
                 d2.programModule().programs().uid(recordUid).get()
                     .map {
-                        if (it.programType() == ProgramType.WITHOUT_REGISTRATION) {
-                            getStateFromEventProgram(it.uid())
-                        } else {
-                            getStateFromTrackerProgram(it.uid())
-                        }
+                        dhisProgramUtils.getProgramState(it)
                     }
-            TEI ->
-                d2.trackedEntityModule().trackedEntityInstances().uid(recordUid).get()
-                    .map { it.state() }
+            TEI -> {
+                val enrollment = d2.enrollmentModule().enrollments().uid(recordUid).blockingGet()
+                d2.trackedEntityModule().trackedEntityInstances()
+                    .uid(enrollment.trackedEntityInstance()).get()
+                    .map { it.aggregatedSyncState() }
+            }
             EVENT ->
                 d2.eventModule().events().uid(recordUid).get()
-                    .map { it.state() }
+                    .map { it.aggregatedSyncState() }
             DATA_SET ->
                 d2.dataSetModule().dataSetInstances()
                     .byDataSetUid().eq(recordUid).get()
@@ -369,71 +463,64 @@ class GranularSyncPresenterImpl(
                     .map { dataSetInstance ->
                         getStateFromCanditates(dataSetInstance.map { it.state() }.toMutableList())
                     }
+            ALL -> Single.just(dhisProgramUtils.getServerState())
         }
     }
 
-    fun getConflicts(
-        conflictType: SyncStatusDialog.ConflictType
+    private fun getLastSynced(): Single<SyncDate> {
+        return when (conflictType) {
+            PROGRAM ->
+                d2.programModule().programs().uid(recordUid).get()
+                    .map {
+                        SyncDate(it.lastUpdated())
+                    }
+            TEI -> {
+                val enrollment = d2.enrollmentModule().enrollments().uid(recordUid).blockingGet()
+                d2.trackedEntityModule().trackedEntityInstances()
+                    .uid(enrollment.trackedEntityInstance()).get()
+                    .map { SyncDate(it.lastUpdated()) }
+            }
+            EVENT ->
+                d2.eventModule().events().uid(recordUid).get()
+                    .map { SyncDate(it.lastUpdated()) }
+            DATA_SET ->
+                d2.dataSetModule().dataSets()
+                    .uid(recordUid).get()
+                    .map { dataSet ->
+                        SyncDate(dataSet.lastUpdated())
+                    }
+            DATA_VALUES ->
+                d2.dataSetModule().dataSetInstances()
+                    .byOrganisationUnitUid().eq(dvOrgUnit)
+                    .byPeriod().eq(dvPeriodId)
+                    .byAttributeOptionComboUid().eq(dvAttrCombo)
+                    .byDataSetUid().eq(recordUid).get()
+                    .map { dataSetInstance ->
+                        dataSetInstance.sortBy { it.lastUpdated() }
+                        SyncDate(
+                            dataSetInstance.apply {
+                                sortBy { it.lastUpdated() }
+                            }.first().lastUpdated()
+                        )
+                    }
+            ALL ->
+                Single.just(SyncDate(preferenceProvider.lastSync()))
+        }
+    }
+
+    private fun getConflicts(
+        conflictType: ConflictType
     ): Single<MutableList<TrackerImportConflict>> {
         return when (conflictType) {
-            TEI ->
+            TEI -> {
+                val enrollment = d2.enrollmentModule().enrollments().uid(recordUid).blockingGet()
                 d2.importModule().trackerImportConflicts()
-                    .byTrackedEntityInstanceUid().eq(recordUid).get()
+                    .byTrackedEntityInstanceUid().eq(enrollment.trackedEntityInstance()).get()
+            }
             EVENT ->
                 d2.importModule().trackerImportConflicts()
                     .byEventUid().eq(recordUid).get()
             else -> Single.just(mutableListOf())
-        }
-    }
-
-    fun getStateFromTrackerProgram(programUid: String): State {
-        val teiRepository =
-            d2.trackedEntityModule().trackedEntityInstances().byProgramUids(
-                Collections.singletonList(programUid)
-            )
-
-        return when {
-            teiRepository.byAggregatedSyncState().`in`(State.ERROR).blockingGet().isNotEmpty() ->
-                State.ERROR
-            teiRepository.byAggregatedSyncState().`in`(State.WARNING).blockingGet().isNotEmpty() ->
-                State.WARNING
-            teiRepository.byAggregatedSyncState().`in`(State.SENT_VIA_SMS, State.SYNCED_VIA_SMS)
-                .blockingGet().isNotEmpty() ->
-                State.SENT_VIA_SMS
-            teiRepository.byAggregatedSyncState().`in`(
-                State.TO_UPDATE,
-                State.TO_POST,
-                State.UPLOADING
-            ).blockingGet().isNotEmpty() ||
-                teiRepository.byDeleted().isTrue.blockingGet().isNotEmpty() ->
-                State.TO_UPDATE
-            else -> State.SYNCED
-        }
-    }
-
-    fun getStateFromEventProgram(programUid: String): State {
-        val eventRepository =
-            d2.eventModule().events().byProgramUid().eq(programUid)
-
-        return when {
-            eventRepository
-                .byAggregatedSyncState().`in`(State.ERROR).blockingGet().isNotEmpty() ->
-                State.ERROR
-            eventRepository
-                .byAggregatedSyncState().`in`(State.WARNING)
-                .blockingGet().isNotEmpty() ->
-                State.WARNING
-            eventRepository.byAggregatedSyncState().`in`(State.SENT_VIA_SMS, State.SYNCED_VIA_SMS)
-                .blockingGet().isNotEmpty() ->
-                State.SENT_VIA_SMS
-            eventRepository.byAggregatedSyncState().`in`(
-                State.TO_UPDATE,
-                State.TO_POST,
-                State.UPLOADING
-            ).blockingGet().isNotEmpty() ||
-                eventRepository.byDeleted().isTrue.blockingGet().isNotEmpty() ->
-                State.TO_UPDATE
-            else -> State.SYNCED
         }
     }
 
@@ -442,7 +529,7 @@ class GranularSyncPresenterImpl(
             stateCandidates.addAll(
                 d2.dataSetModule().dataSetCompleteRegistrations()
                     .byDataSetUid().eq(recordUid)
-                    .blockingGet().map { it.state() }
+                    .blockingGet().map { it.syncState() }
             )
         } else {
             stateCandidates.addAll(
@@ -451,7 +538,7 @@ class GranularSyncPresenterImpl(
                     .byPeriod().eq(dvPeriodId)
                     .byAttributeOptionComboUid().eq(dvAttrCombo)
                     .byDataSetUid().eq(recordUid).get()
-                    .blockingGet().map { it.state() }
+                    .blockingGet().map { it.syncState() }
             )
         }
 
@@ -517,5 +604,19 @@ class GranularSyncPresenterImpl(
                 it.creationDate?.time
             }
         }
+    }
+
+    override fun trackedEntityTypeNameFromEnrollment(enrollmentUid: String): String? {
+        return d2.enrollmentModule().enrollments()
+            .uid(enrollmentUid)
+            .get().flatMap { enrollment ->
+                d2.trackedEntityModule().trackedEntityInstances()
+                    .uid(enrollment.trackedEntityInstance())
+                    .get()
+            }.flatMap { tei ->
+                d2.trackedEntityModule().trackedEntityTypes()
+                    .uid(tei.trackedEntityType())
+                    .get()
+            }.blockingGet().displayName()
     }
 }

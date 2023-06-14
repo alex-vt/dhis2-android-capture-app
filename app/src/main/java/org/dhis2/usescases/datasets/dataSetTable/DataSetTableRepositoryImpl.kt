@@ -7,7 +7,9 @@ import io.reactivex.processors.FlowableProcessor
 import io.reactivex.processors.PublishProcessor
 import java.util.Date
 import javax.inject.Singleton
-import org.dhis2.data.tuples.Pair
+import org.dhis2.commons.data.tuples.Pair
+import org.dhis2.commons.resources.ResourceManager
+import org.dhis2.usescases.datasets.dataSetTable.dataSetSection.DataSetSection
 import org.dhis2.utils.validationrules.DataToReview
 import org.dhis2.utils.validationrules.ValidationRuleResult
 import org.dhis2.utils.validationrules.Violation
@@ -30,7 +32,8 @@ class DataSetTableRepositoryImpl(
     private val dataSetUid: String,
     private val periodId: String,
     private val orgUnitUid: String,
-    private val catOptCombo: String
+    private val catOptCombo: String,
+    private val resourceManager: ResourceManager
 ) {
 
     private val dataSetInstanceProcessor: FlowableProcessor<Unit> = PublishProcessor.create()
@@ -97,13 +100,18 @@ class DataSetTableRepositoryImpl(
         ).toFlowable()
     }
 
-    fun getSections(): Flowable<List<String>> {
+    fun getSections(): Flowable<List<DataSetSection>> {
         return d2.dataSetModule().sections().byDataSetUid().eq(dataSetUid).get()
             .map { sections ->
                 if (sections.isEmpty()) {
-                    arrayListOf("NO_SECTION")
+                    arrayListOf(
+                        DataSetSection(
+                            "NO_SECTION",
+                            resourceManager.defaultEmptyDataSetSectionLabel()
+                        )
+                    )
                 } else {
-                    sections.map { it.displayName()!! }
+                    sections.map { DataSetSection(it.uid(), it.displayName()) }
                 }
             }.toFlowable()
     }
@@ -347,9 +355,9 @@ class DataSetTableRepositoryImpl(
                 ) {
                     d2.dataValueModule().dataValues()
                         .value(periodId, orgUnitUid, de.uid(), catOptCombo.uid(), this.catOptCombo)
-                        .blockingGet().value() ?: "?"
+                        .blockingGet().value() ?: "-"
                 } else {
-                    "?"
+                    "-"
                 }
                 val isFromDefaultCatCombo = d2.categoryModule().categoryCombos()
                     .uid(catOptCombo.categoryCombo()?.uid()).blockingGet().isDefault == true
@@ -377,5 +385,11 @@ class DataSetTableRepositoryImpl(
             .byDeleted().isFalse
             .isEmpty
             .map { isEmpty -> !isEmpty }
+    }
+
+    fun hasDataElementDecoration(): Boolean {
+        return d2.dataSetModule().dataSets().uid(dataSetUid)
+            .blockingGet()
+            .dataElementDecoration() == true
     }
 }

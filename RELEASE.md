@@ -1,4 +1,4 @@
-Android Capture App for DHIS 2 (v2.5.2) - Patch version
+Android Capture App for DHIS 2 (v2.7.1.1) - Patch version
 <table>
 <tr> 
 <td> 
@@ -13,13 +13,10 @@ It includes no functional improvements neither changes in the User Interface. It
 <td colspan="2" bgcolor="white">
 
 ## Bugs fixed
-* [ANDROAPP-4620](https://jira.dhis2.org/browse/ANDROAPP-4620) Option set DE is hidden when selecting an option in another option set
-* [ANDROAPP-4570](https://jira.dhis2.org/browse/ANDROAPP-4570) Dropdown selections in TEI search end up in wrong attributes
-* [ANDROAPP-4568](https://jira.dhis2.org/browse/ANDROAPP-4568) Crash when opening Event-Program relationship in a map
-* [ANDROAPP-4567](https://jira.dhis2.org/browse/ANDROAPP-4567) Bidirectional relationships are created in reverse order
-* This patch release updates the [Android SDK](https://github.com/dhis2/dhis2-android-sdk) to version 1.5.3.
+* [ANDROAPP-5194](https://jira.dhis2.org/browse/ANDROAPP-5194) RuntimeException: Unable to start activity ComponentInfo{com.dhis2/org.dhis2.usescases.eventsWithoutRegistration.ev...
+* This patch release updates the [Android SDK](https://github.com/dhis2/dhis2-android-sdk) to version 1.7.1.
     
-You can find in Jira details on the [bugs fixed](https://jira.dhis2.org/issues/?filter=12336) in this version. 
+You can find in Jira details on the [bugs fixed](https://jira.dhis2.org/issues/?filter=10368) in this version. 
 
 Remember to check the [documentation](https://www.dhis2.org/android-documentation) for detailed 
 information of the features included in the App and how to configure DHIS2 to use it. 

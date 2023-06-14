@@ -1,35 +1,44 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment
 
+import org.dhis2.form.data.DataIntegrityCheckResult
+import org.dhis2.form.data.FieldsWithErrorResult
+import org.dhis2.form.data.FieldsWithWarningResult
+import org.dhis2.form.data.MissingMandatoryResult
+import org.dhis2.form.data.NotSavedResult
+import org.dhis2.form.data.SuccessfulResult
 import io.reactivex.disposables.CompositeDisposable
-import org.dhis2.commons.schedulers.SchedulerProvider
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel
+/*import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel*/
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.biometrics.isBiometricsVerificationModel
 import org.dhis2.usescases.biometrics.isBiometricsVerificationText
 import org.dhis2.usescases.biometrics.isLastVerificationValid
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract
+import org.hisp.dhis.android.core.D2
+import org.hisp.dhis.android.core.event.EventEditableStatus
 import org.jetbrains.annotations.Nullable
 import timber.log.Timber
 
 class EventCaptureFormPresenter(
-    val view: EventCaptureFormView,
+    private val view: EventCaptureFormView,
     private val activityPresenter: EventCaptureContract.Presenter,
-    val schedulerProvider: SchedulerProvider
+    private val d2: D2,
+    private val eventUid: String
 ) {
     private var finishing: Boolean = false
     private var selectedSection: String? = null
 
     var disposable: CompositeDisposable = CompositeDisposable()
-
     private var biometricsVerificationStatus: Int = -1
     private var biometricsGuid: String? = null
     private var teiOrgUnit: String? = null
     private var fields: List<FieldUiModel> = listOf()
-    private var biometricsVerificationViewModel: BiometricsVerificationViewModel? = null
 
-    fun init() {
+    // TODO: simprints
+   // private var biometricsVerificationViewModel: BiometricsVerificationViewModel? = null
+
+/*    fun init() {
         disposable.add(
             activityPresenter.formFieldsFlowable()
                 .subscribeOn(schedulerProvider.io())
@@ -54,9 +63,46 @@ class EventCaptureFormPresenter(
                     { Timber.e(it) }
                 )
         )
+    }*/
+
+    fun handleDataIntegrityResult(result: DataIntegrityCheckResult) {
+        when (result) {
+            is FieldsWithErrorResult -> activityPresenter.attemptFinish(
+                result.canComplete,
+                result.onCompleteMessage,
+                result.fieldUidErrorList,
+                result.mandatoryFields,
+                result.warningFields
+            )
+            is FieldsWithWarningResult -> activityPresenter.attemptFinish(
+                result.canComplete,
+                result.onCompleteMessage,
+                emptyList(),
+                emptyMap(),
+                result.fieldUidWarningList
+            )
+            is MissingMandatoryResult -> activityPresenter.attemptFinish(
+                result.canComplete,
+                result.onCompleteMessage,
+                result.errorFields,
+                result.mandatoryFields,
+                result.warningFields
+            )
+            is SuccessfulResult -> activityPresenter.attemptFinish(
+                result.canComplete,
+                result.onCompleteMessage,
+                emptyList(),
+                emptyMap(),
+                emptyList()
+            )
+            NotSavedResult -> {
+                // Nothing to do in this case
+            }
+        }
     }
 
-    private fun populateList(fields: List<FieldUiModel>) {
+    // TODO: simprints
+ /*   private fun populateList(fields: List<FieldUiModel>) {
         if (BIOMETRICS_ENABLED && biometricsVerificationViewModel != null) {
             launchBiometricsVerificationIfRequired(fields)
         }
@@ -108,11 +154,15 @@ class EventCaptureFormPresenter(
                 it
             }
         } as MutableList<FieldUiModel>
-    }
+    }*/
 
-    private fun checkFinishing() {
-        if (finishing) {
-            view.performSaveClick()
+    fun showOrHideSaveButton() {
+        val isEditable =
+            d2.eventModule().eventService().getEditableStatus(eventUid = eventUid).blockingGet()
+        if (isEditable is EventEditableStatus.Editable) {
+            view.showSaveButton()
+        } else {
+            view.hideSaveButton()
         }
         finishing = false
     }
@@ -121,17 +171,14 @@ class EventCaptureFormPresenter(
         disposable.clear()
     }
 
-    fun onActionButtonClick() {
-        activityPresenter.attemptFinish()
-    }
-
-    private fun mapVerificationStatus(biometricsVerificationStatus: Int): BiometricsVerificationView.BiometricsVerificationStatus {
+    // TODO: simprints
+/*    private fun mapVerificationStatus(biometricsVerificationStatus: Int): BiometricsVerificationView.BiometricsVerificationStatus {
         return when (biometricsVerificationStatus) {
             0 -> BiometricsVerificationView.BiometricsVerificationStatus.FAILURE
             1 -> BiometricsVerificationView.BiometricsVerificationStatus.SUCCESS
             else -> BiometricsVerificationView.BiometricsVerificationStatus.NOT_DONE
         }
-    }
+    }*/
 
     fun <E> Iterable<E>.updated(index: Int, elem: E): List<E> =
         mapIndexed { i, existing -> if (i == index) elem else existing }
@@ -150,7 +197,8 @@ class EventCaptureFormPresenter(
         this.teiOrgUnit = teiOrgUnit
     }
 
-    fun refreshBiometricsVerificationStatus(
+    // TODO: simprints
+/*    fun refreshBiometricsVerificationStatus(
         biometricsVerificationStatus: Int,
         saveValue: Boolean = true
     ) {
@@ -166,5 +214,5 @@ class EventCaptureFormPresenter(
 
         this.biometricsVerificationStatus = biometricsVerificationStatus
         activityPresenter.refreshByBiometricsVerification(this.biometricsVerificationStatus)
-    }
+    }*/
 }

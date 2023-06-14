@@ -24,7 +24,8 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
 import timber.log.Timber;
 
-public class BiometricsView extends FieldLayout {
+//TODO: simprints
+/*public class BiometricsView extends FieldLayout {
 
     private BiometricsViewBinding binding;
 
@@ -142,4 +143,4 @@ public class BiometricsView extends FieldLayout {
                 AppCompatResources.getDrawable(rootView.getContext(),
                         getBioIconWarning(rootView.getContext())));
     }
-}
+}*/

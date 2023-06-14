@@ -9,24 +9,25 @@ import co.infinum.goldfinger.Goldfinger
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import org.dhis2.App
-import org.dhis2.commons.prefs.Preference
+import org.dhis2.commons.Constants.PREFS_URLS
+import org.dhis2.commons.Constants.PREFS_USERS
+import org.dhis2.commons.Constants.SERVER
+import org.dhis2.commons.Constants.USER
+import org.dhis2.commons.Constants.USER_ASKED_CRASHLYTICS
+import org.dhis2.commons.Constants.USER_TEST_ANDROID
+import org.dhis2.commons.network.NetworkUtils
 import org.dhis2.commons.prefs.Preference.Companion.PIN
 import org.dhis2.commons.prefs.Preference.Companion.SESSION_LOCKED
 import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.commons.prefs.SECURE_PASS
 import org.dhis2.commons.prefs.SECURE_SERVER_URL
 import org.dhis2.commons.prefs.SECURE_USER_NAME
+import org.dhis2.commons.reporting.CrashReportController
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.fingerprint.FingerPrintController
 import org.dhis2.data.fingerprint.Type
 import org.dhis2.data.server.UserManager
 import org.dhis2.usescases.main.MainActivity
-import org.dhis2.utils.Constants.PREFS_URLS
-import org.dhis2.utils.Constants.PREFS_USERS
-import org.dhis2.utils.Constants.SERVER
-import org.dhis2.utils.Constants.USER
-import org.dhis2.utils.Constants.USER_ASKED_CRASHLYTICS
-import org.dhis2.utils.Constants.USER_TEST_ANDROID
 import org.dhis2.utils.DEFAULT_URL
 import org.dhis2.utils.TestingCredential
 import org.dhis2.utils.analytics.ACCOUNT_RECOVERY
@@ -34,7 +35,6 @@ import org.dhis2.utils.analytics.AnalyticsHelper
 import org.dhis2.utils.analytics.CLICK
 import org.dhis2.utils.analytics.LOGIN
 import org.dhis2.utils.analytics.SERVER_QR_SCANNER
-import org.dhis2.utils.reporting.CrashReportController
 import org.hisp.dhis.android.core.maintenance.D2Error
 import org.hisp.dhis.android.core.maintenance.D2ErrorCode
 import org.hisp.dhis.android.core.systeminfo.SystemInfo
@@ -42,22 +42,27 @@ import org.hisp.dhis.android.core.user.openid.OpenIDConnectConfig
 import retrofit2.Response
 import timber.log.Timber
 
+const val VERSION = "version"
+
 class LoginPresenter(
     private val view: LoginContracts.View,
     private val preferenceProvider: PreferenceProvider,
     private val schedulers: SchedulerProvider,
     private val fingerPrintController: FingerPrintController,
     private val analyticsHelper: AnalyticsHelper,
-    private val crashReportController: CrashReportController
+    private val crashReportController: CrashReportController,
+    private val network: NetworkUtils
 ) {
 
     private var userManager: UserManager? = null
+    private lateinit var syncIsPerformedInteractor: SyncIsPerformedInteractor
     var disposable: CompositeDisposable = CompositeDisposable()
 
     private var canHandleBiometrics: Boolean? = null
 
     fun init(userManager: UserManager?) {
         this.userManager = userManager
+        syncIsPerformedInteractor = SyncIsPerformedInteractor(userManager)
         this.userManager?.let {
             disposable.add(
                 it.isUserLoggedIn
@@ -95,6 +100,11 @@ class LoginPresenter(
                     )
             )
         } ?: view.setUrl(view.getDefaultServerProtocol())
+    }
+
+    fun trackServerVersion() {
+        userManager?.d2?.systemInfoModule()?.systemInfo()?.blockingGet()?.version()
+            ?.let { analyticsHelper.trackMatomoEvent(SERVER, VERSION, it) }
     }
 
     fun checkServerInfoAndShowBiometricButton() {
@@ -311,11 +321,10 @@ class LoginPresenter(
     @VisibleForTesting
     fun handleResponse(userResponse: Response<*>, userName: String, server: String) {
         view.showLoginProgress(false)
-        if (userResponse.isSuccessful) {
-            if (view.isNetworkAvailable()) {
-                preferenceProvider.setValue(Preference.INITIAL_SYNC_DONE, false)
-            }
 
+        if (userResponse.isSuccessful) {
+            trackServerVersion()
+            val isInitialSyncDone = syncIsPerformedInteractor.execute()
             val updatedServer = (preferenceProvider.getSet(PREFS_URLS, HashSet()) as HashSet)
             if (!updatedServer.contains(server)) {
                 updatedServer.add(server)
@@ -328,7 +337,7 @@ class LoginPresenter(
             preferenceProvider.setValue(PREFS_URLS, updatedServer)
             preferenceProvider.setValue(PREFS_USERS, updatedUsers)
 
-            view.saveUsersData()
+            view.saveUsersData(isInitialSyncDone)
         }
     }
 
@@ -408,8 +417,12 @@ class LoginPresenter(
     }
 
     fun onAccountRecovery() {
-        analyticsHelper.setEvent(ACCOUNT_RECOVERY, CLICK, ACCOUNT_RECOVERY)
-        view.openAccountRecovery()
+        if (network.isOnline()) {
+            analyticsHelper.setEvent(ACCOUNT_RECOVERY, CLICK, ACCOUNT_RECOVERY)
+            view.openAccountRecovery()
+        } else {
+            view.showNoConnectionDialog()
+        }
     }
 
     fun getAutocompleteData(
@@ -437,6 +450,15 @@ class LoginPresenter(
         preferenceProvider.setValue(PREFS_USERS, HashSet(users))
 
         return Pair(urls, users)
+    }
+
+    fun displayManageAccount(): Boolean {
+        val users = userManager?.d2?.userModule()?.accountManager()?.getAccounts()?.count() ?: 0
+        return users >= 1
+    }
+
+    fun onManageAccountClicked() {
+        view.openAccountsActivity()
     }
 
     // TODO Remove this when we remove the userManager from the presenter

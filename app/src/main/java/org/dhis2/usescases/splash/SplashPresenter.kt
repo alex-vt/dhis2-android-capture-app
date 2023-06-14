@@ -2,14 +2,14 @@ package org.dhis2.usescases.splash
 
 import io.reactivex.disposables.CompositeDisposable
 import java.util.concurrent.TimeUnit
+import org.dhis2.commons.Constants
+import org.dhis2.commons.Constants.SERVER
+import org.dhis2.commons.Constants.USER
 import org.dhis2.commons.prefs.Preference
 import org.dhis2.commons.prefs.PreferenceProvider
+import org.dhis2.commons.reporting.CrashReportController
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.server.UserManager
-import org.dhis2.utils.Constants
-import org.dhis2.utils.Constants.SERVER
-import org.dhis2.utils.Constants.USER
-import org.dhis2.utils.reporting.CrashReportController
 import timber.log.Timber
 
 class SplashPresenter internal constructor(
@@ -51,14 +51,27 @@ class SplashPresenter internal constructor(
                             }
                             view.goToNextScreen(
                                 userLogged,
-                                preferenceProvider.getBoolean(Preference.SESSION_LOCKED, false),
-                                preferenceProvider.getBoolean(Preference.INITIAL_SYNC_DONE, false)
+                                preferenceProvider.getBoolean(
+                                    Preference.SESSION_LOCKED, false
+                                ),
+                                preferenceProvider.getBoolean(
+                                    Preference.INITIAL_METADATA_SYNC_DONE, false
+                                ),
+                                preferenceProvider.getBoolean(
+                                    Preference.INITIAL_DATA_SYNC_DONE,
+                                    false
+                                )
                             )
                         },
                         { Timber.d(it) }
                     )
             )
-        } ?: view.goToNextScreen(false, sessionLocked = false, initialSyncDone = false)
+        } ?: view.goToNextScreen(
+            false,
+            sessionLocked = false,
+            initialSyncDone = false,
+            initialDataSyncDone = false
+        )
     }
 
     private fun trackUserInfo() {
@@ -67,5 +80,9 @@ class SplashPresenter internal constructor(
 
         crashReportController.trackServer(server)
         crashReportController.trackUser(username, server)
+    }
+
+    fun getAccounts(): Int {
+        return userManager?.d2?.userModule()?.accountManager()?.getAccounts()?.count() ?: 0
     }
 }

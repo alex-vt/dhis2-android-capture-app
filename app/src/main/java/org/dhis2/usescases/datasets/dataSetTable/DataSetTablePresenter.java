@@ -2,14 +2,20 @@ package org.dhis2.usescases.datasets.dataSetTable;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.dhis2.commons.data.tuples.Pair;
+import org.dhis2.commons.data.tuples.Quartet;
+import org.dhis2.commons.data.tuples.Trio;
+import org.dhis2.commons.matomo.Actions;
+import org.dhis2.commons.matomo.Categories;
+import org.dhis2.commons.matomo.Labels;
 import org.dhis2.commons.schedulers.SchedulerProvider;
-import org.dhis2.data.tuples.Pair;
-import org.dhis2.data.tuples.Quartet;
-import org.dhis2.data.tuples.Trio;
+import org.dhis2.usescases.datasets.dataSetTable.dataSetSection.DataSetSection;
 import org.dhis2.utils.analytics.AnalyticsHelper;
 import org.dhis2.utils.validationrules.ValidationRuleResult;
 import org.hisp.dhis.android.core.validation.engine.ValidationResult.ValidationResultStatus;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.BackpressureStrategy;
@@ -18,6 +24,7 @@ import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.processors.FlowableProcessor;
 import io.reactivex.processors.PublishProcessor;
+import kotlin.Unit;
 import timber.log.Timber;
 
 public class DataSetTablePresenter implements DataSetTableContract.Presenter {
@@ -25,6 +32,7 @@ public class DataSetTablePresenter implements DataSetTableContract.Presenter {
     private final DataSetTableRepositoryImpl tableRepository;
     private final SchedulerProvider schedulerProvider;
     private final AnalyticsHelper analyticsHelper;
+    private final List<DataSetSection> sections = new ArrayList<>();
     private DataSetTableContract.View view;
     public CompositeDisposable disposable;
 
@@ -34,17 +42,20 @@ public class DataSetTablePresenter implements DataSetTableContract.Presenter {
     private String catCombo;
     private String periodId;
     private FlowableProcessor<Boolean> validationProcessor;
+    private FlowableProcessor<Unit> updateProcessor;
 
     public DataSetTablePresenter(
             DataSetTableContract.View view,
             DataSetTableRepositoryImpl dataSetTableRepository,
             SchedulerProvider schedulerProvider,
-            AnalyticsHelper analyticsHelper) {
+            AnalyticsHelper analyticsHelper,
+            FlowableProcessor<Unit> updateProcessor) {
         this.view = view;
         this.tableRepository = dataSetTableRepository;
         this.schedulerProvider = schedulerProvider;
         this.analyticsHelper = analyticsHelper;
         this.validationProcessor = PublishProcessor.create();
+        this.updateProcessor = updateProcessor;
         disposable = new CompositeDisposable();
     }
 
@@ -61,17 +72,21 @@ public class DataSetTablePresenter implements DataSetTableContract.Presenter {
                 tableRepository.getSections()
                         .subscribeOn(schedulerProvider.io())
                         .observeOn(schedulerProvider.ui())
-                        .subscribe(view::setSections, Timber::e)
+                        .subscribe(sections -> {
+                            this.sections.clear();
+                            this.sections.addAll(sections);
+                            view.setSections(sections);
+                        }, Timber::e)
         );
 
         disposable.add(
                 Flowable.zip(
-                        tableRepository.getDataSet().toFlowable(),
-                        tableRepository.getCatComboName(catCombo),
-                        tableRepository.getPeriod().toFlowable(),
-                        tableRepository.isComplete().toFlowable(),
-                        Quartet::create
-                )
+                                tableRepository.getDataSet().toFlowable(),
+                                tableRepository.getCatComboName(catCombo),
+                                tableRepository.getPeriod().toFlowable(),
+                                tableRepository.isComplete().toFlowable(),
+                                Quartet::create
+                        )
                         .subscribeOn(schedulerProvider.io())
                         .observeOn(schedulerProvider.ui())
                         .subscribe(
@@ -108,9 +123,9 @@ public class DataSetTablePresenter implements DataSetTableContract.Presenter {
     @VisibleForTesting
     public void handleValidationResult(ValidationRuleResult result) {
         if (result.getValidationResultStatus() == ValidationResultStatus.OK) {
-            if(!isComplete()) {
+            if (!isComplete()) {
                 view.showSuccessValidationDialog();
-            }else{
+            } else {
                 view.saveAndFinish();
             }
         } else {
@@ -129,9 +144,9 @@ public class DataSetTablePresenter implements DataSetTableContract.Presenter {
             } else {
                 view.showValidationRuleDialog();
             }
-        } else if(!isComplete()){
+        } else if (!isComplete()) {
             view.showSuccessValidationDialog();
-        }else{
+        } else {
             view.saveAndFinish();
         }
     }
@@ -185,9 +200,9 @@ public class DataSetTablePresenter implements DataSetTableContract.Presenter {
     public void completeDataSet() {
         disposable.add(
                 Single.zip(
-                        tableRepository.checkMandatoryFields(),
-                        tableRepository.checkFieldCombination(),
-                        Pair::create)
+                                tableRepository.checkMandatoryFields(),
+                                tableRepository.checkFieldCombination(),
+                                Pair::create)
                         .flatMap(missingAndCombination -> {
                             boolean mandatoryFieldOk = missingAndCombination.val0().isEmpty();
                             boolean fieldCombinationOk = missingAndCombination.val1().val0();
@@ -258,7 +273,43 @@ public class DataSetTablePresenter implements DataSetTableContract.Presenter {
     }
 
     @Override
-    public boolean isComplete(){
+    public boolean isComplete() {
         return tableRepository.isComplete().blockingGet();
+    }
+
+    @Override
+    public void updateData() {
+        updateProcessor.onNext(Unit.INSTANCE);
+    }
+
+    @Override
+    public void onClickSyncStatus() {
+        analyticsHelper.trackMatomoEvent(
+                Categories.DATASET_DETAIL,
+                Actions.SYNC_DATASET,
+                Labels.CLICK);
+    }
+
+    @Override
+    public boolean dataSetHasDataElementDecoration() {
+        return tableRepository.hasDataElementDecoration();
+    }
+
+    @Override
+    public void editingCellValue(boolean isEditing) {
+        if (isEditing) {
+            view.startInputEdition();
+        } else {
+            view.finishInputEdition();
+        }
+    }
+
+    @Override
+    public String getFirstSection() {
+        if (sections.isEmpty()) {
+            return tableRepository.getSections().blockingFirst().get(0).getUid();
+        } else {
+            return sections.get(0).getUid();
+        }
     }
 }

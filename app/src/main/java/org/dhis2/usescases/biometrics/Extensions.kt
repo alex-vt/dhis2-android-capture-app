@@ -4,8 +4,8 @@ import android.content.Context
 import org.dhis2.R
 import org.dhis2.commons.prefs.PreferenceProviderImpl
 import org.dhis2.data.biometrics.BiometricsPreference
-import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel
+/*import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel
+import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel*/
 import org.dhis2.form.model.FieldUiModel
 import org.hisp.dhis.android.core.program.ProgramTrackedEntityAttribute
 
@@ -13,12 +13,15 @@ fun ProgramTrackedEntityAttribute.isBiometricAttribute(): Boolean {
     return name()?.contains(BIOMETRIC_VALUE, true) ?: false
 }
 
+// TODO: simprints
 fun FieldUiModel.isBiometricModel(): Boolean {
-    return this is BiometricsViewModel && this.label.isBiometricText()
+  //  return this is BiometricsViewModel && this.label.isBiometricText()
+    return false
 }
 
 fun FieldUiModel.isBiometricsVerificationModel(): Boolean {
-    return this is BiometricsVerificationViewModel && this.label.isBiometricsVerificationText()
+   // return this is BiometricsVerificationViewModel && this.label.isBiometricsVerificationText()
+    return false
 }
 
 fun String.isBiometricText(): Boolean {

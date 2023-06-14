@@ -3,7 +3,6 @@ package org.dhis2.commons.orgunitselector
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
 import java.util.ArrayList
-import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.schedulers.defaultSubscribe
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
@@ -29,7 +28,7 @@ class OUTreePresenter(
                     repository.orgUnits().toFlowable()
                 }.map { orgUnits ->
                     orgUnits.filter { orgUnit ->
-                        orgUnit.level() == orgUnits.minBy { it.level()!! }?.level()
+                        orgUnit.level() == orgUnits.minByOrNull { it.level()!! }?.level()
                     }
                 }.map { organisationUnits ->
                     val nodes = ArrayList<TreeNode>()
@@ -146,7 +145,7 @@ class OUTreePresenter(
 
     private fun rebuildOrgUnitList(location: Int, nodes: List<TreeNode>): List<TreeNode> {
         val nodesCopy: MutableList<TreeNode> = ArrayList<TreeNode>(view.getCurrentList())
-        nodesCopy[location].isOpen = !nodesCopy[location].isOpen
+        nodesCopy[location] = nodesCopy[location].copy(isOpen = !nodesCopy[location].isOpen)
 
         if (!nodesCopy[location].isOpen) {
             val (_, _, _, _, level) = nodesCopy[location]

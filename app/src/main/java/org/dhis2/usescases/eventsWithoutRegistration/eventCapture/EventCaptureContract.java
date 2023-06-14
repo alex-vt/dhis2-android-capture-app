@@ -7,9 +7,9 @@ import androidx.annotation.NonNull;
 import org.dhis2.data.forms.FormSectionViewModel;
 import org.dhis2.form.model.FieldUiModel;
 import org.dhis2.form.model.RowAction;
+import org.dhis2.commons.data.FieldWithIssue;
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.model.EventCompletionDialog;
 import org.dhis2.usescases.general.AbstractActivityContracts;
-import org.dhis2.utils.Result;
-import org.dhis2.utils.RulesUtilsProviderConfigurationError;
 import org.hisp.dhis.android.core.event.EventStatus;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 import org.hisp.dhis.rules.models.RuleEffect;
@@ -23,8 +23,6 @@ import java.util.Map;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.processors.FlowableProcessor;
-import io.reactivex.subjects.BehaviorSubject;
 
 public class EventCaptureContract {
 
@@ -36,7 +34,10 @@ public class EventCaptureContract {
 
         void updatePercentage(float primaryValue);
 
-        void showCompleteActions(boolean canComplete, String completeMessage, Map<String, String> errors, Map<String, FieldUiModel> emptyMandatoryFields);
+        void showCompleteActions(
+                boolean canComplete,
+                Map<String, String> emptyMandatoryFields,
+                EventCompletionDialog eventCompletionDialog);
 
         void updateProgramStageName(String stageName);
 
@@ -44,25 +45,19 @@ public class EventCaptureContract {
 
         void finishDataEntry();
 
-        void attemptToReopen();
+        void SaveAndFinish();
 
         void showSnackBar(int messageId);
-
-        void clearFocus();
 
         void attemptToSkip();
 
         void attemptToReschedule();
-
-        void setProgramStage(String programStageUid);
 
         void showErrorSnackBar();
 
         void showEventIntegrityAlert();
 
         void updateNoteBadge(int numberOfNotes);
-
-        void showLoopWarning();
 
         void goBack();
 
@@ -74,8 +69,6 @@ public class EventCaptureContract {
 
         void hideNavigationBar();
 
-        void displayConfigurationErrors(List<RulesUtilsProviderConfigurationError> configurationError);
-
         void refreshByBiometricsVerification(int status);
     }
 
@@ -85,21 +78,17 @@ public class EventCaptureContract {
 
         Date getBiometricsAttributeValueInTeiLastUpdated(String deUid);
 
-        BehaviorSubject<List<FieldUiModel>> formFieldsFlowable();
-
         void onBackClick();
 
-        void nextCalculation(boolean doNextCalculation);
-
-        void attemptFinish();
+        void attemptFinish(boolean canComplete,
+                           String onCompleteMessage,
+                           List<FieldWithIssue> errorFields,
+                           Map<String, String> emptyMandatoryFields,
+                           List<FieldWithIssue> warningFields);
 
         boolean isEnrollmentOpen();
 
-        void goToSection();
-
         void completeEvent(boolean addNew);
-
-        void reopenEvent();
 
         void deleteEvent();
 
@@ -111,14 +100,14 @@ public class EventCaptureContract {
 
         boolean hasExpired();
 
-        void saveImage(String uuid, String filePath);
-
         @SuppressLint("CheckResult")
         void saveValue(String uuid, String value);
 
         void initNoteCounter();
 
         void refreshTabCounters();
+
+        void refreshProgramStage();
 
         void hideProgress();
 
@@ -127,8 +116,6 @@ public class EventCaptureContract {
         boolean getCompletionPercentageVisibility();
 
         void setValueChanged(@NotNull String uid);
-
-        void disableConfErrorMessage();
 
         void refreshByBiometricsVerification(int status);
 
@@ -149,19 +136,9 @@ public class EventCaptureContract {
 
         Flowable<String> catOption();
 
-        Flowable<List<FormSectionViewModel>> eventSections();
-
-        @NonNull
-        Flowable<List<FieldUiModel>> list(FlowableProcessor<RowAction> processor);
-
-        @NonNull
-        Flowable<Result<RuleEffect>> calculate();
-
         Observable<Boolean> completeEvent();
 
         Flowable<EventStatus> eventStatus();
-
-        boolean reopenEvent();
 
         boolean isEnrollmentOpen();
 
@@ -179,8 +156,6 @@ public class EventCaptureContract {
 
         boolean isEventEditable(String eventUid);
 
-        String getSectionFor(String field);
-
         Single<Boolean> canReOpenEvent();
 
         Observable<Boolean> isCompletedEventExpired(String eventUid);
@@ -188,8 +163,6 @@ public class EventCaptureContract {
         Single<Integer> getNoteCount();
 
         boolean showCompletionPercentage();
-
-        void updateFieldValue(String uid);
 
         boolean hasAnalytics();
 

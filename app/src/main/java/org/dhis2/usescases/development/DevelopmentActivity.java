@@ -15,13 +15,11 @@ import com.google.gson.reflect.TypeToken;
 
 import org.dhis2.App;
 import org.dhis2.R;
-import org.dhis2.databinding.DevelopmentActivityBinding;
 import org.dhis2.commons.featureconfig.ui.FeatureConfigView;
+import org.dhis2.databinding.DevelopmentActivityBinding;
 import org.dhis2.usescases.general.ActivityGlobalAbstract;
 import org.dhis2.usescases.main.MainActivity;
 import org.dhis2.utils.customviews.BreakTheGlassBottomDialog;
-import org.dhis2.utils.dialFloatingActionButton.DialItem;
-import org.hisp.dhis.android.core.D2Manager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,7 +28,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -51,16 +48,9 @@ public class DevelopmentActivity extends ActivityGlobalAbstract {
         loadLocaleDevTools();
         loadIconsDevTools();
         loadBreakTheGlass();
-        loadProgramRuleCheck();
+        loadCrashControl();
         loadFeatureConfig();
-    }
-
-    private void loadProgramRuleCheck() {
-        binding.ruleActionQualityButton.setOnClickListener(view -> {
-            binding.ruleActionQualityResult.setText("Checking...");
-            String result = new ProgramRulesValidations(D2Manager.getD2()).validateRules();
-            binding.ruleActionQualityResult.setText(result);
-        });
+        loadTable();
     }
 
     private void loadAnalyticsDevTools() {
@@ -227,10 +217,21 @@ public class DevelopmentActivity extends ActivityGlobalAbstract {
                                 BreakTheGlassBottomDialog.class.getName()));
     }
 
+    private void loadCrashControl() {
+        binding.crashButton.setOnClickListener(view -> {
+            throw new IllegalArgumentException("KA BOOOOOM!");
+        });
+    }
+
     private void loadFeatureConfig() {
         binding.featureConfigButton.setOnClickListener(view -> {
             startActivity(FeatureConfigView.class, null, false, false, null);
         });
+    }
+
+    private void loadTable() {
+        binding.tableButton.setOnClickListener(view ->
+                startActivity(TableTestActivity.class, null, false, false, null));
     }
 
     @Override

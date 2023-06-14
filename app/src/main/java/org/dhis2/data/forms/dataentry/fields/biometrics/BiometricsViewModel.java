@@ -1,7 +1,12 @@
 package org.dhis2.data.forms.dataentry.fields.biometrics;
 
-import com.google.auto.value.AutoValue;
+//TODO: simprints
 
+
+/*
+
+
+import com.google.auto.value.AutoValue;
 import org.dhis2.R;
 import org.dhis2.data.forms.dataentry.DataEntryViewHolderTypes;
 import org.dhis2.data.forms.dataentry.fields.FieldViewModel;
@@ -14,6 +19,7 @@ import org.hisp.dhis.android.core.common.ValueType;
 
 import androidx.annotation.NonNull;
 import io.reactivex.processors.FlowableProcessor;
+
 
 @AutoValue
 public abstract class BiometricsViewModel extends FieldViewModel {
@@ -79,8 +85,8 @@ public abstract class BiometricsViewModel extends FieldViewModel {
                 style(), null, activated(), ValueType.TEXT, url());
     }
 
-    // We don't use the FieldUiModel onItemClick() to avoid infrastructure to listen in FormViewModel
-    // because we need listen in enrollmentPresenterImpl to register biometrics
+    We don't use the FieldUiModel onItemClick() to avoid infrastructure to listen in FormViewModel
+    because we need listen in enrollmentPresenterImpl to register biometrics
     public void onBiometricsClick() {
         if (listener != null){
             listener.OnClick();
@@ -98,3 +104,4 @@ public abstract class BiometricsViewModel extends FieldViewModel {
         void OnClick();
     }
 }
+*/

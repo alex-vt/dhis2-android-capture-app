@@ -25,6 +25,7 @@
 
 package org.dhis2.utils.granularsync
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.work.WorkInfo
 import org.dhis2.usescases.general.AbstractActivityContracts
@@ -40,22 +41,36 @@ class GranularSyncContracts {
         fun closeDialog()
         fun setState(state: State, conflicts: MutableList<TrackerImportConflict>)
         fun prepareConflictAdapter(conflicts: MutableList<TrackerImportConflict>)
-        fun emptyEnrollmentError(): String
-        fun unsupportedTask(): String
+        fun setLastUpdated(result: SyncDate)
+        fun showRefreshTitle()
+        fun logWaitingForServerResponse()
+        fun logSmsReachedServer()
+        fun logSmsReachedServerError()
+        fun logSmsSent()
+        fun logSmsNotSent()
+        fun checkSmsPermission(): Boolean
+        fun logOpeningSmsApp()
+        fun openSmsApp(message: String, smsToNumber: String)
+        fun updateState(state: State)
     }
 
     interface Presenter : AbstractActivityContracts.Presenter {
-        fun isSMSEnabled(isTrackerSync: Boolean): Boolean
+        fun isSMSEnabled(showSms: Boolean): Boolean
         fun configure(view: View)
         fun initGranularSync(): LiveData<List<WorkInfo>>
         fun initSMSSync(): LiveData<List<SmsSendingService.SendingStatus>>
-        fun reportState(state: SmsSendingService.State, sent: Int, total: Int)
-        fun reportError(throwable: Throwable)
         fun sendSMS()
         fun syncErrors(): List<ErrorViewModel>
-    }
+        fun trackedEntityTypeNameFromEnrollment(enrollmentUid: String): String?
+        fun onSmsNotAccepted()
+        fun onSmsNotManuallySent(context: Context)
+        fun onSmsSyncClick(
+            callback: (LiveData<List<SmsSendingService.SendingStatus>>) -> Unit
+        )
 
-    interface OnDismissListener {
-        fun onDismiss(hasChanged: Boolean)
+        fun onSmsManuallySent(context: Context, confirmationCallback: (LiveData<Boolean?>) -> Unit)
+        fun onConfirmationMessageStateChanged(messageReceived: Boolean?)
+        fun restartSmsSender()
+        fun canSendSMS(): Boolean
     }
 }

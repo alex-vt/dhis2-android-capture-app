@@ -1,8 +1,12 @@
 package org.dhis2.usescases.main
 
+import android.app.AlertDialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
@@ -10,32 +14,40 @@ import android.view.View
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.app.NotificationCompat
 import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
 import androidx.drawerlayout.widget.DrawerLayout
+import java.io.File
 import javax.inject.Inject
 import org.dhis2.Bindings.app
 import org.dhis2.BuildConfig
 import org.dhis2.R
+import org.dhis2.commons.Constants
 import org.dhis2.commons.filters.FilterItem
 import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.filters.FiltersAdapter
 import org.dhis2.commons.prefs.Preference
+import org.dhis2.commons.sync.ConflictType
+import org.dhis2.commons.sync.OnDismissListener
 import org.dhis2.databinding.ActivityMainBinding
 import org.dhis2.usescases.development.DevelopmentActivity
 import org.dhis2.usescases.general.ActivityGlobalAbstract
 import org.dhis2.usescases.login.LoginActivity
-import org.dhis2.utils.Constants
 import org.dhis2.utils.DateUtils
-import org.dhis2.utils.analytics.BLOCK_SESSION
 import org.dhis2.utils.analytics.CLICK
 import org.dhis2.utils.analytics.CLOSE_SESSION
 import org.dhis2.utils.customviews.navigationbar.NavigationPageConfigurator
 import org.dhis2.utils.extension.navigateTo
+import org.dhis2.utils.granularsync.SyncStatusDialog
 import org.dhis2.utils.session.PIN_DIALOG_TAG
 import org.dhis2.utils.session.PinDialog
 
 private const val FRAGMENT = "Fragment"
+private const val INIT_DATA_SYNC = "INIT_DATA_SYNC"
+private const val WIPE_NOTIFICATION = "wipe_notification"
+private const val RESTART = "Restart"
+const val AVOID_SYNC = "AvoidSync"
 
 class MainActivity :
     ActivityGlobalAbstract(),
@@ -53,6 +65,9 @@ class MainActivity :
 
     @Inject
     lateinit var pageConfigurator: NavigationPageConfigurator
+
+    var notification: Boolean = false
+    var forceToNotSynced = false
 
     private val getDevActivityContent =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -77,8 +92,32 @@ class MainActivity :
         setBottomNavigationVisibility(showBottomNavigation)
     }
 
-    //region LIFECYCLE
+    companion object {
+        fun intent(
+            context: Context,
+            initScreen: MainNavigator.MainScreen? = null,
+            launchDataSync: Boolean = false
+        ): Intent {
+            return Intent(context, MainActivity::class.java).apply {
+                initScreen?.let {
+                    putExtra(FRAGMENT, initScreen.name)
+                }
+                putExtra(INIT_DATA_SYNC, launchDataSync)
+            }
+        }
 
+        fun bundle(
+            initScreen: MainNavigator.MainScreen? = null,
+            launchDataSync: Boolean = false
+        ) = Bundle().apply {
+            initScreen?.let {
+                putString(FRAGMENT, initScreen.name)
+            }
+            putBoolean(INIT_DATA_SYNC, launchDataSync)
+        }
+    }
+
+    //region LIFECYCLE
     override fun onCreate(savedInstanceState: Bundle?) {
         app().userComponent()?.let {
             mainComponent = it.plus(MainModule(this)).apply {
@@ -87,6 +126,7 @@ class MainActivity :
         } ?: navigateTo<LoginActivity>(true)
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        forceToNotSynced = intent.getBooleanExtra(AVOID_SYNC, false)
         if (::presenter.isInitialized) {
             binding.presenter = presenter
         } else {
@@ -115,6 +155,7 @@ class MainActivity :
                     mainNavigator.openPrograms()
                 }
                 R.id.navigation_analytics -> {
+                    presenter.trackHomeAnalytics()
                     mainNavigator.openVisualizations()
                 }
             }
@@ -131,12 +172,32 @@ class MainActivity :
         elevation = ViewCompat.getElevation(binding.toolbar)
 
         val restoreScreenName = savedInstanceState?.getString(FRAGMENT)
-        if (restoreScreenName != null) {
-            changeFragment(mainNavigator.currentNavigationViewItemId(restoreScreenName))
-            mainNavigator.restoreScreen(restoreScreenName)
-        } else {
-            changeFragment(R.id.menu_home)
-            initCurrentScreen()
+        val openScreen = intent.getStringExtra(FRAGMENT)
+
+        when {
+            openScreen != null || restoreScreenName != null -> {
+                changeFragment(
+                    mainNavigator.currentNavigationViewItemId(
+                        openScreen ?: restoreScreenName!!
+                    )
+                )
+                mainNavigator.restoreScreen(
+                    screenToRestoreName = openScreen ?: restoreScreenName!!,
+                    languageSelectorOpened = openScreen != null &&
+                        MainNavigator.MainScreen.valueOf(openScreen) ==
+                        MainNavigator.MainScreen.TROUBLESHOOTING
+                )
+            }
+            else -> {
+                changeFragment(R.id.menu_home)
+                initCurrentScreen()
+            }
+        }
+
+        observeSyncState()
+
+        if (!presenter.wasSyncAlreadyDone()) {
+            presenter.launchInitialDataSync()
         }
     }
 
@@ -158,6 +219,47 @@ class MainActivity :
         presenter.setOpeningFilterToNone()
         presenter.onDetach()
         super.onPause()
+    }
+
+    private fun observeSyncState() {
+        presenter.observeDataSync().observe(this) {
+            if (it.running) {
+                setFilterButtonVisibility(false)
+                setBottomNavigationVisibility(false)
+            } else {
+                setFilterButtonVisibility(true)
+                setBottomNavigationVisibility(true)
+                presenter.onDataSuccess()
+            }
+        }
+    }
+
+    override fun showGranularSync() {
+        SyncStatusDialog.Builder()
+            .setConflictType(ConflictType.ALL)
+            .setUid("")
+            .onDismissListener(
+                object : OnDismissListener {
+                    override fun onDismiss(hasChanged: Boolean) {
+                        if (hasChanged) {
+                            mainNavigator.getCurrentIfProgram()?.presenter?.updateProgramQueries()
+                        }
+                    }
+                })
+            .build().show(supportFragmentManager, "ALL_SYNC")
+    }
+
+    override fun goToLogin(accountsCount: Int, isDeletion: Boolean) {
+        startActivity(
+            LoginActivity::class.java,
+            LoginActivity.bundle(
+                accountsCount = accountsCount,
+                isDeletion = isDeletion
+            ),
+            true,
+            true,
+            null
+        )
     }
 
     override fun renderUsername(username: String) {
@@ -265,6 +367,11 @@ class MainActivity :
         } else {
             View.GONE
         }
+        binding.syncActionButton.visibility = if (showFilterButton) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
     }
 
     private fun setBottomNavigationVisibility(showBottomNavigation: Boolean) {
@@ -291,7 +398,7 @@ class MainActivity :
 
     override fun onDrawerClosed(drawerView: View) {
         initCurrentScreen()
-        if (mainNavigator.isPrograms()) {
+        if (mainNavigator.isPrograms() && !isNotificationRunning()) {
             presenter.initFilters()
         }
     }
@@ -306,16 +413,18 @@ class MainActivity :
                 mainNavigator.openSettings()
             }
             R.id.qr_scan -> {
+                presenter.trackQRScanner()
                 mainNavigator.openQR()
             }
             R.id.menu_jira -> {
+                presenter.trackJiraReport()
                 mainNavigator.openJira()
             }
             R.id.menu_about -> {
                 mainNavigator.openAbout()
             }
             R.id.block_button -> {
-                analyticsHelper.setEvent(BLOCK_SESSION, CLICK, BLOCK_SESSION)
+                presenter.trackPinDialog()
                 onLockClick()
             }
             R.id.logout_button -> {
@@ -325,10 +434,71 @@ class MainActivity :
             R.id.menu_home -> {
                 mainNavigator.openHome(binding.navigationBar)
             }
+            R.id.menu_troubleshooting -> {
+                mainNavigator.openTroubleShooting()
+            }
+            R.id.delete_account -> {
+                confirmAccountDelete()
+            }
         }
 
         if (backDropActive && mainNavigator.isPrograms()) {
             showHideFilter()
         }
+    }
+
+    private fun confirmAccountDelete() {
+        AlertDialog.Builder(context, R.style.CustomDialog)
+            .setTitle(getString(R.string.delete_account))
+            .setMessage(getString(R.string.wipe_data_meesage))
+            .setView(R.layout.warning_layout)
+            .setPositiveButton(getString(R.string.wipe_data_ok)) { _, _ ->
+                presenter.onDeleteAccount()
+            }
+            .setNegativeButton(getString(R.string.wipe_data_no)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    override fun showProgressDeleteNotification() {
+        notification = true
+        val notificationManager =
+            context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val mChannel = NotificationChannel(
+                WIPE_NOTIFICATION,
+                RESTART,
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(mChannel)
+        }
+        val notificationBuilder = NotificationCompat.Builder(context, WIPE_NOTIFICATION)
+            .setSmallIcon(R.drawable.ic_sync)
+            .setContentTitle(getString(R.string.wipe_data))
+            .setContentText(getString(R.string.please_wait))
+            .setOngoing(true)
+            .setAutoCancel(false)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+        notificationManager.notify(123456, notificationBuilder.build())
+    }
+
+    override fun obtainFileView(): File? {
+        return this.cacheDir
+    }
+
+    private fun isNotificationRunning(): Boolean {
+        return notification
+    }
+
+    override fun hasToNotSync(): Boolean {
+        return forceToNotSynced
+    }
+
+    override fun cancelNotifications() {
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancelAll()
     }
 }

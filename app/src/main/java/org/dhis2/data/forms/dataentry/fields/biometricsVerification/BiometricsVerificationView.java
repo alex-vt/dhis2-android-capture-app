@@ -1,5 +1,9 @@
 package org.dhis2.data.forms.dataentry.fields.biometricsVerification;
 
+
+//TODO: simprints
+/*
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
@@ -85,3 +89,4 @@ public class BiometricsVerificationView extends FieldLayout {
         }
     }
 }
+*/

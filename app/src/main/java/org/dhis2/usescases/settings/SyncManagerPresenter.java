@@ -2,6 +2,7 @@ package org.dhis2.usescases.settings;
 
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.ExistingWorkPolicy;
+import androidx.work.WorkInfo;
 
 import org.dhis2.commons.filters.FilterManager;
 import org.dhis2.commons.prefs.PreferenceProvider;
@@ -13,16 +14,16 @@ import org.dhis2.data.service.workManager.WorkerType;
 import org.dhis2.usescases.login.LoginActivity;
 import org.dhis2.usescases.reservedValue.ReservedValueActivity;
 import org.dhis2.usescases.settings.models.ErrorViewModel;
+import org.dhis2.usescases.settings.models.SMSSettingsViewModel;
 import org.dhis2.usescases.settings.models.SettingsViewModel;
-import org.dhis2.utils.Constants;
+import org.dhis2.commons.Constants;
 import org.dhis2.utils.analytics.AnalyticsHelper;
 import org.dhis2.usescases.settings.models.ErrorModelMapper;
-import org.dhis2.utils.analytics.matomo.MatomoAnalyticsController;
+import org.dhis2.commons.matomo.MatomoAnalyticsController;
 import org.hisp.dhis.android.core.D2;
 import org.hisp.dhis.android.core.maintenance.D2Error;
 import org.hisp.dhis.android.core.settings.LimitScope;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,15 +34,19 @@ import io.reactivex.processors.FlowableProcessor;
 import io.reactivex.processors.PublishProcessor;
 import timber.log.Timber;
 
+import static org.dhis2.commons.Constants.DATA_NOW;
+import static org.dhis2.commons.Constants.META_NOW;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CLICK;
 import static org.dhis2.utils.analytics.AnalyticsConstants.SYNC_DATA_NOW;
 import static org.dhis2.utils.analytics.AnalyticsConstants.SYNC_METADATA_NOW;
-import static org.dhis2.utils.analytics.matomo.Actions.SYNC_CONFIG;
-import static org.dhis2.utils.analytics.matomo.Actions.SYNC_DATA;
-import static org.dhis2.utils.analytics.matomo.Categories.SETTINGS;
+import static org.dhis2.commons.matomo.Actions.SYNC_CONFIG;
+import static org.dhis2.commons.matomo.Actions.SYNC_DATA;
+import static org.dhis2.commons.matomo.Categories.SETTINGS;
+
+import com.google.common.annotations.VisibleForTesting;
 
 
-public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
+public class SyncManagerPresenter {
 
     private final D2 d2;
     private final SchedulerProvider schedulerProvider;
@@ -56,6 +61,7 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
     private GatewayValidator gatewayValidator;
     private WorkManagerController workManagerController;
     private MatomoAnalyticsController matomoAnalyticsController;
+    private SMSSettingsViewModel smsSettingsViewModel;
 
     SyncManagerPresenter(
             D2 d2,
@@ -84,12 +90,10 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         compositeDisposable = new CompositeDisposable();
     }
 
-    @Override
     public void onItemClick(SettingItem settingsItem) {
         view.openItem(settingsItem);
     }
 
-    @Override
     public void init() {
         compositeDisposable.add(
                 checkData.startWith(true)
@@ -111,19 +115,18 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
                                     view.setParameterSettings(settingsViewModel.getSyncParametersViewModel());
                                     view.setReservedValuesSettings(settingsViewModel.getReservedValueSettingsViewModel());
                                     view.setSMSSettings(settingsViewModel.getSmsSettingsViewModel());
+                                    this.smsSettingsViewModel = settingsViewModel.getSmsSettingsViewModel();
                                 },
                                 Timber::e
                         ));
     }
 
-    @Override
     public int getMetadataPeriodSetting() {
         return settingsRepository.metaSync(userManager)
                 .blockingGet()
                 .getMetadataSyncPeriod();
     }
 
-    @Override
     public int getDataPeriodSetting() {
         return settingsRepository.dataSync()
                 .blockingGet()
@@ -162,7 +165,6 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         return true;
     }
 
-    @Override
     public void saveLimitScope(LimitScope limitScope) {
         String syncParam = "sync_limitScope_save";
         matomoAnalyticsController.trackEvent(SETTINGS, syncParam, CLICK);
@@ -170,7 +172,6 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         checkData.onNext(true);
     }
 
-    @Override
     public void saveEventMaxCount(Integer eventsNumber) {
         String syncParam = "sync_eventMaxCount_save";
         matomoAnalyticsController.trackEvent(SETTINGS, syncParam, CLICK);
@@ -178,7 +179,6 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         checkData.onNext(true);
     }
 
-    @Override
     public void saveTeiMaxCount(Integer teiNumber) {
         String syncParam = "sync_teiMaxCoung_save";
         matomoAnalyticsController.trackEvent(SETTINGS, syncParam, CLICK);
@@ -186,7 +186,6 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         checkData.onNext(true);
     }
 
-    @Override
     public void saveReservedValues(Integer reservedValuesCount) {
         String syncParam = "sync_reservedValues_save";
         matomoAnalyticsController.trackEvent(SETTINGS, syncParam, CLICK);
@@ -194,29 +193,24 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         checkData.onNext(true);
     }
 
-    @Override
     public void saveGatewayNumber(String gatewayNumber) {
         if (isGatewaySetAndValid(gatewayNumber)) {
             settingsRepository.saveGatewayNumber(gatewayNumber);
         }
     }
 
-    @Override
     public void saveSmsResultSender(String smsResultSender) {
         settingsRepository.saveSmsResultSender(smsResultSender);
     }
 
-    @Override
     public void saveSmsResponseTimeout(Integer smsResponseTimeout) {
         settingsRepository.saveSmsResponseTimeout(smsResponseTimeout);
     }
 
-    @Override
     public void saveWaitForSmsResponse(boolean shouldWait) {
         settingsRepository.saveWaitForSmsResponse(shouldWait);
     }
 
-    @Override
     public void enableSmsModule(boolean enableSms) {
         if (enableSms) {
             view.displaySMSRefreshingData();
@@ -235,12 +229,41 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         );
     }
 
-    @Override
     public void resetFilters() {
         FilterManager.getInstance().clearAllFilters();
     }
 
-    @Override
+    public void onWorkStatusesUpdate(WorkInfo.State workState,String workerTag) {
+        if(workState!=null){
+            switch (workState){
+                case ENQUEUED:
+                case RUNNING:
+                case BLOCKED:
+                    if(workerTag.equals(META_NOW)){
+                        view.onMetadataSyncInProgress();
+                    }else if(workerTag.equals(DATA_NOW)){
+                        view.onDataSyncInProgress();
+                    }
+                    break;
+                case SUCCEEDED:
+                case FAILED:
+                case CANCELLED:
+                default:
+                    if(workerTag.equals(META_NOW)){
+                        view.onMetadataFinished();
+                    }else if(workerTag.equals(DATA_NOW)){
+                        view.onDataFinished();
+                    }
+            }
+        }else{
+            if(workerTag.equals(META_NOW)){
+                view.onMetadataFinished();
+            }else if(workerTag.equals(DATA_NOW)){
+                view.onDataFinished();
+            }
+        }
+    }
+
     public void syncData(int seconds, String scheduleTag) {
         preferenceProvider.setValue(Constants.TIME_DATA, seconds);
         workManagerController.cancelUniqueWork(scheduleTag);
@@ -249,7 +272,6 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         checkData();
     }
 
-    @Override
     public void syncMeta(int seconds, String scheduleTag) {
         matomoAnalyticsController.trackEvent(SETTINGS, SYNC_DATA, CLICK);
         preferenceProvider.setValue(Constants.TIME_META, seconds);
@@ -259,7 +281,6 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         checkData();
     }
 
-    @Override
     public void syncData() {
         matomoAnalyticsController.trackEvent(SETTINGS, SYNC_CONFIG, CLICK);
         view.syncData();
@@ -269,7 +290,6 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         checkData();
     }
 
-    @Override
     public void syncMeta() {
         view.syncMeta();
         analyticsHelper.setEvent(SYNC_METADATA_NOW, CLICK, SYNC_METADATA_NOW);
@@ -277,19 +297,16 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         workManagerController.syncDataForWorker(workerItem);
     }
 
-    @Override
     public void cancelPendingWork(String tag) {
         preferenceProvider.setValue(tag.equals(Constants.DATA) ? Constants.TIME_DATA : Constants.TIME_META, 0);
         workManagerController.cancelUniqueWork(tag);
         checkData();
     }
 
-    @Override
     public void dispose() {
         compositeDisposable.clear();
     }
 
-    @Override
     public void resetSyncParameters() {
         preferenceProvider.setValue(Constants.EVENT_MAX, Constants.EVENT_MAX_DEFAULT);
         preferenceProvider.setValue(Constants.TEI_MAX, Constants.TEI_MAX_DEFAULT);
@@ -299,18 +316,13 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         checkData.onNext(true);
     }
 
-    @Override
-    public void onWipeData() {
-        view.wipeDatabase();
-    }
-
-    @Override
     public void wipeDb() {
         try {
             workManagerController.cancelAllWork();
             workManagerController.pruneWork();
             // clearing cache data
-            deleteDir(view.getAbstracContext().getCacheDir());
+
+            DeleteCacheKt.deleteCache(view.getAbstracContext().getCacheDir());
 
             preferenceProvider.clear();
 
@@ -324,12 +336,10 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         }
     }
 
-    @Override
     public void onDeleteLocalData() {
         view.deleteLocalData();
     }
 
-    @Override
     public void deleteLocalData() {
         boolean error = false;
         try {
@@ -342,12 +352,10 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
         view.showLocalDataDeleted(error);
     }
 
-    @Override
     public void onReservedValues() {
         view.startActivity(ReservedValueActivity.class, null, false, false, null);
     }
 
-    @Override
     public void checkSyncErrors() {
         compositeDisposable.add(Single.fromCallable(() -> {
             List<ErrorViewModel> errors = new ArrayList<>();
@@ -371,25 +379,18 @@ public class SyncManagerPresenter implements SyncManagerContracts.Presenter {
                 ));
     }
 
-    @Override
     public void checkData() {
         checkData.onNext(true);
     }
 
-    private static boolean deleteDir(File dir) {
-        if (dir != null && dir.isDirectory()) {
-            String[] children = dir.list();
-            for (String aChildren : children) {
-                boolean success = deleteDir(new File(dir, aChildren));
-                if (!success) {
-                    return false;
-                }
-            }
-            return dir.delete();
-        } else if (dir != null && dir.isFile()) {
-            return dir.delete();
-        } else {
-            return false;
+    public void checkGatewayAndTimeoutAreValid() {
+        if (view.isGatewayValid() && view.isResultTimeoutValid()) {
+            view.enabledSMSSwitchAndSender(smsSettingsViewModel);
         }
+    }
+
+    @VisibleForTesting
+    public void setSmsSettingsViewModel(SMSSettingsViewModel settingsViewModel) {
+        this.smsSettingsViewModel = settingsViewModel;
     }
 }

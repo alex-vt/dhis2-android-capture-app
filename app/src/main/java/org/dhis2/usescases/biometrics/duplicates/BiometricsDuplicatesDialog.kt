@@ -20,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar
 import io.reactivex.functions.Consumer
 import org.dhis2.Bindings.app
 import org.dhis2.R
+import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.data.biometrics.BiometricsClientFactory
 import org.dhis2.data.biometrics.BiometricsClientFactory.get
 import org.dhis2.data.biometrics.IdentifyResult
@@ -28,7 +29,7 @@ import org.dhis2.data.biometrics.IdentifyResult.UserNotFound
 import org.dhis2.data.biometrics.RegisterResult
 import org.dhis2.databinding.DialogBiometricsDuplicatesBinding
 import org.dhis2.usescases.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
-import org.dhis2.usescases.searchTrackEntity.adapters.SearchTeiModel
+
 import org.dhis2.utils.LastSelection
 import org.hisp.dhis.android.core.arch.call.D2Progress
 import javax.inject.Inject

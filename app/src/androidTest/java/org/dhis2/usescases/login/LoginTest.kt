@@ -1,6 +1,5 @@
 package org.dhis2.usescases.login
 
-import android.Manifest
 import android.app.Activity
 import android.app.Instrumentation
 import android.content.Intent
@@ -13,8 +12,9 @@ import org.dhis2.commons.prefs.Preference.Companion.SESSION_LOCKED
 import org.dhis2.usescases.BaseTest
 import org.dhis2.usescases.main.MainActivity
 import org.dhis2.usescases.qrScanner.ScanActivity
-import org.dhis2.utils.Constants.EXTRA_DATA
+import org.dhis2.commons.Constants.EXTRA_DATA
 import org.hamcrest.CoreMatchers.allOf
+import org.hisp.dhis.android.core.D2Manager
 import org.hisp.dhis.android.core.mockwebserver.ResponseController.API_ME_PATH
 import org.hisp.dhis.android.core.mockwebserver.ResponseController.API_SYSTEM_INFO_PATH
 import org.hisp.dhis.android.core.mockwebserver.ResponseController.GET
@@ -31,13 +31,10 @@ class LoginTest : BaseTest() {
     @get:Rule
     val mainRule = ActivityTestRule(MainActivity::class.java, false, false)
 
-    override fun getPermissionsToBeAccepted(): Array<String> {
-        return arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
-    }
-
     override fun setUp() {
         super.setUp()
         setupMockServer()
+        D2Manager.removeCredentials()
     }
 
     @Test

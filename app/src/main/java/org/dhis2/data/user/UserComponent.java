@@ -2,9 +2,9 @@ package org.dhis2.data.user;
 
 import androidx.annotation.NonNull;
 
+import org.dhis2.commons.di.dagger.PerUser;
 import org.dhis2.commons.dialogs.calendarpicker.di.CalendarPickerComponent;
 import org.dhis2.commons.dialogs.calendarpicker.di.CalendarPickerModule;
-import org.dhis2.commons.di.dagger.PerUser;
 import org.dhis2.commons.featureconfig.di.FeatureConfigActivityComponent;
 import org.dhis2.commons.featureconfig.di.FeatureConfigActivityModule;
 import org.dhis2.commons.filters.data.FilterPresenter;
@@ -24,8 +24,6 @@ import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialogCompo
 import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialogModule;
 import org.dhis2.usescases.datasets.dataSetTable.DataSetTableComponent;
 import org.dhis2.usescases.datasets.dataSetTable.DataSetTableModule;
-import org.dhis2.usescases.datasets.dataSetTable.dataSetSection.DataValueComponent;
-import org.dhis2.usescases.datasets.dataSetTable.dataSetSection.DataValueModule;
 import org.dhis2.usescases.datasets.datasetDetail.DataSetDetailComponent;
 import org.dhis2.usescases.datasets.datasetDetail.DataSetDetailModule;
 import org.dhis2.usescases.datasets.datasetInitial.DataSetInitialComponent;
@@ -36,6 +34,8 @@ import org.dhis2.usescases.events.ScheduledEventComponent;
 import org.dhis2.usescases.events.ScheduledEventModule;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureComponent;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureModule;
+import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.injection.EventDetailsComponent;
+import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.injection.EventDetailsModule;
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialComponent;
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialModule;
 import org.dhis2.usescases.main.MainComponent;
@@ -80,6 +80,8 @@ import org.dhis2.usescases.teiDashboard.teiProgramList.TeiProgramListComponent;
 import org.dhis2.usescases.teiDashboard.teiProgramList.TeiProgramListModule;
 import org.dhis2.utils.optionset.OptionSetComponent;
 import org.dhis2.utils.optionset.OptionSetModule;
+import org.dhis2.utils.session.PinModule;
+import org.dhis2.utils.session.SessionComponent;
 
 import dagger.Subcomponent;
 import dhis2.org.analytics.charts.ui.di.AnalyticsFragmentComponent;
@@ -142,9 +144,6 @@ public interface UserComponent extends UserComponentFlavor{
     DataSetTableComponent plus(DataSetTableModule dataSetTableModule);
 
     @NonNull
-    DataValueComponent plus(DataValueModule dataValueModule);
-
-    @NonNull
     ReservedValueComponent plus(ReservedValueModule reservedValueModule);
 
     @NonNull
@@ -205,6 +204,12 @@ public interface UserComponent extends UserComponentFlavor{
 
     @NonNull
     RelationshipComponent plus(RelationshipModule relationshipModule);
+
+    @NonNull
+    EventDetailsComponent plus(EventDetailsModule eventDetailsModule);
+
+    @NonNull
+    SessionComponent plus(PinModule pinModule);
 
     @NonNull
     BiometricsDuplicatesDialogComponent plus(@NonNull BiometricsDuplicatesDialogModule biometricsDuplicatesDialogModule);
