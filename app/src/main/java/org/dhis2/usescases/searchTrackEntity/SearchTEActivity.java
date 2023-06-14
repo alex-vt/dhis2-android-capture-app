@@ -216,6 +216,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         configureBottomNavigation();
         observeScreenState();
         observeDownload();
+        initBiometrics();
     }
 
     private void initializeVariables(Bundle savedInstanceState) {
@@ -259,79 +260,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         snackbarLayout.addView(snackbarBinding.getRoot(), 0);
 
         snackbar.show();
-
-        binding.biometricsButtonsContainer.identificationPlusButtonIcon.setImageDrawable(
-                AppCompatResources.getDrawable(this, getBioIconBasic(getContext())));
-        binding.biometricsButtonsContainer.noneOfTheAboveButtonIcon.setImageDrawable(
-                AppCompatResources.getDrawable(this, getBioIconNoneOfTheAbove(getContext())));
-        binding.biometricSearch.setImageDrawable(
-                AppCompatResources.getDrawable(this, getBioIconSearch(getContext())));
-        binding.biometricSearch.setOnClickListener(v -> {
-            searchByBiometrics();
-        });
-    }
-
-    private void searchByBiometrics() {
-        BiometricsClientFactory.INSTANCE.get(this).identify(this);
-    }
-
-
-    @Override
-    public void sendBiometricsConfirmIdentity(String sessionId, String guid, String teiUid,
-            String enrollmentUid, boolean isOnline) {
-        lastSelection = new LastSelection(teiUid, enrollmentUid, isOnline);
-        BiometricsClientFactory.INSTANCE.get(this).confirmIdentify(this, sessionId, guid);
-    }
-
-    @Override
-    public void sendBiometricsNoneSelected(String sessionId) {
-        BiometricsClientFactory.INSTANCE.get(this).noneSelected(this, sessionId);
-    }
-
-    @Override
-    public void biometricsEnrollmentLast(String sessionId) {
-        BiometricsClientFactory.INSTANCE.get(this).registerLast(this, sessionId);
-    }
-
-
-    @Override
-    public void showNoneOfTheAboveButton() {
-        binding.biometricsButtonsContainer.noneOfTheAboveButton.setVisibility(VISIBLE);
-    }
-
-    @Override
-    public void hideNoneOfTheAboveButton() {
-        binding.biometricsButtonsContainer.noneOfTheAboveButton.setVisibility(GONE);
-    }
-
-    @Override
-    public void showIdentificationPlusButton() {
-        binding.biometricsButtonsContainer.identificationPlusButton.setVisibility(VISIBLE);
-    }
-
-    @Override
-    public void hideIdentificationPlusButton() {
-        binding.biometricsButtonsContainer.identificationPlusButton.setVisibility(GONE);
-    }
-
-    @Override
-    public void activeBiometricsSearch(boolean active) {
-        if (active) {
-            binding.biometricSearch.setImageDrawable(AppCompatResources.getDrawable(this,
-                    getBioIconFunnel(this)));
-        } else {
-            binding.biometricSearch.setImageDrawable(AppCompatResources.getDrawable(this,
-                    getBioIconSearch(this)));
-        }
-    }
-
-    @Override
-    public void setBiometricsVisibility(boolean visible) {
-        if (visible){
-            binding.biometricSearch.setVisibility(VISIBLE);
-        } else {
-            binding.biometricSearch.setVisibility(GONE);
-        }
     }
 
     @Override
@@ -450,6 +378,81 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 .build();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.formViewContainer, formView).commit();
+    }
+
+    private void searchByBiometrics() {
+        BiometricsClientFactory.INSTANCE.get(this).identify(this);
+    }
+
+
+    @Override
+    public void sendBiometricsConfirmIdentity(String sessionId, String guid, String teiUid,
+            String enrollmentUid, boolean isOnline) {
+        lastSelection = new LastSelection(teiUid, enrollmentUid, isOnline);
+        BiometricsClientFactory.INSTANCE.get(this).confirmIdentify(this, sessionId, guid);
+    }
+
+    @Override
+    public void sendBiometricsNoneSelected(String sessionId) {
+        BiometricsClientFactory.INSTANCE.get(this).noneSelected(this, sessionId);
+    }
+
+    @Override
+    public void biometricsEnrollmentLast(String sessionId) {
+        BiometricsClientFactory.INSTANCE.get(this).registerLast(this, sessionId);
+    }
+
+
+    @Override
+    public void showNoneOfTheAboveButton() {
+        binding.biometricsButtonsContainer.noneOfTheAboveButton.setVisibility(VISIBLE);
+    }
+
+    @Override
+    public void hideNoneOfTheAboveButton() {
+        binding.biometricsButtonsContainer.noneOfTheAboveButton.setVisibility(GONE);
+    }
+
+    @Override
+    public void showIdentificationPlusButton() {
+        binding.biometricsButtonsContainer.identificationPlusButton.setVisibility(VISIBLE);
+    }
+
+    @Override
+    public void hideIdentificationPlusButton() {
+        binding.biometricsButtonsContainer.identificationPlusButton.setVisibility(GONE);
+    }
+
+    @Override
+    public void activeBiometricsSearch(boolean active) {
+        if (active) {
+            binding.biometricSearch.setImageDrawable(AppCompatResources.getDrawable(this,
+                    getBioIconFunnel(this)));
+        } else {
+            binding.biometricSearch.setImageDrawable(AppCompatResources.getDrawable(this,
+                    getBioIconSearch(this)));
+        }
+    }
+
+    @Override
+    public void setBiometricsVisibility(boolean visible) {
+        if (visible){
+            binding.biometricSearch.setVisibility(VISIBLE);
+        } else {
+            binding.biometricSearch.setVisibility(GONE);
+        }
+    }
+
+    private void initBiometrics(){
+        binding.biometricsButtonsContainer.identificationPlusButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(this, getBioIconBasic(getContext())));
+        binding.biometricsButtonsContainer.noneOfTheAboveButtonIcon.setImageDrawable(
+                AppCompatResources.getDrawable(this, getBioIconNoneOfTheAbove(getContext())));
+        binding.biometricSearch.setImageDrawable(
+                AppCompatResources.getDrawable(this, getBioIconSearch(getContext())));
+        binding.biometricSearch.setOnClickListener(v -> {
+            searchByBiometrics();
+        });
     }
 
     @Override
