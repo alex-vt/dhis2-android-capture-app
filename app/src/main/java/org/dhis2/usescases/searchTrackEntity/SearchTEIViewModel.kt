@@ -76,6 +76,13 @@ class SearchTEIViewModel(
             )
             _pageConfiguration.postValue(searchNavPageConfigurator.initVariables())
         }
+
+        presenter.setBiometricListener{ biometricUid,value ->
+            Timber.d("Search by biometrics %s", value)
+            queryData[biometricUid] = value
+
+            onSearchClick()
+        }
     }
 
     fun setListScreen() {
@@ -232,7 +239,7 @@ class SearchTEIViewModel(
                 displayFrontPageList() -> loadDisplayInListResults()
                 else -> null
             }
-            onPagedListReady(resultPagedList)
+        onPagedListReady(resultPagedList)
         }
     }
 
@@ -419,6 +426,8 @@ class SearchTEIViewModel(
         }
 
         SearchIdlingResourceSingleton.decrement()
+
+        presenter.onDataLoaded(programResultCount)
     }
 
     private fun handleDisplayInListResult(hasProgramResults: Boolean, isLandscape: Boolean) {
@@ -617,5 +626,9 @@ class SearchTEIViewModel(
 
     fun fetchMapStyles(): List<BaseMapStyle> {
         return mapStyleConfig.fetchMapStyles()
+    }
+
+    fun getBiometricsSearchStatus(): Boolean {
+        return presenter.biometricsSearchStatus
     }
 }

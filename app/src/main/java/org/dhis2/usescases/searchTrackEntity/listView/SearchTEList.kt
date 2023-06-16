@@ -19,8 +19,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
-import java.io.File
-import javax.inject.Inject
 import org.dhis2.Bindings.dp
 import org.dhis2.commons.dialogs.imagedetail.ImageDetailBottomDialog
 import org.dhis2.databinding.FragmentSearchListBinding
@@ -32,6 +30,8 @@ import org.dhis2.usescases.searchTrackEntity.adapters.SearchTeiLiveAdapter
 import org.dhis2.usescases.searchTrackEntity.ui.CreateNewButton
 import org.dhis2.usescases.searchTrackEntity.ui.FullSearchButton
 import org.dhis2.utils.isLandscape
+import java.io.File
+import javax.inject.Inject
 
 const val ARG_FROM_RELATIONSHIP = "ARG_FROM_RELATIONSHIP"
 private const val DIRECTION_DOWN = 1
@@ -303,6 +303,11 @@ class SearchTEList : FragmentGlobalAbstract() {
                     liveAdapter.submitList(results) {
                         onInitDataLoaded()
                     }
+
+                    for (i in 0 until results.size) {
+                        results[i]?.setBiometricsSearchStatus(viewModel.getBiometricsSearchStatus())
+                    }
+
                     results.addWeakCallback(results.snapshot(), initResultCallback)
                 }
             } ?: onInitDataLoaded()

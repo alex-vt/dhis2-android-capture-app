@@ -79,6 +79,8 @@ public class SearchTEContractsModule {
 
         void activeBiometricsSearch(boolean active);
         void setBiometricsVisibility(boolean visible);
+
+        void onDataLoaded(int count);
     }
 
     public interface Presenter {
@@ -156,5 +158,9 @@ public class SearchTEContractsModule {
         void onBiometricsNoneOfTheAboveClick();
 
         void onBiometricsEnrolmentLastClick();
+
+        void onDataLoaded(int count);
+
+        void setBiometricListener(SearchTEPresenter.BiometricsSearchListener biometricsSearchListener);
     }
 }

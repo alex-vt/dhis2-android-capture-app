@@ -1001,6 +1001,17 @@ public class SearchRepositoryImpl implements SearchRepository {
 
     @Override
     public Observable<Boolean> programHasBiometrics() {
+        String biometricAttributeUid = getBiometricAttributeUid();
+
+        if (biometricAttributeUid != null && BIOMETRICS_ENABLED){
+            return Observable.just(true);
+        } else {
+            return  Observable.just(false);
+        }
+    }
+
+    @Override
+    public String getBiometricAttributeUid() {
         String programUid = currentProgram();
 
         if (programUid != null) {
@@ -1010,13 +1021,13 @@ public class SearchRepositoryImpl implements SearchRepository {
 
             for (ProgramTrackedEntityAttribute attribute : attributeList) {
                 if (isBiometricAttribute(attribute) && BIOMETRICS_ENABLED) {
-                    return Observable.just(true);
+                    return attribute.trackedEntityAttribute().uid();
                 }
             }
 
         }
 
-        return  Observable.just(false);
+        return  null;
     }
 
     @Override

@@ -214,6 +214,8 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                                 Timber::e
                         )
         );
+
+        biometricUid = searchRepository.getBiometricAttributeUid();
     }
 
     @Override
@@ -288,46 +290,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         view.onBackClicked();
     }
 
-    /*
-       @Override
-    public void onFabClick(boolean needsSearch) {
-        if (!needsSearch) {
-            onEnrollClick();
-        } else if (!selectedProgramMinNumberOfAttributesCheck()) {
-            view.displayMinNumberOfAttributesMessage(selectedProgram.minAttributesRequiredToSearch());
-        } else {
-            isSearching = true;
-            analyticsHelper.setEvent(SEARCH_TEI, CLICK, SEARCH_TEI);
-            view.clearData();
-
-            List<String> optionSetIds = new ArrayList<>();
-            view.updateFiltersSearch(queryData.entrySet().size());
-
-            for (Map.Entry<String, String> entry : queryData.entrySet()) {
-                if (entry.getValue().equals("null_os_null"))
-                    optionSetIds.add(entry.getKey());
-            }
-            for (String id : optionSetIds) {
-                queryData.remove(id);
-            }
-
-            if (compliesWithMinAttributesToSearch()) {
-                view.setFabIcon(false);
-                queryProcessor.onNext(queryData);
-            } else {
-                if (selectedProgram.displayFrontPageList()) {
-                    showList = false;
-                }
-                view.setFabIcon(true);
-                queryProcessor.onNext(new HashMap<>());
-            }
-
-            if(this.getBiometricsSearchStatus()==false){
-                view.closeFilters();
-            }
-        }
-    }
-     */
 
     @Override
     public void onEnrollClick(HashMap<String, String> queryData) {
@@ -693,16 +655,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         disableHomeFilters.execute(filters);
     }
 
-    /*
-    @Override
-    public void populateList(List<FieldUiModel> list) {
-        if (list != null) {
-            view.setFabIcon(!list.isEmpty());
-        }
-        view.setFormData(list);
-        findBiometricUid(list);
-    }*/
-
     @Override
     public void setOrgUnitFilters(List<OrganisationUnit> selectedOrgUnits) {
         FilterManager.getInstance().addOrgUnits(selectedOrgUnits);
@@ -710,32 +662,29 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
     @Override
     public void searchOnBiometrics(List<String> guids, String sessionId) {
-        this.sessionId = sessionId;
+        if (biometricsSearchListener != null){
+            this.sessionId = sessionId;
 
-        if (guids == null || guids.size() <= 0) return;
+            if (guids == null || guids.size() <= 0) return;
 
-        StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
 
-        for (int i = 0; i < guids.size(); i++) {
+            for (int i = 0; i < guids.size(); i++) {
 
-            sb.append(guids.get(i));
+                sb.append(guids.get(i));
 
-            // if not the last item
-            if (i != guids.size() - 1) {
-                sb.append(";");
+                // if not the last item
+                if (i != guids.size() - 1) {
+                    sb.append(";");
+                }
+
             }
 
+            biometricsSearchStatus = true;
+            view.activeBiometricsSearch(true);
+
+            biometricsSearchListener.onBiometricsSearch(biometricUid,sb.toString());
         }
-
-        biometricsSearchStatus = true;
-        view.activeBiometricsSearch(true);
-
-        // TODO: simprints
-   /*     queryData.clear();
-        Timber.d("Search by biometrics %s", sb.toString());
-        queryData.put(biometricUid, sb.toString());
-
-        onFabClick(true);*/
     }
 
     @Override
@@ -788,15 +737,21 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         )).collect(Collectors.toList());
     }
 
-    private void findBiometricUid(List<FieldUiModel> data) {
-        if (data == null) return;
+    public void onDataLoaded(int count){
+        view.onDataLoaded(count);
 
-        for(int i=data.size()-1; i>=0; i--){
-            String label = data.get(i).getLabel();
-            if(isBiometricText( label)){
-                biometricUid = data.get(i).getUid();
-                break;
-            }
-        }
+  /*      if(this.getBiometricsSearchStatus()==false){
+            view.closeFilters();
+        }*/
+    }
+
+    private BiometricsSearchListener biometricsSearchListener;
+
+    public void setBiometricListener(BiometricsSearchListener biometricsSearchListener){
+        this.biometricsSearchListener = biometricsSearchListener;
+    }
+
+    public interface BiometricsSearchListener{
+        void onBiometricsSearch(String biometricUid, String value);
     }
 }

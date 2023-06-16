@@ -443,6 +443,20 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         }
     }
 
+    @Override
+    public void onDataLoaded(int count) {
+        if (presenter.getBiometricsSearchStatus()) {
+            //presenter.clearQueryData();
+
+            if (count > 0) {
+                showNoneOfTheAboveButton();
+            } else {
+                hideNoneOfTheAboveButton();
+            }
+            showIdentificationPlusButton();
+        }
+    }
+
     private void initBiometrics(){
         binding.biometricsButtonsContainer.identificationPlusButtonIcon.setImageDrawable(
                 AppCompatResources.getDrawable(this, getBioIconBasic(getContext())));
@@ -661,74 +675,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         }
                 ));
     }
-
-    /* TODO: simprints
-    @Override
-    public void setLiveData(LiveData<PagedList<SearchTeiModel>> liveData) {
-        if (!fromRelationship) {
-            liveData.observe(this, searchTeiModels -> {
-                if (presenter.getBiometricsSearchStatus()) {
-                    presenter.clearQueryData();
-
-                    if (searchTeiModels.size() > 0) {
-                        showNoneOfTheAboveButton();
-                    } else {
-                        hideNoneOfTheAboveButton();
-                    }
-                    showIdentificationPlusButton();
-
-                    for (int i = 0; i < searchTeiModels.size(); i++) {
-                        searchTeiModels.get(i).setBiometricsSearchStatus(true);
-                    }
-                } else {
-                    for (int i = 0; i < searchTeiModels.size(); i++) {
-                        searchTeiModels.get(i).setBiometricsSearchStatus(false);
-                    }
-                }
-
-                SearchMessageResult data = presenter.getMessage(searchTeiModels);
-                presenter.checkFilters(data.getMessage().isEmpty());
-                if (data.getMessage().isEmpty()) {
-                    binding.messageContainer.setVisibility(GONE);
-                    binding.scrollView.setVisibility(View.VISIBLE);
-                    liveAdapter.submitList(searchTeiModels);
-                    binding.progressLayout.setVisibility(GONE);
-                    CountingIdlingResourceSingleton.INSTANCE.decrement();
-                } else {
-                    binding.progressLayout.setVisibility(GONE);
-                    binding.messageContainer.setVisibility(View.VISIBLE);
-                    binding.message.setText(data.getMessage());
-                    binding.scrollView.setVisibility(GONE);
-                    CountingIdlingResourceSingleton.INSTANCE.decrement();
-                }
-                if (!searchTeiModels.isEmpty() && !data.getCanRegister() && data.getForceSearch() && !presenter.getBiometricsSearchStatus()) {
-                    showHideFilter();
-                    if (data.getShowButton()) {
-                        binding.showListBtn.setVisibility(View.VISIBLE);
-                    }
-                }
-            });
-        } else {
-            liveData.observeForever(searchTeiModels -> {
-                SearchMessageResult data = presenter.getMessage(searchTeiModels);
-                if (data.getMessage().isEmpty()) {
-                    binding.messageContainer.setVisibility(GONE);
-                    binding.scrollView.setVisibility(View.VISIBLE);
-                    liveAdapter.submitList(searchTeiModels);
-                    binding.progressLayout.setVisibility(GONE);
-                } else {
-                    binding.progressLayout.setVisibility(GONE);
-                    binding.messageContainer.setVisibility(View.VISIBLE);
-                    binding.message.setText(data.getMessage());
-                    binding.scrollView.setVisibility(GONE);
-                }
-                CountingIdlingResourceSingleton.INSTANCE.decrement();
-                if (!presenter.getQueryData().isEmpty() && data.getCanRegister())
-                    setFabIcon(false);
-            });
-        }
-        updateFilters(FilterManager.getInstance().getTotalFilters());
-    }*/
 
     @Override
     public void clearList(String uid) {

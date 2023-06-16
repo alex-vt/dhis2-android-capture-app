@@ -74,4 +74,6 @@ public interface SearchRepository {
     boolean filtersApplyOnGlobalSearch();
 
     Observable<Boolean> programHasBiometrics();
+
+    String getBiometricAttributeUid();
 }
