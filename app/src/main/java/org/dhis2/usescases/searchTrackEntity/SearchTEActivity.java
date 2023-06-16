@@ -592,15 +592,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         });
     }
 
-    //TODO: simprints
-/*    @Override
-    public void setFormData(List<FieldUiModel> data) {
-        data = removeBiometricsAttribute(data);
-
-        formView.processItems(data);
-        updateFiltersSearch(presenter.getQueryData().size());
-    }*/
-
     private void showList() {
         if (currentContent != Content.LIST) {
             currentContent = Content.LIST;
@@ -615,21 +606,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.mainComponent, SearchTEMap.Companion.get(fromRelationship, tEType)).commit();
         }
-    }
-
-    private List<FieldUiModel> removeBiometricsAttribute(List<FieldUiModel> data) {
-        List<FieldUiModel> finalData = new ArrayList<>();
-
-        if (data == null) return finalData;
-
-        for (int i = data.size() - 1; i >= 0; i--) {
-            String label = data.get(i).getLabel();
-            if (!isBiometricText(label)) {
-                finalData.add(data.get(i));
-            }
-        }
-
-        return finalData;
     }
 
     private void showAnalytics() {

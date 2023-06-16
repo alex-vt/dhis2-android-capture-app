@@ -64,12 +64,14 @@ class SearchRepository(
                 )
             }.filter { item: FieldUiModel ->
                 item.valueType !== ValueType.IMAGE &&
-                    item.valueType !== ValueType.COORDINATE
+                        item.valueType !== ValueType.COORDINATE
             }
         }
     }
 
     private fun programTrackedEntityAttributes(): Flowable<List<FieldUiModel>> {
+
+
         return Flowable.fromCallable {
             val searchableAttributes = d2.programModule().programTrackedEntityAttributes()
                 .withRenderType()
@@ -108,8 +110,13 @@ class SearchRepository(
                 )
             }.filter { item: FieldUiModel? ->
                 item!!.valueType !== ValueType.IMAGE &&
-                    item!!.valueType !== ValueType.COORDINATE
+                        item!!.valueType !== ValueType.COORDINATE &&
+                        !isBiometricText(item!!.label)
             }
         }
+    }
+
+    private fun isBiometricText(displayName: String?): Boolean {
+        return displayName.equals("biometrics", true)
     }
 }
