@@ -7,6 +7,7 @@ import org.dhis2.form.ui.FieldViewModelFactory
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.common.ValueType
+import org.dhis2.form.extensions.isBiometricText;
 
 class SearchRepository(
     private val d2: D2,
@@ -111,12 +112,8 @@ class SearchRepository(
             }.filter { item: FieldUiModel? ->
                 item!!.valueType !== ValueType.IMAGE &&
                         item!!.valueType !== ValueType.COORDINATE &&
-                        !isBiometricText(item!!.label)
+                        !item!!.label.isBiometricText()
             }
         }
-    }
-
-    private fun isBiometricText(displayName: String?): Boolean {
-        return displayName.equals("biometrics", true)
     }
 }
