@@ -90,14 +90,14 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import timber.log.Timber;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconBasic;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconFailed;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconSuccess;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconWarning;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
+import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconBasic;
+import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconFailed;
+import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconSuccess;
+import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconWarning;
 
 public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataContracts.View, OnOrgUnitSelectionFinished {
 

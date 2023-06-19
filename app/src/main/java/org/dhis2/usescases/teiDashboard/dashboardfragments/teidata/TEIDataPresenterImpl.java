@@ -5,9 +5,6 @@ import static android.text.TextUtils.isEmpty;
 import static org.dhis2.usescases.biometrics.VerificationKt.isLastVerificationValid;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ACTIVE_FOLLOW_UP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.FOLLOW_UP;
-import static org.dhis2.utils.analytics.AnalyticsConstants.SHARE_TEI;
-import static org.dhis2.utils.analytics.AnalyticsConstants.TYPE_QR;
-import static org.dhis2.utils.analytics.AnalyticsConstants.TYPE_SHARE;
 
 import android.content.Intent;
 import android.view.View;
@@ -25,7 +22,7 @@ import org.dhis2.commons.data.StageSection;
 import org.dhis2.commons.prefs.Preference;
 import org.dhis2.commons.prefs.PreferenceProvider;
 import org.dhis2.commons.filters.data.FilterRepository;
-import org.dhis2.data.biometrics.BiometricsPreference;
+import org.dhis2.commons.biometrics.BiometricsPreference;
 import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.data.forms.dataentry.RuleEngineRepository;
 import org.dhis2.commons.schedulers.SchedulerProvider;
@@ -54,7 +51,6 @@ import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 import org.hisp.dhis.android.core.program.Program;
 import org.hisp.dhis.android.core.program.ProgramStage;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue;
-import org.hisp.dhis.rules.models.RuleActionHideProgramStage;
 import org.hisp.dhis.rules.models.RuleEffect;
 
 import java.util.HashMap;
@@ -63,18 +59,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityOptionsCompat;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.processors.BehaviorProcessor;
 import timber.log.Timber;
-
-import static android.text.TextUtils.isEmpty;
-import static org.dhis2.utils.analytics.AnalyticsConstants.ACTIVE_FOLLOW_UP;
-import static org.dhis2.utils.analytics.AnalyticsConstants.FOLLOW_UP;
 
 public class TEIDataPresenterImpl implements TEIDataContracts.Presenter {
 

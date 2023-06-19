@@ -52,5 +52,5 @@ interface FieldViewModelFactory {
 
     fun createClosingSection(): FieldUiModel
 
-    fun createBiometrics(value: String): FieldUiModel
+    fun createBiometrics( id: String,value: String,programStageSection: String? = null): FieldUiModel
 }

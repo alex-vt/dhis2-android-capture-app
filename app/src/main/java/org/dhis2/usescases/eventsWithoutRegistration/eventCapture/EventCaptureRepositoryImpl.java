@@ -1,8 +1,8 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture;
 
 import org.dhis2.commons.bindings.ValueExtensionsKt;
-import org.dhis2.usescases.biometrics.ExtensionsKt;
 
+import org.dhis2.commons.biometrics.ExtensionsKt;
 import org.dhis2.data.dhislogic.AuthoritiesKt;
 
 import org.dhis2.utils.DateUtils;

@@ -1,7 +1,7 @@
 package org.dhis2.usescases.teiDashboard;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricAttribute;
+import static org.dhis2.commons.biometrics.ExtensionsKt.isBiometricAttribute;
 
 import androidx.databinding.BaseObservable;
 
@@ -12,7 +12,6 @@ import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 import org.hisp.dhis.android.core.program.Program;
 import org.hisp.dhis.android.core.program.ProgramStage;
 import org.hisp.dhis.android.core.program.ProgramTrackedEntityAttribute;
-import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance;
 

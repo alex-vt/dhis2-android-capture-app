@@ -14,10 +14,9 @@ import org.dhis2.form.data.EnrollmentRepository
 
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
+import org.dhis2.form.model.biometrics.BiometricsUiModelImpl
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
-import org.dhis2.usescases.biometrics.BIOMETRICS_FAILURE_PATTERN
-import org.dhis2.usescases.biometrics.isBiometricModel
-import org.dhis2.utils.Result
+import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.dhis2.utils.analytics.DELETE_AND_BACK
 import org.hisp.dhis.android.core.D2
@@ -58,8 +57,7 @@ class EnrollmentPresenterImpl(
     private val backButtonProcessor: FlowableProcessor<Boolean> = PublishProcessor.create()
     private var hasShownIncidentDateEditionWarning = false
     private var hasShownEnrollmentDateEditionWarning = false
-    //TODO: Simprints
-    //private var biometricsViewModel: BiometricsViewModel? = null
+    private var biometricsUiModel: BiometricsUiModelImpl? = null
 
     fun init() {
         view.setSaveButtonVisible(false)
@@ -121,81 +119,6 @@ class EnrollmentPresenterImpl(
                     { Timber.tag(TAG).e(it) }
                 )
         )
-
-        /*  val fields = getFieldFlowable()
-
-        disposable.add(
-            dataEntryRepository.enrollmentSectionUids()
-                .flatMap { sectionList ->
-                    sectionProcessor.startWith(sectionList[0])
-                        .map { setCurrentSection(it) }
-                        .doOnNext { view.showProgress() }
-                        .switchMap { section ->
-                            fields.map { fieldList ->
-                                return@map setFieldsToShow(section, fieldList)
-                            }
-                        }
-                }
-                .subscribeOn(schedulerProvider.io())
-                .observeOn(schedulerProvider.ui())
-                .subscribe({
-                    populateList(it)
-
-                    if (BIOMETRICS_ENABLED) {
-                        biometricsViewModel = it.firstOrNull {
-                            it.isBiometricModel()
-                        }?.let { it as BiometricsViewModel }
-
-                        biometricsViewModel?.setBiometricsRegisterListener {
-                            val orgUnit = enrollmentObjectRepository.get().blockingGet()
-                                .organisationUnit()!!
-                            view.registerBiometrics(orgUnit)
-                        }
-                    }
-
-
-                    view.setSaveButtonVisible(true)
-                    view.hideProgress()
-                    if (configurationErrors.isNotEmpty() && showConfigurationError) {
-                        view.displayConfigurationErrors(configurationErrors)
-                    }
-                }) {
-                    Timber.tag(TAG).e(it)
-                }
-        )
-
-        disposable.add(
-            sectionProcessor
-                .subscribeOn(schedulerProvider.io())
-                .observeOn(schedulerProvider.io())
-                .subscribe(
-                    { fieldsFlowable.onNext(true) },
-                    { Timber.tag(TAG).e(it) }
-                )
-        )
-
-        fields.connect()
-    }
-
-    private fun checkFinishing() {
-        if (finishing) {
-            view.performSaveClick()
-        }
-        finishing = false
-    }
-
-    private fun populateList(items: List<FieldUiModel>? = null) {
-        view.showFields(items)
-    }
-
-    private fun setCurrentSection(sectionUid: String): String {
-        if (sectionUid == selectedSection) {
-            this.selectedSection = ""
-        } else {
-            this.selectedSection = sectionUid
-        }
-        return selectedSection
-    }*/
     }
 
     private fun shouldShowDateEditionWarning(uid: String): Boolean {
@@ -402,39 +325,58 @@ class EnrollmentPresenterImpl(
         saveBiometricValue("${BIOMETRICS_FAILURE_PATTERN}_${uuid}")
     }
 
-    private fun checkIfBiometricValueValid() {
-        // TODO: simprints
-  /*      if (biometricsViewModel != null && biometricsViewModel!!.value() != null &&
-            biometricsViewModel!!.value()!!.startsWith(BIOMETRICS_FAILURE_PATTERN)
-        ) {
-            valueStore.save(biometricsViewModel!!.uid(), null).blockingFirst()
-        }*/
+    fun checkIfBiometricValueValid() {
+        if ( BIOMETRICS_ENABLED) {
+            if (biometricsUiModel != null && biometricsUiModel!!.value != null && biometricsUiModel!!.value!!.startsWith(
+                    BIOMETRICS_FAILURE_PATTERN
+                )
+            ) {
+                biometricsUiModel!!.onTextChange(null)
+                biometricsUiModel!!.onSave(null)
+            }
+        }
     }
 
     private fun saveBiometricValue(value: String) {
-        // TODO: simprints
-   /*     if (biometricsViewModel != null) {
-            valueStore.save(biometricsViewModel!!.uid(), value).blockingFirst()
-            updateFields()
-        }*/
+        if (biometricsUiModel != null) {
+            biometricsUiModel!!.onTextChange(value)
+            biometricsUiModel!!.onSave(value)
+        }
     }
 
     fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
-        // TODO: simprints
-   /*     val program = getProgram().uid()
-        val biometricsAttUid = biometricsViewModel!!.uid
+        val program = getProgram().uid()
+        val biometricsAttUid = biometricsUiModel!!.uid
         val teiUid = getEnrollment()!!.trackedEntityInstance()
 
         val teiTypeUid = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
             .trackedEntityType()!!
 
-        if (guids.size == 1 && guids[0] == biometricsViewModel!!.value){
+        if (guids.size == 1 && guids[0] == biometricsUiModel!!.value){
             view.registerLast(sessionId)
         } else {
-            val finalGuids = guids.filter { it != biometricsViewModel!!.value  }
+            val finalGuids = guids.filter { it != biometricsUiModel!!.value  }
 
             view.hideProgress()
             view.showPossibleDuplicatesDialog(finalGuids, sessionId, program, teiTypeUid, biometricsAttUid)
-        }*/
+        }
+    }
+
+    fun onFieldsLoaded(fields: List<FieldUiModel>) {
+        if (BIOMETRICS_ENABLED) {
+            biometricsUiModel = fields.firstOrNull {
+                it is BiometricsUiModelImpl
+            }?.let { it as BiometricsUiModelImpl }
+
+            biometricsUiModel?.setBiometricsRegisterListener(
+                object : BiometricsUiModelImpl.BiometricsOnRegisterClickListener {
+                    override fun onClick() {
+                        val orgUnit = enrollmentObjectRepository.get().blockingGet()
+                            .organisationUnit()!!
+                        view.registerBiometrics(orgUnit)
+
+                    }
+                })
+        }
     }
 }

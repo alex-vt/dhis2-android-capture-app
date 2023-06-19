@@ -12,7 +12,7 @@ import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 
-class FormViewHolder(private val binding: ViewDataBinding) : RecyclerView.ViewHolder(
+open class FormViewHolder(private val binding: ViewDataBinding) : RecyclerView.ViewHolder(
     binding.root
 ) {
 

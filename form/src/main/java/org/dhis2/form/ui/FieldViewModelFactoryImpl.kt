@@ -240,11 +240,12 @@ class FieldViewModelFactoryImpl(
         )
     }
 
-    override fun createBiometrics(value: String): FieldUiModel {
+    override fun createBiometrics(id: String,value: String,programStageSection: String?): FieldUiModel {
         return BiometricsUiModelImpl(
-            BiometricsUiModelImpl.BIOMETRICS_UID,
+            id,
             layoutProvider.getLayoutForBiometrics(),
             value,
+            programStageSection
         )
     }
 }

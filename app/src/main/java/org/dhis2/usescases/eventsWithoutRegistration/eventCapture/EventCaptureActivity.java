@@ -58,12 +58,9 @@ import javax.inject.Inject;
 
 import kotlin.Unit;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
-import static org.dhis2.utils.analytics.AnalyticsConstants.CLICK;
-import static org.dhis2.utils.analytics.AnalyticsConstants.DELETE_EVENT;
-import static org.dhis2.utils.analytics.AnalyticsConstants.SHOW_HELP;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 
 public class EventCaptureActivity extends ActivityGlobalAbstract implements EventCaptureContract.View, MapButtonObservable, EventDetailsComponentProvider {
 

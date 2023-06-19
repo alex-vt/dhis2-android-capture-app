@@ -12,7 +12,7 @@ import org.dhis2.commons.filters.sorting.SortingItem
 import org.dhis2.commons.filters.sorting.SortingStatus
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.getProgramStageName
 import org.dhis2.data.dhislogic.DhisPeriodUtils
-import org.dhis2.usescases.biometrics.isBiometricAttribute
+import org.dhis2.commons.biometrics.isBiometricAttribute
 import org.dhis2.utils.DateUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope

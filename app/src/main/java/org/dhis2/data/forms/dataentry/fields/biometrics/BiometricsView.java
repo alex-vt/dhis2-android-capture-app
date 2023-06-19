@@ -1,11 +1,11 @@
 package org.dhis2.data.forms.dataentry.fields.biometrics;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_FAILURE_PATTERN;
+/*import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_FAILURE_PATTERN;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconNew;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconBasic;
+import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconBasic;
 import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconNew;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconSuccess;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.getBioIconWarning;
+import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconSuccess;
+import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconWarning;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -25,7 +25,7 @@ import androidx.core.content.ContextCompat;
 import timber.log.Timber;
 
 //TODO: simprints
-/*public class BiometricsView extends FieldLayout {
+public class BiometricsView extends FieldLayout {
 
     private BiometricsViewBinding binding;
 

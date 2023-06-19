@@ -4,10 +4,10 @@ import static org.dhis2.commons.extensions.ViewExtensionsKt.closeKeyboard;
 
 import static android.app.Activity.RESULT_OK;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFY_REQUEST;
 
 import android.content.Context;
 import android.content.Intent;

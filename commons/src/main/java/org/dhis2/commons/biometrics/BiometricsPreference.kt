@@ -1,4 +1,4 @@
-package org.dhis2.data.biometrics
+package org.dhis2.commons.biometrics
 
 class BiometricsPreference {
     companion object {

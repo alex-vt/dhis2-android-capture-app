@@ -36,7 +36,6 @@ import org.dhis2.commons.resources.D2ErrorUtils;
 import org.dhis2.commons.resources.ObjectStyleUtils;
 import org.dhis2.commons.schedulers.SchedulerProvider;
 import org.dhis2.data.service.SyncStatusController;
-import org.dhis2.form.model.FieldUiModel;
 import org.dhis2.maps.model.StageStyle;
 import org.dhis2.utils.analytics.AnalyticsHelper;
 import org.dhis2.commons.matomo.MatomoAnalyticsController;
@@ -47,7 +46,6 @@ import org.hisp.dhis.android.core.maintenance.D2Error;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 import org.hisp.dhis.android.core.program.Program;
 import org.hisp.dhis.android.core.program.ProgramStage;
-import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityType;
@@ -65,15 +63,6 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.BehaviorSubject;
 import timber.log.Timber;
-
-import static android.app.Activity.RESULT_OK;
-
-import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricText;
-import static org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipFragment.TEI_A_UID;
-import static org.dhis2.utils.analytics.AnalyticsConstants.ADD_RELATIONSHIP;
-import static org.dhis2.utils.analytics.AnalyticsConstants.CREATE_ENROLL;
-import static org.dhis2.utils.analytics.AnalyticsConstants.DELETE_RELATIONSHIP;
-import static org.dhis2.utils.analytics.AnalyticsConstants.SEARCH_TEI;
 
 public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 

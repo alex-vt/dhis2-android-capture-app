@@ -11,7 +11,9 @@ import androidx.recyclerview.widget.ListAdapter
 import org.dhis2.form.R
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.SectionUiModelImpl
+import org.dhis2.form.model.biometrics.BiometricsUiModelImpl
 import org.dhis2.form.ui.FormViewHolder.FieldItemCallback
+import org.dhis2.form.ui.biometrics.BiometricsViewHolder
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 import org.hisp.dhis.android.core.common.ValueType
@@ -64,14 +66,23 @@ class DataEntryAdapter(private val searchStyle: Boolean) :
             }
         val binding =
             DataBindingUtil.inflate<ViewDataBinding>(layoutInflater, viewType, parent, false)
-        return FormViewHolder(binding)
+
+        return if (viewType == R.layout.form_biometrics) BiometricsViewHolder(binding) else FormViewHolder(
+            binding
+        )
     }
 
     override fun onBindViewHolder(holder: FormViewHolder, position: Int) {
         if (getItem(position) is SectionUiModelImpl) {
             updateSectionData(position, false)
         }
-        holder.bind(getItem(position), this, textWatcher, coordinateWatcher)
+
+        if (getItem(position) is BiometricsUiModelImpl) {
+            (holder as BiometricsViewHolder).bind(getItem(position),this)
+        } else {
+            holder.bind(getItem(position), this, textWatcher, coordinateWatcher)
+        }
+
     }
 
     fun updateSectionData(position: Int, isHeader: Boolean) {

@@ -10,15 +10,10 @@ import io.reactivex.disposables.CompositeDisposable
 /*import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationView
 import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel*/
 import org.dhis2.form.model.FieldUiModel
-import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
-import org.dhis2.usescases.biometrics.isBiometricsVerificationModel
-import org.dhis2.usescases.biometrics.isBiometricsVerificationText
-import org.dhis2.usescases.biometrics.isLastVerificationValid
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.event.EventEditableStatus
 import org.jetbrains.annotations.Nullable
-import timber.log.Timber
 
 class EventCaptureFormPresenter(
     private val view: EventCaptureFormView,

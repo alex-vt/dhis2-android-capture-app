@@ -55,9 +55,9 @@ import javax.inject.Inject;
 import io.reactivex.disposables.CompositeDisposable;
 import kotlin.Unit;
 
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
-import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_GUID;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_TEI_ORGANISATION_UNIT;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_VERIFICATION_STATUS;
 
 public class EventInitialActivity extends ActivityGlobalAbstract implements EventInitialContract.View, EventDetailsComponentProvider {
 

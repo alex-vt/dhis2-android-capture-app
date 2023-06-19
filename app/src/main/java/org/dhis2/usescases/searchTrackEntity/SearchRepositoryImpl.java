@@ -44,7 +44,7 @@ import org.dhis2.ui.ThemeManager;
 import org.dhis2.usescases.teiDownload.TeiDownloader;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
-import static org.dhis2.usescases.biometrics.ExtensionsKt.isBiometricAttribute;
+import static org.dhis2.commons.biometrics.ExtensionsKt.isBiometricAttribute;
 import org.dhis2.utils.DateUtils;
 import org.dhis2.utils.ValueUtils;
 import org.hisp.dhis.android.core.D2;

@@ -32,8 +32,8 @@ import org.dhis2.form.ui.FormView
 import org.dhis2.form.ui.provider.EnrollmentResultDialogUiProvider
 import org.dhis2.maps.views.MapSelectorActivity
 import org.dhis2.usescases.events.ScheduledEventActivity
-import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
-import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_REQUEST
 import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialog
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity
@@ -128,6 +128,12 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                     )
                 )
             )
+            .onFieldsLoadedListener {
+                presenter.onFieldsLoaded(it)
+            }
+            .onDataIntegrityResult {
+                presenter.checkIfBiometricValueValid()
+            }
             .build()
 
         super.onCreate(savedInstanceState)

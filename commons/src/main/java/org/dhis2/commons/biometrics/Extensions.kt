@@ -1,27 +1,13 @@
-package org.dhis2.usescases.biometrics
+package org.dhis2.commons.biometrics
 
 import android.content.Context
-import org.dhis2.R
+import org.dhis2.commons.R
 import org.dhis2.commons.prefs.PreferenceProviderImpl
-import org.dhis2.data.biometrics.BiometricsPreference
-/*import org.dhis2.data.forms.dataentry.fields.biometrics.BiometricsViewModel
-import org.dhis2.data.forms.dataentry.fields.biometricsVerification.BiometricsVerificationViewModel*/
-import org.dhis2.form.model.FieldUiModel
+
 import org.hisp.dhis.android.core.program.ProgramTrackedEntityAttribute
 
 fun ProgramTrackedEntityAttribute.isBiometricAttribute(): Boolean {
     return name()?.contains(BIOMETRIC_VALUE, true) ?: false
-}
-
-// TODO: simprints
-fun FieldUiModel.isBiometricModel(): Boolean {
-  //  return this is BiometricsViewModel && this.label.isBiometricText()
-    return false
-}
-
-fun FieldUiModel.isBiometricsVerificationModel(): Boolean {
-   // return this is BiometricsVerificationViewModel && this.label.isBiometricsVerificationText()
-    return false
 }
 
 fun String.isBiometricText(): Boolean {
@@ -64,7 +50,7 @@ fun Context.getBioIconNoneOfTheAbove() =
     if (getBioIcon(this) == BiometricsIcon.FINGERPRINT) R.drawable.ic_bio_fingerprint_warning_red
     else R.drawable.ic_bio_face_warning_red
 
-private fun getBioIcon(context: Context):BiometricsIcon{
+private fun getBioIcon(context: Context): BiometricsIcon {
     val preferences = PreferenceProviderImpl(context)
 
     val iconText = preferences.getString(

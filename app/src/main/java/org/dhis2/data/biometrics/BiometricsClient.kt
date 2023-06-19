@@ -14,11 +14,11 @@ import com.simprints.libsimprints.SimHelper
 import com.simprints.libsimprints.Tier
 import com.simprints.libsimprints.Verification
 import org.dhis2.R
-import org.dhis2.usescases.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
-import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
-import org.dhis2.usescases.biometrics.BIOMETRICS_ENROLL_REQUEST
-import org.dhis2.usescases.biometrics.BIOMETRICS_IDENTIFY_REQUEST
-import org.dhis2.usescases.biometrics.BIOMETRICS_VERIFY_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_IDENTIFY_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_VERIFY_REQUEST
 import timber.log.Timber
 import java.util.ArrayList
 

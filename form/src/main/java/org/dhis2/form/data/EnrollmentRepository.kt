@@ -222,7 +222,7 @@ class EnrollmentRepository(
         val label = attribute.displayFormName() ?: ""
 
         val fieldViewModel = if (label.isBiometricText())
-            fieldFactory.createBiometrics(dataValue ?: "") else
+            fieldFactory.createBiometrics(attribute.uid(),dataValue ?: "", sectionUid) else
             fieldFactory.create(
                 attribute.uid(),
                 attribute.displayFormName() ?: "",

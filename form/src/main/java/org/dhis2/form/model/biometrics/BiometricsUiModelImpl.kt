@@ -13,7 +13,7 @@ data class BiometricsUiModelImpl(
     override val uid: String,
     override val layoutId: Int,
     override val value: String? = null,
-
+    override val programStageSection: String?
 ) : FieldUiModel {
 
     private var sectionNumber: Int = 0
@@ -22,18 +22,20 @@ data class BiometricsUiModelImpl(
 
     private var callback: FieldUiModel.Callback? = null
 
+    private var biometricListener: BiometricsOnRegisterClickListener? = null
+
     fun hasToShowDescriptionIcon(isTitleEllipsed: Boolean): Boolean {
         return description != null && description.isNotEmpty() || isTitleEllipsed
     }
 
 
     fun setSelected() {
-  /*      onItemClick()
-        selectedField.get()?.let {
-            val sectionToOpen = if (it == uid) "" else uid
-            selectedField.set(sectionToOpen)
-            callback!!.intent(OnSection(sectionToOpen))
-        }*/
+        /*      onItemClick()
+              selectedField.get()?.let {
+                  val sectionToOpen = if (it == uid) "" else uid
+                  selectedField.set(sectionToOpen)
+                  callback!!.intent(OnSection(sectionToOpen))
+              }*/
     }
 
     fun isSelected(): Boolean = false
@@ -47,7 +49,7 @@ data class BiometricsUiModelImpl(
     }
 
     override fun equals(item: FieldUiModel): Boolean {
-        item as SectionUiModelImpl
+        item as BiometricsUiModelImpl
         return super.equals(item)
     }
 
@@ -57,7 +59,6 @@ data class BiometricsUiModelImpl(
     override val warning = ""
     override val mandatory = true
     override val label = ""
-    override val programStageSection: String? = null
     override val style: FormUiModelStyle? = null
     override val hint: String? = null
     override val description: String = ""
@@ -119,11 +120,20 @@ data class BiometricsUiModelImpl(
 
     override fun onNext() {}
 
-    override fun onTextChange(value: CharSequence?) {}
+    override fun onTextChange(value: CharSequence?) {
+        val text = when {
+            value?.isEmpty() == true -> null
+            else -> value?.toString()
+        }
+        callback?.intent(FormIntent.OnTextChange(uid, text))
+    }
 
     override fun onClear() {}
 
-    override fun onSave(value: String?) {}
+    override fun onSave(value: String?) {
+        onItemClick()
+        callback?.intent(FormIntent.OnSave(uid, value, valueType))
+    }
 
     override fun onSaveBoolean(boolean: Boolean) {}
 
@@ -135,23 +145,34 @@ data class BiometricsUiModelImpl(
 
     override fun setDisplayName(displayName: String?) = this.copy()
 
-    override fun setKeyBoardActionDone()  = this.copy()
+    override fun setKeyBoardActionDone() = this.copy()
 
     override fun setFocus() = this.copy()
 
-    override fun setError(error: String?) =  this.copy()
+    override fun setError(error: String?) = this.copy()
 
-    override fun setEditable(editable: Boolean)= this.copy()
+    override fun setEditable(editable: Boolean) = this.copy()
 
     override fun setLegend(legendValue: LegendValue?) = this.copy()
 
     override fun setWarning(warning: String) = this.copy()
 
-    override fun setFieldMandatory()= this.copy()
+    override fun setFieldMandatory() = this.copy()
 
     override fun isSectionWithFields() = false
 
-    companion object {
-        const val BIOMETRICS_UID = "BIOMETRICS_UID"
+    // We don't use the FieldUiModel onItemClick() to avoid infrastructure to listen in FormViewModel
+    // because we need listen in enrollmentPresenterImpl to register biometrics
+    fun onBiometricsClick() {
+        biometricListener?.onClick();
+    }
+
+
+    fun setBiometricsRegisterListener(listener: BiometricsUiModelImpl.BiometricsOnRegisterClickListener) {
+        this.biometricListener = listener
+    }
+
+    interface BiometricsOnRegisterClickListener {
+        fun onClick()
     }
 }
