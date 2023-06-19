@@ -57,7 +57,7 @@ data class BiometricsUiModelImpl(
     override val error = ""
     override val editable = false
     override val warning = ""
-    override val mandatory = true
+    override val mandatory = false
     override val label = ""
     override val style: FormUiModelStyle? = null
     override val hint: String? = null
