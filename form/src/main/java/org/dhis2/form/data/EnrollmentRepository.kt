@@ -4,6 +4,7 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 import org.dhis2.commons.bindings.userFriendlyValue
 import org.dhis2.commons.date.DateUtils
+import org.dhis2.form.extensions.isBiometricText
 import org.dhis2.form.model.EnrollmentMode
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.OptionSetConfiguration
@@ -138,8 +139,8 @@ class EnrollmentRepository(
                         .byProgram().eq(program.blockingGet().uid())
                         .byTrackedEntityAttribute().eq(attribute.uid())
                         .one().blockingGet()?.let { programTrackedEntityAttribute ->
-                        fields.add(transform(programTrackedEntityAttribute, section.uid()))
-                    }
+                            fields.add(transform(programTrackedEntityAttribute, section.uid()))
+                        }
                 }
             }
             return@fromCallable fields
@@ -218,24 +219,28 @@ class EnrollmentRepository(
 
         val renderingType = getSectionRenderingType(programSection)
 
-        val fieldViewModel = fieldFactory.create(
-            attribute.uid(),
-            attribute.displayFormName() ?: "",
-            valueType!!,
-            mandatory,
-            optionSet,
-            dataValue,
-            sectionUid,
-            programTrackedEntityAttribute.allowFutureDate() ?: false,
-            isEditable(generated),
-            renderingType,
-            attribute.displayDescription(),
-            programTrackedEntityAttribute.renderType()?.mobile(),
-            attribute.style(),
-            attribute.fieldMask(),
-            optionSetConfig,
-            if (valueType == ValueType.COORDINATE) FeatureType.POINT else null
-        )
+        val label = attribute.displayFormName() ?: ""
+
+        val fieldViewModel = if (label.isBiometricText())
+            fieldFactory.createBiometrics(dataValue ?: "") else
+            fieldFactory.create(
+                attribute.uid(),
+                attribute.displayFormName() ?: "",
+                valueType!!,
+                mandatory,
+                optionSet,
+                dataValue,
+                sectionUid,
+                programTrackedEntityAttribute.allowFutureDate() ?: false,
+                isEditable(generated),
+                renderingType,
+                attribute.displayDescription(),
+                programTrackedEntityAttribute.renderType()?.mobile(),
+                attribute.style(),
+                attribute.fieldMask(),
+                optionSetConfig,
+                if (valueType == ValueType.COORDINATE) FeatureType.POINT else null
+            )
 
         return if (!error.isNullOrEmpty()) {
             fieldViewModel.setError(error)

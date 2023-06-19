@@ -14,4 +14,5 @@ interface LayoutProvider {
         sectionRenderingType: SectionRenderingType?
     ): Int
     fun getLayoutForSection(): Int
+    fun getLayoutForBiometrics(): Int
 }

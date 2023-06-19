@@ -6,6 +6,7 @@ import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.FieldUiModelImpl
 import org.dhis2.form.model.OptionSetConfiguration
 import org.dhis2.form.model.SectionUiModelImpl
+import org.dhis2.form.model.biometrics.BiometricsUiModelImpl
 import org.dhis2.form.ui.event.UiEventFactoryImpl
 import org.dhis2.form.ui.provider.DisplayNameProvider
 import org.dhis2.form.ui.provider.HintProvider
@@ -236,6 +237,14 @@ class FieldViewModelFactoryImpl(
             0,
             SectionRenderingType.LISTING.name,
             currentSection
+        )
+    }
+
+    override fun createBiometrics(value: String): FieldUiModel {
+        return BiometricsUiModelImpl(
+            BiometricsUiModelImpl.BIOMETRICS_UID,
+            layoutProvider.getLayoutForBiometrics(),
+            value,
         )
     }
 }

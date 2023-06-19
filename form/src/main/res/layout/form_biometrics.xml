@@ -40,7 +40,7 @@
                 android:layout_height="27dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_bio_fingerprint_new"
+                app:srcCompat="@drawable/ic_bio_fingerprint"
                 tools:ignore="ContentDescription" />
 
             <TextView

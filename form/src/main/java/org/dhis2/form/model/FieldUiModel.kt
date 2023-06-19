@@ -3,6 +3,7 @@ package org.dhis2.form.model
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.event.UiEventFactory
 import org.dhis2.form.ui.intent.FormIntent
+import org.dhis2.form.ui.style.FormUiModelColorFactoryImpl
 import org.dhis2.form.ui.style.FormUiModelStyle
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.option.Option
@@ -118,7 +119,7 @@ interface FieldUiModel {
         fun recyclerViewUiEvents(uiEvent: RecyclerViewUiEvents)
     }
 
-    fun isSection() = valueType == null
+    fun isSection() = this is SectionUiModelImpl
 
     fun isSectionWithFields(): Boolean
 }
