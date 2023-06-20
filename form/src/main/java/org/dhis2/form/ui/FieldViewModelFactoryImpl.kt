@@ -7,6 +7,8 @@ import org.dhis2.form.model.FieldUiModelImpl
 import org.dhis2.form.model.OptionSetConfiguration
 import org.dhis2.form.model.SectionUiModelImpl
 import org.dhis2.form.model.biometrics.BiometricsUiModelImpl
+import org.dhis2.form.model.biometrics.BiometricsVerificationStatus
+import org.dhis2.form.model.biometrics.BiometricsVerificationUiModelImpl
 import org.dhis2.form.ui.event.UiEventFactoryImpl
 import org.dhis2.form.ui.provider.DisplayNameProvider
 import org.dhis2.form.ui.provider.HintProvider
@@ -240,12 +242,31 @@ class FieldViewModelFactoryImpl(
         )
     }
 
-    override fun createBiometrics(id: String,value: String,programStageSection: String?): FieldUiModel {
+    override fun createBiometrics(
+        id: String,
+        value: String,
+        programStageSection: String?
+    ): FieldUiModel {
         return BiometricsUiModelImpl(
             id,
             layoutProvider.getLayoutForBiometrics(),
             value,
             programStageSection
+        )
+    }
+
+    override fun createBiometricsVerification(
+        id: String,
+        value: String,
+        programStageSection: String?,
+        status: BiometricsVerificationStatus
+    ): FieldUiModel {
+        return BiometricsVerificationUiModelImpl(
+            id,
+            layoutProvider.getLayoutForBiometricsVerification(),
+            value,
+            programStageSection,
+            status
         )
     }
 }

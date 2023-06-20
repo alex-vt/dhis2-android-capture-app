@@ -175,4 +175,6 @@ class LayoutProviderImpl : LayoutProvider {
     override fun getLayoutForSection() = R.layout.form_section
 
     override fun getLayoutForBiometrics() = R.layout.form_biometrics
+
+    override fun getLayoutForBiometricsVerification() = R.layout.form_biometrics_verification
 }

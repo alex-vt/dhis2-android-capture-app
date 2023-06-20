@@ -115,6 +115,10 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                 })
                 .factory(activity.getSupportFragmentManager())
                 .setRecords(new EventRecords(getArguments().getString(Constants.EVENT_UID)))
+                .onFieldsLoadedListener ( fields -> {
+                    presenter.onFieldsLoaded(fields);
+                    return Unit.INSTANCE;
+                })
                 .build();
         activity.setFormEditionListener(this);
         super.onCreate(savedInstanceState);
@@ -131,9 +135,6 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         });
 
         presenter.initBiometricsValues(biometricsGuid, biometricsVerificationStatus, teiOrgUnit);
-
-        // TODO: simprints
-        //presenter.init();
 
         return binding.getRoot();
     }
@@ -163,14 +164,14 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                     VerifyResult result = BiometricsClientFactory.INSTANCE.get(
                             this.getContext()).handleVerifyResponse(data);
 
-                    // TODO: simprints
-                  /*  if (result instanceof VerifyResult.Match) {
+
+                   if (result instanceof VerifyResult.Match) {
                         presenter.refreshBiometricsVerificationStatus(1,true);
                     } else if (result instanceof VerifyResult.NoMatch) {
                         presenter.refreshBiometricsVerificationStatus(0,true);
                     } else if (result instanceof VerifyResult.Failure) {
                         presenter.refreshBiometricsVerificationStatus(0,true);
-                    }*/
+                    }
                 }
                 break;
         }

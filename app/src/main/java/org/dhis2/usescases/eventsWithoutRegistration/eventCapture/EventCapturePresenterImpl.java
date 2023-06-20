@@ -257,13 +257,6 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
     }
 
     @Override
-    public void saveValue(String uuid, String value) {
-        //TODO: simprints
-/*        valueStore.save(uuid, value).blockingFirst();
-        setValueChanged(uuid);*/
-    }
-
-    @Override
     public void initNoteCounter() {
         if (!notesCounterProcessor.hasSubscribers()) {
             compositeDisposable.add(

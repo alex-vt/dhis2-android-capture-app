@@ -9,18 +9,37 @@ import org.dhis2.form.ui.style.FormUiModelStyle
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.option.Option
 
-data class BiometricsUiModelImpl(
+enum class BiometricsVerificationStatus {
+    NOT_DONE,
+    SUCCESS,
+    FAILURE
+}
+
+data class BiometricsVerificationUiModelImpl(
     override val uid: String,
     override val layoutId: Int,
     override val value: String? = null,
-    override val programStageSection: String?
+    override val programStageSection: String?,
+    val status: BiometricsVerificationStatus
 ) : FieldUiModel {
+
 
     private var callback: FieldUiModel.Callback? = null
 
-    private var biometricListener: BiometricsOnRegisterClickListener? = null
+    private var biometricRetryListener: BiometricsReTryOnClickListener? = null
+
+    fun setSelected() {
+        /*      onItemClick()
+              selectedField.get()?.let {
+                  val sectionToOpen = if (it == uid) "" else uid
+                  selectedField.set(sectionToOpen)
+                  callback!!.intent(OnSection(sectionToOpen))
+              }*/
+    }
 
     fun isSelected(): Boolean = false
+
+    fun setStatus(value: BiometricsVerificationStatus) = this.copy(status = value)
 
     override val formattedLabel: String
         get() = label
@@ -30,7 +49,7 @@ data class BiometricsUiModelImpl(
     }
 
     override fun equals(item: FieldUiModel): Boolean {
-        item as BiometricsUiModelImpl
+        item as BiometricsVerificationUiModelImpl
         return super.equals(item)
     }
 
@@ -142,18 +161,15 @@ data class BiometricsUiModelImpl(
 
     override fun isSectionWithFields() = false
 
-    // We don't use the FieldUiModel onItemClick() to avoid infrastructure to listen in FormViewModel
-    // because we need listen in enrollmentPresenterImpl to register biometrics
-    fun onBiometricsClick() {
-        biometricListener?.onClick();
+    fun onRetryVerificationClick() {
+        biometricRetryListener?.onRetryClick();
     }
 
-
-    fun setBiometricsRegisterListener(listener: BiometricsUiModelImpl.BiometricsOnRegisterClickListener) {
-        this.biometricListener = listener
+    fun setBiometricsRetryListener(listener: BiometricsReTryOnClickListener) {
+        this.biometricRetryListener = listener
     }
 
-    interface BiometricsOnRegisterClickListener {
-        fun onClick()
+    interface BiometricsReTryOnClickListener {
+        fun onRetryClick()
     }
 }

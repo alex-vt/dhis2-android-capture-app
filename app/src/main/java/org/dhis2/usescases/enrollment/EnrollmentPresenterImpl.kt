@@ -249,49 +249,11 @@ class EnrollmentPresenterImpl(
         view.displayMessage(message)
     }
 
-    /*fun dataIntegrityCheck(): Boolean {
-        return when {
-            uniqueFields.isNotEmpty() -> {
-                view.showInfoDialog(
-                    view.context.getString(R.string.error),
-                    view.context.getString(R.string.unique_coincidence_found)
-                )
-                false
-            }
-            mandatoryFields.isNotEmpty() -> {
-                showErrors = Pair(true, showErrors.second)
-                fieldsFlowable.onNext(true)
-                view.showMissingMandatoryFieldsMessage(mandatoryFields)
-                false
-            }
-            this.errorFields.isNotEmpty() -> {
-                showErrors = Pair(showErrors.first || warningFields.isNotEmpty(), true)
-                fieldsFlowable.onNext(true)
-                view.showErrorFieldsMessage(errorFields.values.toList())
-                false
-            }
-            warningFields.isNotEmpty() -> {
-                showErrors = Pair(true, showErrors.second)
-                fieldsFlowable.onNext(true)
-                view.showWarningFieldsMessage(warningFields.values.toList())
-                false
-            }
-            else -> {
-                analyticsHelper.setEvent(SAVE_ENROLL, CLICK, SAVE_ENROLL)
-                true
-            }
-        }
-    }*/
-
     fun onTeiImageHeaderClick() {
         val picturePath = enrollmentFormRepository.getProfilePicture()
         if (picturePath.isNotEmpty()) {
             view.displayTeiPicture(picturePath)
         }
-    }
-
-    fun setFinishing() {
-        finishing = true
     }
 
     fun getEventStage(eventUid: String) =

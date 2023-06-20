@@ -5,8 +5,11 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 import org.dhis2.commons.bindings.blockingGetValueCheck
 import org.dhis2.commons.bindings.userFriendlyValue
+import org.dhis2.commons.biometrics.isBiometricsVerificationText
+import org.dhis2.form.extensions.isBiometricText
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.OptionSetConfiguration
+import org.dhis2.form.model.biometrics.BiometricsVerificationStatus
 import org.dhis2.form.ui.FieldViewModelFactory
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.helpers.UidsHelper.getUidsList
@@ -92,10 +95,10 @@ class EventRepository(
                         .byProgramStage().eq(event.programStage())
                         .byDataElement().eq(dataElement.uid())
                         .one().blockingGet()?.let {
-                        fields.add(
-                            transform(it)
-                        )
-                    }
+                            fields.add(
+                                transform(it)
+                            )
+                        }
                 }
             }
             return@fromCallable fields
@@ -132,9 +135,9 @@ class EventRepository(
         var optionSetConfig: OptionSetConfiguration? = null
         if (!TextUtils.isEmpty(optionSet)) {
             if (!TextUtils.isEmpty(dataValue) && d2.optionModule().options().byOptionSetUid()
-                .eq(optionSet).byCode()
-                .eq(dataValue)
-                .one().blockingExists()
+                    .eq(optionSet).byCode()
+                    .eq(dataValue)
+                    .one().blockingExists()
             ) {
                 dataValue =
                     d2.optionModule().options().byOptionSetUid().eq(optionSet)
@@ -163,24 +166,33 @@ class EventRepository(
         val renderingType = getSectionRenderingType(programStageSection)
         val featureType = getFeatureType(valueType)
 
-        val fieldViewModel = fieldFactory.create(
-            uid,
-            formName ?: displayName,
-            valueType!!,
-            mandatory,
-            optionSet,
-            dataValue,
-            programStageSection?.uid(),
-            allowFutureDates,
-            isEventEditable(),
-            renderingType,
-            description,
-            fieldRendering,
-            objectStyle,
-            de.fieldMask(),
-            optionSetConfig,
-            featureType
-        )
+        val label = formName ?: displayName
+
+        val fieldViewModel = if (label.isBiometricsVerificationText())
+            fieldFactory.createBiometricsVerification(
+                uid,
+                dataValue ?: "",
+                programStageSection?.uid(),
+                BiometricsVerificationStatus.NOT_DONE
+            ) else
+            fieldFactory.create(
+                uid,
+                label,
+                valueType!!,
+                mandatory,
+                optionSet,
+                dataValue,
+                programStageSection?.uid(),
+                allowFutureDates,
+                isEventEditable(),
+                renderingType,
+                description,
+                fieldRendering,
+                objectStyle,
+                de.fieldMask(),
+                optionSetConfig,
+                featureType
+            )
         return if (error.isNotEmpty()) {
             fieldViewModel.setError(error)
         } else {
@@ -212,8 +224,8 @@ class EventRepository(
             .blockingGet()
             .firstOrNull { conflict ->
                 conflict.event() == eventUid &&
-                    conflict.dataElement() == dataElementUid &&
-                    conflict.value() == value
+                        conflict.dataElement() == dataElementUid &&
+                        conflict.value() == value
             }?.displayDescription() ?: ""
     }
 }

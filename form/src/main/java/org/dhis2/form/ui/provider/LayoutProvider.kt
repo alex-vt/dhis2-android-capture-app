@@ -15,4 +15,5 @@ interface LayoutProvider {
     ): Int
     fun getLayoutForSection(): Int
     fun getLayoutForBiometrics(): Int
+    fun getLayoutForBiometricsVerification(): Int
 }

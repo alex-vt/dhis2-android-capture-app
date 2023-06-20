@@ -100,9 +100,6 @@ public class EventCaptureContract {
 
         boolean hasExpired();
 
-        @SuppressLint("CheckResult")
-        void saveValue(String uuid, String value);
-
         void initNoteCounter();
 
         void refreshTabCounters();

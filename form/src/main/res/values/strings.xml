@@ -105,4 +105,5 @@
     <string name="biometrics_retake">Retake</string>
     <string name="biometrics_completed">Biometrics completed</string>
     <string name="biometrics_declined">Biometrics declined</string>
+    <string name="biometrics_try_again">Try again</string>
 </resources>

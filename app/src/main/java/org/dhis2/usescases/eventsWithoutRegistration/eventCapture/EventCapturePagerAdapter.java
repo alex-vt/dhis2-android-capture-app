@@ -79,9 +79,10 @@ public class EventCapturePagerAdapter extends FragmentStateAdapter {
         super(fragmentActivity);
         this.programUid = programUid;
         this.eventUid = eventUid;
-
         pages = new ArrayList<>();
+        pages.add(EventPageType.DETAILS);
         pages.add(EventPageType.DATA_ENTRY);
+
         if (displayAnalyticScreen) {
             pages.add(EventPageType.ANALYTICS);
         }

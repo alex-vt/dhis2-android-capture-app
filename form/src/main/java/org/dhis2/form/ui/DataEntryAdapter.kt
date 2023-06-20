@@ -12,15 +12,16 @@ import org.dhis2.form.R
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.SectionUiModelImpl
 import org.dhis2.form.model.biometrics.BiometricsUiModelImpl
+import org.dhis2.form.model.biometrics.BiometricsVerificationUiModelImpl
 import org.dhis2.form.ui.FormViewHolder.FieldItemCallback
+import org.dhis2.form.ui.biometrics.BiometricsVerificationViewHolder
 import org.dhis2.form.ui.biometrics.BiometricsViewHolder
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 import org.hisp.dhis.android.core.common.ValueType
 
 class DataEntryAdapter(private val searchStyle: Boolean) :
-    ListAdapter<FieldUiModel, FormViewHolder>(DataEntryDiff()),
-    FieldItemCallback {
+    ListAdapter<FieldUiModel, FormViewHolder>(DataEntryDiff()), FieldItemCallback {
 
     var onIntent: ((intent: FormIntent) -> Unit)? = null
     var onRecyclerViewUiEvents: ((uiEvent: RecyclerViewUiEvents) -> Unit)? = null
@@ -48,28 +49,27 @@ class DataEntryAdapter(private val searchStyle: Boolean) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FormViewHolder {
-        val layoutInflater =
-            if (searchStyle) {
-                LayoutInflater.from(
-                    ContextThemeWrapper(
-                        parent.context,
-                        R.style.searchFormInputText
-                    )
+        val layoutInflater = if (searchStyle) {
+            LayoutInflater.from(
+                ContextThemeWrapper(
+                    parent.context, R.style.searchFormInputText
                 )
-            } else {
-                LayoutInflater.from(
-                    ContextThemeWrapper(
-                        parent.context,
-                        R.style.formInputText
-                    )
+            )
+        } else {
+            LayoutInflater.from(
+                ContextThemeWrapper(
+                    parent.context, R.style.formInputText
                 )
-            }
+            )
+        }
         val binding =
             DataBindingUtil.inflate<ViewDataBinding>(layoutInflater, viewType, parent, false)
 
-        return if (viewType == R.layout.form_biometrics) BiometricsViewHolder(binding) else FormViewHolder(
-            binding
-        )
+        return when (viewType) {
+            R.layout.form_biometrics -> BiometricsViewHolder(binding)
+            R.layout.form_biometrics_verification -> BiometricsVerificationViewHolder(binding)
+            else -> FormViewHolder(binding)
+        }
     }
 
     override fun onBindViewHolder(holder: FormViewHolder, position: Int) {
@@ -78,7 +78,9 @@ class DataEntryAdapter(private val searchStyle: Boolean) :
         }
 
         if (getItem(position) is BiometricsUiModelImpl) {
-            (holder as BiometricsViewHolder).bind(getItem(position),this)
+            (holder as BiometricsViewHolder).bind(getItem(position), this)
+        } else if (getItem(position) is BiometricsVerificationUiModelImpl) {
+            (holder as BiometricsVerificationViewHolder).bind(getItem(position), this)
         } else {
             holder.bind(getItem(position), this, textWatcher, coordinateWatcher)
         }
@@ -132,9 +134,7 @@ class DataEntryAdapter(private val searchStyle: Boolean) :
 
     fun getSectionForPosition(visiblePos: Int): SectionUiModelImpl? {
         val sectionPosition = sectionHandler.getSectionPositionFromVisiblePosition(
-            visiblePos,
-            isSection(visiblePos),
-            ArrayList(sectionPositions.values)
+            visiblePos, isSection(visiblePos), ArrayList(sectionPositions.values)
         )
         val model = if (sectionPosition != -1) {
             getItem(sectionPosition)
