@@ -4,6 +4,8 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.FlowableProcessor
 import io.reactivex.processors.PublishProcessor
 import org.dhis2.Bindings.profilePicturePath
+import org.dhis2.commons.bindings.trackedEntityTypeForTei
+import org.dhis2.commons.data.TeiAttributesInfo
 import org.dhis2.commons.matomo.Actions.Companion.CREATE_TEI
 import org.dhis2.commons.matomo.Categories.Companion.TRACKER_LIST
 import org.dhis2.commons.matomo.Labels.Companion.CLICK
@@ -17,6 +19,7 @@ import org.dhis2.form.model.RowAction
 import org.dhis2.form.model.biometrics.BiometricsUiModelImpl
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
+import org.dhis2.usescases.teiDashboard.TeiAttributesProvider
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.dhis2.utils.analytics.DELETE_AND_BACK
 import org.hisp.dhis.android.core.D2
@@ -24,7 +27,6 @@ import org.hisp.dhis.android.core.arch.repositories.`object`.ReadOnlyOneObjectRe
 import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.common.Geometry
 import org.hisp.dhis.android.core.common.State
-import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.enrollment.Enrollment
 import org.hisp.dhis.android.core.enrollment.EnrollmentAccess
 import org.hisp.dhis.android.core.enrollment.EnrollmentObjectRepository
@@ -33,6 +35,7 @@ import org.hisp.dhis.android.core.event.EventCollectionRepository
 import org.hisp.dhis.android.core.event.EventStatus
 import org.hisp.dhis.android.core.maintenance.D2Error
 import org.hisp.dhis.android.core.program.Program
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstanceObjectRepository
 import timber.log.Timber
 import java.util.UUID
@@ -50,7 +53,8 @@ class EnrollmentPresenterImpl(
     private val enrollmentFormRepository: EnrollmentFormRepository,
     private val analyticsHelper: AnalyticsHelper,
     private val matomoAnalyticsController: MatomoAnalyticsController,
-    private val eventCollectionRepository: EventCollectionRepository
+    private val eventCollectionRepository: EventCollectionRepository,
+    private val teiAttributesProvider: TeiAttributesProvider
 ) {
     private var finishing: Boolean = false
     private val disposable = CompositeDisposable()
@@ -64,37 +68,41 @@ class EnrollmentPresenterImpl(
 
         disposable.add(
             teiRepository.get()
-                .flatMap { tei ->
-                    d2.trackedEntityModule().trackedEntityTypeAttributes()
-                        .byTrackedEntityTypeUid().eq(tei.trackedEntityType()).get()
-                        .map { list ->
-                            val attrList = list.filter {
-                                d2.trackedEntityModule().trackedEntityAttributes()
-                                    .uid(it.trackedEntityAttribute()?.uid())
-                                    .blockingGet().valueType() != ValueType.IMAGE
-                            }.sortedBy {
-                                it.sortOrder()
-                            }.map {
-                                d2.trackedEntityModule().trackedEntityAttributeValues()
-                                    .byTrackedEntityInstance().eq(tei.uid())
-                                    .byTrackedEntityAttribute().eq(
-                                        it.trackedEntityAttribute()?.uid()
-                                    )
-                                    .one()
-                                    .blockingGet()?.value() ?: ""
-                            }
-                            val icon =
-                                tei.profilePicturePath(d2, programRepository.blockingGet().uid())
-                            Pair(attrList, icon)
-                        }
+                .map { tei ->
+                    val attrList = mutableListOf<String>()
+                    val attributesValues =
+                        teiAttributesProvider
+                            .getListOfValuesFromProgramTrackedEntityAttributesByProgram(
+                                programRepository.blockingGet().uid(),
+                                tei.uid()
+                            )
+                    val teiTypeAttributeValue = mutableListOf<TrackedEntityAttributeValue>()
+                    if (attributesValues.isEmpty()) {
+                        teiTypeAttributeValue.addAll(
+                            teiAttributesProvider.getValuesFromTrackedEntityTypeAttributes(
+                                tei.trackedEntityType(),
+                                tei.uid()
+                            )
+                        )
+                        attrList.addAll(teiTypeAttributeValue.map { it.value() ?: "" })
+                    } else {
+                        attrList.addAll(attributesValues.map { it.value() ?: "" })
+                    }
+
+                    TeiAttributesInfo(
+                        attributes = attrList,
+                        profileImage = tei.profilePicturePath(
+                            d2,
+                            programRepository.blockingGet().uid()
+                        ),
+                        teTypeName = d2.trackedEntityTypeForTei(tei.uid()).displayName()!!
+                    )
                 }
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
                 .subscribe(
-                    { mainAttributes ->
-                        view.displayTeiInfo(mainAttributes.first, mainAttributes.second)
-                    },
-                    { Timber.tag(TAG).e(it) }
+                    view::displayTeiInfo,
+                    Timber.tag(TAG)::e
                 )
         )
 
@@ -192,7 +200,8 @@ class EnrollmentPresenterImpl(
         val event = d2.eventModule().events().uid(eventUid).blockingGet()
         val stage = d2.programModule().programStages().uid(event.programStage()).blockingGet()
         val needsCatCombo = programRepository.blockingGet().categoryComboUid() != null &&
-            d2.categoryModule().categoryCombos().uid(catComboUid).blockingGet().isDefault == false
+            d2.categoryModule().categoryCombos().uid(catComboUid)
+            .blockingGet().isDefault == false
         val needsCoordinates =
             stage.featureType() != null && stage.featureType() != FeatureType.NONE
 
@@ -254,6 +263,10 @@ class EnrollmentPresenterImpl(
         if (picturePath.isNotEmpty()) {
             view.displayTeiPicture(picturePath)
         }
+    }
+
+    fun setFinishing() {
+        finishing = true
     }
 
     fun getEventStage(eventUid: String) =

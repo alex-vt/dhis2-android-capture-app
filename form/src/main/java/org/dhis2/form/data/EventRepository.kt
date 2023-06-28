@@ -12,12 +12,12 @@ import org.dhis2.form.model.OptionSetConfiguration
 import org.dhis2.form.model.biometrics.BiometricsVerificationStatus
 import org.dhis2.form.ui.FieldViewModelFactory
 import org.hisp.dhis.android.core.D2
-import org.hisp.dhis.android.core.arch.helpers.UidsHelper.getUidsList
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
 import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.common.ObjectStyle
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.dataelement.DataElement
+import org.hisp.dhis.android.core.imports.ImportStatus
 import org.hisp.dhis.android.core.program.ProgramStageDataElement
 import org.hisp.dhis.android.core.program.ProgramStageSection
 
@@ -111,24 +111,21 @@ class EventRepository(
         ).blockingGet()
         val valueRepository =
             d2.trackedEntityModule().trackedEntityDataValues().value(eventUid, de.uid())
-        var programStageSection: ProgramStageSection? = null
-        for (section in sectionMap.values) {
-            if (getUidsList<DataElement>(section.dataElements()!!).contains(de.uid())) {
-                programStageSection = section
-                break
-            }
+        val programStageSection: ProgramStageSection? = sectionMap.values.firstOrNull { section ->
+            section.dataElements()?.map { it.uid() }?.contains(de.uid()) ?: false
         }
         val uid = de.uid()
         val displayName = de.displayName()!!
         val valueType = de.valueType()
         val mandatory = programStageDataElement.compulsory() ?: false
         val optionSet = de.optionSetUid()
-        var dataValue =
-            if (valueRepository.blockingExists()) valueRepository.blockingGet()
-                .value() else null
-        val friendlyValue =
-            if (dataValue != null) valueRepository.blockingGetValueCheck(d2, uid)
-                .userFriendlyValue(d2) else null
+        var dataValue = when {
+            valueRepository.blockingExists() -> valueRepository.blockingGet().value()
+            else -> null
+        }
+        val friendlyValue = dataValue?.let {
+            valueRepository.blockingGetValueCheck(d2, uid).userFriendlyValue(d2)
+        }
         val allowFutureDates = programStageDataElement.allowFutureDate() ?: false
         val formName = de.displayFormName()
         val description = de.displayDescription()
@@ -156,7 +153,9 @@ class EventRepository(
         }
         val fieldRendering = getValueTypeDeviceRendering(programStageDataElement)
         val objectStyle = getObjectStyle(de)
-        val error: String = checkConflicts(de.uid(), dataValue)
+
+        var (error, warning) = getConflictErrorsAndWarnings(de.uid(), dataValue)
+
         val isOrgUnit =
             valueType === ValueType.ORGANISATION_UNIT
         val isDate = valueType != null && valueType.isDate
@@ -168,7 +167,7 @@ class EventRepository(
 
         val label = formName ?: displayName
 
-        val fieldViewModel = if (label.isBiometricsVerificationText())
+        var fieldViewModel =  if (label.isBiometricsVerificationText())
             fieldFactory.createBiometricsVerification(
                 uid,
                 dataValue ?: "",
@@ -176,56 +175,86 @@ class EventRepository(
                 BiometricsVerificationStatus.NOT_DONE
             ) else
             fieldFactory.create(
-                uid,
-                label,
-                valueType!!,
-                mandatory,
-                optionSet,
-                dataValue,
-                programStageSection?.uid(),
-                allowFutureDates,
-                isEventEditable(),
-                renderingType,
-                description,
-                fieldRendering,
-                objectStyle,
-                de.fieldMask(),
-                optionSetConfig,
-                featureType
-            )
-        return if (error.isNotEmpty()) {
-            fieldViewModel.setError(error)
-        } else {
-            fieldViewModel
+            uid,
+            label,
+            valueType!!,
+            mandatory,
+            optionSet,
+            dataValue,
+            programStageSection?.uid(),
+            allowFutureDates,
+            isEventEditable(),
+            renderingType,
+            description,
+            fieldRendering,
+            objectStyle,
+            de.fieldMask(),
+            optionSetConfig,
+            featureType
+        )
+
+        if (!error.isNullOrEmpty()) {
+            fieldViewModel = fieldViewModel.setError(error)
         }
+
+        if (!warning.isNullOrEmpty()) {
+            fieldViewModel = fieldViewModel.setWarning(warning)
+        }
+
+        return fieldViewModel
+    }
+
+    private fun getConflictErrorsAndWarnings(
+        dataElementUid: String,
+        dataValue: String?
+    ): Pair<String?, String?> {
+        var error: String? = null
+        var warning: String? = null
+
+        val conflicts = d2.importModule().trackerImportConflicts()
+            .byEventUid().eq(eventUid)
+            .blockingGet()
+
+        val conflict = conflicts
+            .find { it.dataElement() == dataElementUid }
+
+        when (conflict?.status()) {
+            ImportStatus.WARNING -> warning = getError(conflict, dataValue)
+            ImportStatus.ERROR -> error = getError(conflict, dataValue)
+            else -> {}
+        }
+
+        return Pair(error, warning)
     }
 
     private fun getObjectStyle(de: DataElement) =
         if (de.style() != null) de.style() else ObjectStyle.builder().build()
 
     private fun getValueTypeDeviceRendering(programStageDataElement: ProgramStageDataElement) =
-        if (programStageDataElement.renderType() != null) programStageDataElement.renderType()!!
-            .mobile() else null
-
-    private fun getFeatureType(valueType: ValueType?) =
-        when (valueType) {
-            ValueType.COORDINATE -> FeatureType.POINT
-            else -> null
+        if (programStageDataElement.renderType() != null) {
+            programStageDataElement.renderType()!!
+                .mobile()
+        } else {
+            null
         }
+
+    private fun getFeatureType(valueType: ValueType?) = when (valueType) {
+        ValueType.COORDINATE -> FeatureType.POINT
+        else -> null
+    }
 
     private fun getSectionRenderingType(programStageSection: ProgramStageSection?) =
         programStageSection?.renderType()?.mobile()?.type()
 
     private fun isEventEditable() = d2.eventModule().eventService().blockingIsEditable(eventUid)
 
-    private fun checkConflicts(dataElementUid: String, value: String?): String {
+    private fun checkConflicts(dataElementUid: String): String {
         return d2.importModule().trackerImportConflicts()
             .byEventUid().eq(eventUid)
             .blockingGet()
             .firstOrNull { conflict ->
                 conflict.event() == eventUid &&
-                        conflict.dataElement() == dataElementUid &&
-                        conflict.value() == value
+                    conflict.dataElement() == dataElementUid
             }?.displayDescription() ?: ""
     }
 }

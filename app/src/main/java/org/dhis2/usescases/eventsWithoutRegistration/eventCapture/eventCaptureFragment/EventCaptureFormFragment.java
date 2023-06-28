@@ -1,6 +1,7 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment;
 
 import static org.dhis2.commons.extensions.ViewExtensionsKt.closeKeyboard;
+import static org.dhis2.utils.granularsync.SyncStatusDialogNavigatorKt.OPEN_ERROR_LOCATION;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -51,18 +52,20 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     private int biometricsVerificationStatus;
     private String teiOrgUnit;
 
-    public static EventCaptureFormFragment newInstance(String eventUid) {
+    public static EventCaptureFormFragment newInstance(String eventUid, Boolean openErrorSection) {
         EventCaptureFormFragment fragment = new EventCaptureFormFragment();
         Bundle args = new Bundle();
         args.putString(Constants.EVENT_UID, eventUid);
+        args.putBoolean(OPEN_ERROR_LOCATION, openErrorSection);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public static EventCaptureFormFragment newInstance(String eventUid, String guid, int status, String teiOrgUnit) {
+    public static EventCaptureFormFragment newInstance(String eventUid, Boolean openErrorSection, String guid, int status, String teiOrgUnit) {
         EventCaptureFormFragment fragment = new EventCaptureFormFragment();
         Bundle args = new Bundle();
         args.putString(Constants.EVENT_UID, eventUid);
+        args.putBoolean(OPEN_ERROR_LOCATION, openErrorSection);
         args.putString(BIOMETRICS_GUID, guid);
         args.putInt(BIOMETRICS_VERIFICATION_STATUS, status);
         args.putString(BIOMETRICS_TEI_ORGANISATION_UNIT, teiOrgUnit);
@@ -115,6 +118,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                 })
                 .factory(activity.getSupportFragmentManager())
                 .setRecords(new EventRecords(getArguments().getString(Constants.EVENT_UID)))
+                .openErrorLocation(getArguments().getBoolean(OPEN_ERROR_LOCATION, false))
                 .onFieldsLoadedListener ( fields -> {
                     presenter.onFieldsLoaded(fields);
                     return Unit.INSTANCE;

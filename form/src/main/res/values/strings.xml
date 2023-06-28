@@ -100,6 +100,8 @@
     <string name="enrollmment_date">Enrollment date</string>
     <string name="incident_date">Incident date</string>
     <string name="location_permission_denied">The location permission is needed for capturing coordinates. Please, enable them in the application settings</string>
+    <string name="open_with">Open with</string>
+    <string name="no_option_found">No option found</string>
 
     <string name="biometrics_get">Get biometrics</string>
     <string name="biometrics_retake">Retake</string>
