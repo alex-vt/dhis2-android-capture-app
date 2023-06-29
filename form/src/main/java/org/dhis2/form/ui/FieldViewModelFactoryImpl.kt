@@ -260,15 +260,13 @@ class FieldViewModelFactoryImpl(
     override fun createBiometricsVerification(
         id: String,
         value: String,
-        programStageSection: String?,
-        status: BiometricsVerificationStatus
+        programStageSection: String?
     ): FieldUiModel {
         return BiometricsVerificationUiModelImpl(
             id,
             layoutProvider.getLayoutForBiometricsVerification(),
             value,
-            programStageSection,
-            status
+            programStageSection
         )
     }
 }

@@ -61,8 +61,6 @@ public class EventCaptureContract {
         void showNavigationBar();
 
         void hideNavigationBar();
-
-        void refreshByBiometricsVerification(int status);
     }
 
     public interface Presenter extends AbstractActivityContracts.Presenter {
@@ -106,8 +104,6 @@ public class EventCaptureContract {
         boolean getCompletionPercentageVisibility();
 
         void setValueChanged(@NotNull String uid);
-
-        void refreshByBiometricsVerification(int status);
 
         void updateBiometricsAttributeValueInTei(@Nullable String biometricsGuid);
 

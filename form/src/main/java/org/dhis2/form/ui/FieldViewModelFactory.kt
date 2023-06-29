@@ -62,7 +62,6 @@ interface FieldViewModelFactory {
     fun createBiometricsVerification(
         id: String,
         value: String,
-        programStageSection: String?,
-        status: BiometricsVerificationStatus
+        programStageSection: String?
     ): FieldUiModel
 }

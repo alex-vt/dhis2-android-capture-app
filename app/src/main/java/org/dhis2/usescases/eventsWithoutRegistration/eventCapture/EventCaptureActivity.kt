@@ -448,10 +448,6 @@ class EventCaptureActivity :
         binding!!.navigationBar.hide()
     }
 
-    override fun refreshByBiometricsVerification(status: Int) {
-        binding!!.eventViewPager.adapter = getAdapter(status);
-    }
-
     override fun relationshipMap(): LiveData<Boolean> {
         return relationshipMapButton
     }

@@ -171,8 +171,7 @@ class EventRepository(
             fieldFactory.createBiometricsVerification(
                 uid,
                 dataValue ?: "",
-                programStageSection?.uid(),
-                BiometricsVerificationStatus.NOT_DONE
+                programStageSection?.uid()
             ) else
             fieldFactory.create(
             uid,

@@ -20,7 +20,6 @@ data class BiometricsVerificationUiModelImpl(
     override val layoutId: Int,
     override val value: String? = null,
     override val programStageSection: String?,
-    val status: BiometricsVerificationStatus
 ) : FieldUiModel {
 
 
@@ -28,18 +27,18 @@ data class BiometricsVerificationUiModelImpl(
 
     private var biometricRetryListener: BiometricsReTryOnClickListener? = null
 
-    fun setSelected() {
-        /*      onItemClick()
-              selectedField.get()?.let {
-                  val sectionToOpen = if (it == uid) "" else uid
-                  selectedField.set(sectionToOpen)
-                  callback!!.intent(OnSection(sectionToOpen))
-              }*/
-    }
-
     fun isSelected(): Boolean = false
 
-    fun setStatus(value: BiometricsVerificationStatus) = this.copy(status = value)
+    val status: BiometricsVerificationStatus
+        get() {
+            val rawValue = value?.split(GUID_STATUS_SEPARATOR) ?: listOf()
+
+            return if (rawValue.size > 1) {
+                mapToVerificationStatus(rawValue[1].toInt())
+            } else {
+                BiometricsVerificationStatus.NOT_DONE
+            }
+        }
 
     override val formattedLabel: String
         get() = label
@@ -75,7 +74,7 @@ data class BiometricsVerificationUiModelImpl(
     override val isLoadingData = false
 
     override fun onItemClick() {
-        callback!!.intent(
+        callback?.intent(
             OnFocus(
                 uid,
                 value
@@ -171,5 +170,25 @@ data class BiometricsVerificationUiModelImpl(
 
     interface BiometricsReTryOnClickListener {
         fun onRetryClick()
+    }
+
+    companion object {
+        const val GUID_STATUS_SEPARATOR = "_"
+
+        fun mapToVerificationStatus(biometricsVerificationStatus: Int): BiometricsVerificationStatus {
+            return when (biometricsVerificationStatus) {
+                0 -> BiometricsVerificationStatus.FAILURE
+                1 -> BiometricsVerificationStatus.SUCCESS
+                else -> BiometricsVerificationStatus.NOT_DONE
+            }
+        }
+
+        fun mapFromVerificationStatus(biometricsVerificationStatus: BiometricsVerificationStatus): Int {
+            return when (biometricsVerificationStatus) {
+                BiometricsVerificationStatus.FAILURE -> 0
+                BiometricsVerificationStatus.SUCCESS -> 1
+                else -> -1
+            }
+        }
     }
 }

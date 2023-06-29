@@ -74,8 +74,6 @@ class EventCaptureFormPresenter(
                 it is BiometricsVerificationUiModelImpl
             }?.let { it as BiometricsVerificationUiModelImpl }
 
-            updateBiometricsField()
-
             biometricsVerificationUiModel?.setBiometricsRetryListener(
                 object : BiometricsVerificationUiModelImpl.BiometricsReTryOnClickListener {
                     override fun onRetryClick() {
@@ -96,7 +94,7 @@ class EventCaptureFormPresenter(
         }?.let { it as BiometricsVerificationUiModelImpl }
 
         if (biometricsVerificationUiModel != null && this.biometricsGuid != null &&
-            biometricsVerificationUiModel?.status == BiometricsVerificationStatus.NOT_DONE
+            biometricsVerificationStatus == -1
         ) {
             val lastUpdated = activityPresenter.getBiometricsAttributeValueInTeiLastUpdated(
                 biometricsVerificationUiModel?.uid
@@ -115,12 +113,6 @@ class EventCaptureFormPresenter(
         }
     }
 
-    private fun updateBiometricsField(){
-        val status = mapVerificationStatus(biometricsVerificationStatus)
-        biometricsVerificationUiModel?.setValue(biometricsGuid)
-        biometricsVerificationUiModel?.setStatus(status)
-    }
-
     fun showOrHideSaveButton() {
         val isEditable =
             d2.eventModule().eventService().getEditableStatus(eventUid = eventUid).blockingGet()
@@ -128,14 +120,6 @@ class EventCaptureFormPresenter(
             view.showSaveButton()
         } else {
             view.hideSaveButton()
-        }
-    }
-
-    private fun mapVerificationStatus(biometricsVerificationStatus: Int): BiometricsVerificationStatus {
-        return when (biometricsVerificationStatus) {
-            0 -> BiometricsVerificationStatus.FAILURE
-            1 -> BiometricsVerificationStatus.SUCCESS
-            else -> BiometricsVerificationStatus.NOT_DONE
         }
     }
 
@@ -157,17 +141,17 @@ class EventCaptureFormPresenter(
         saveValue: Boolean = true
     ) {
         if (biometricsVerificationUiModel != null) {
-            biometricsVerificationUiModel?.onSave(biometricsGuid)
-            //activityPresenter.saveValue(biometricsVerificationUiModel!!.uid, )
+            biometricsVerificationUiModel?.onSave("${biometricsGuid}_$biometricsVerificationStatus")
         }
 
-        val status = mapVerificationStatus(biometricsVerificationStatus)
+        val status = BiometricsVerificationUiModelImpl.mapToVerificationStatus(biometricsVerificationStatus)
 
         if (status == BiometricsVerificationStatus.SUCCESS && saveValue) {
             activityPresenter.updateBiometricsAttributeValueInTei(biometricsGuid)
         }
 
         this.biometricsVerificationStatus = biometricsVerificationStatus
-        activityPresenter.refreshByBiometricsVerification(this.biometricsVerificationStatus)
+
+        view.onReopen()
     }
 }

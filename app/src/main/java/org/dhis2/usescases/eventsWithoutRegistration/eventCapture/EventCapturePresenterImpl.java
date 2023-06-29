@@ -305,11 +305,6 @@ public class EventCapturePresenterImpl implements EventCaptureContract.Presenter
     }
 
     @Override
-    public void refreshByBiometricsVerification(int status) {
-        view.refreshByBiometricsVerification(status);
-    }
-
-    @Override
     public Date getBiometricsAttributeValueInTeiLastUpdated(String deUid)  {
         return eventCaptureRepository.getBiometricsAttributeValueInTeiLastUpdated();
     }

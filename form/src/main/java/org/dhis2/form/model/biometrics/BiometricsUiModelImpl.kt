@@ -56,7 +56,7 @@ data class BiometricsUiModelImpl(
     override val isLoadingData = false
 
     override fun onItemClick() {
-        callback!!.intent(
+        callback?.intent(
             OnFocus(
                 uid,
                 value
