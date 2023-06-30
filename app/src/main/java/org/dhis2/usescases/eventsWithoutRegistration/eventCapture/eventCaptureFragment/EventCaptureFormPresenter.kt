@@ -27,7 +27,6 @@ class EventCaptureFormPresenter(
     private var biometricsVerificationStatus: Int = -1
     private var biometricsGuid: String? = null
     private var teiOrgUnit: String? = null
-    private var fields: List<FieldUiModel> = listOf()
 
     private var biometricsVerificationUiModel: BiometricsVerificationUiModelImpl? = null
 
