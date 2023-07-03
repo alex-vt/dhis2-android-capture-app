@@ -119,10 +119,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                 .factory(activity.getSupportFragmentManager())
                 .setRecords(new EventRecords(getArguments().getString(Constants.EVENT_UID)))
                 .openErrorLocation(getArguments().getBoolean(OPEN_ERROR_LOCATION, false))
-                .onFieldsLoadedListener ( fields -> {
-                    presenter.onFieldsLoaded(fields);
-                    return Unit.INSTANCE;
-                })
+                .onFieldsLoadingListener ( fields -> presenter.onFieldsLoading(fields))
                 .build();
         activity.setFormEditionListener(this);
         super.onCreate(savedInstanceState);

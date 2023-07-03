@@ -20,6 +20,7 @@ data class BiometricsVerificationUiModelImpl(
     override val layoutId: Int,
     override val value: String? = null,
     override val programStageSection: String?,
+    val status: BiometricsVerificationStatus
 ) : FieldUiModel {
 
 
@@ -28,17 +29,6 @@ data class BiometricsVerificationUiModelImpl(
     private var biometricRetryListener: BiometricsReTryOnClickListener? = null
 
     fun isSelected(): Boolean = false
-
-    val status: BiometricsVerificationStatus
-        get() {
-            val rawValue = value?.split(GUID_STATUS_SEPARATOR) ?: listOf()
-
-            return if (rawValue.size > 1) {
-                mapToVerificationStatus(rawValue[1].toInt())
-            } else {
-                BiometricsVerificationStatus.NOT_DONE
-            }
-        }
 
     override val formattedLabel: String
         get() = label
@@ -140,6 +130,8 @@ data class BiometricsVerificationUiModelImpl(
 
     override fun setValue(value: String?) = this.copy(value = value)
 
+    fun setStatus(status: BiometricsVerificationStatus) = this.copy(status = status)
+
     override fun setIsLoadingData(isLoadingData: Boolean) = this.copy()
 
     override fun setDisplayName(displayName: String?) = this.copy()
@@ -170,25 +162,5 @@ data class BiometricsVerificationUiModelImpl(
 
     interface BiometricsReTryOnClickListener {
         fun onRetryClick()
-    }
-
-    companion object {
-        const val GUID_STATUS_SEPARATOR = "_"
-
-        fun mapToVerificationStatus(biometricsVerificationStatus: Int): BiometricsVerificationStatus {
-            return when (biometricsVerificationStatus) {
-                0 -> BiometricsVerificationStatus.FAILURE
-                1 -> BiometricsVerificationStatus.SUCCESS
-                else -> BiometricsVerificationStatus.NOT_DONE
-            }
-        }
-
-        fun mapFromVerificationStatus(biometricsVerificationStatus: BiometricsVerificationStatus): Int {
-            return when (biometricsVerificationStatus) {
-                BiometricsVerificationStatus.FAILURE -> 0
-                BiometricsVerificationStatus.SUCCESS -> 1
-                else -> -1
-            }
-        }
     }
 }

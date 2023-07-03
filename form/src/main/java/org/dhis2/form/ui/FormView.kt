@@ -96,6 +96,8 @@ class FormView : Fragment() {
     private var locationProvider: LocationProvider? = null
     private var onLoadingListener: ((loading: Boolean) -> Unit)? = null
     private var onFieldsLoadedListener: ((fields: List<FieldUiModel>) -> Unit)? = null
+    private var onFieldsLoadingListener: ((fields: List<FieldUiModel>) -> List<FieldUiModel>)? =
+        null
     private var onFocused: (() -> Unit)? = null
     private var onFinishDataEntry: (() -> Unit)? = null
     private var onActivityForResult: (() -> Unit)? = null
@@ -513,10 +515,12 @@ class FormView : Fragment() {
             is RecyclerViewUiEvents.OpenYearMonthDayAgeCalendar -> showYearMonthDayAgeCalendar(
                 uiEvent
             )
+
             is RecyclerViewUiEvents.OpenTimePicker -> showTimePicker(uiEvent)
             is RecyclerViewUiEvents.ShowDescriptionLabelDialog -> showDescriptionLabelDialog(
                 uiEvent
             )
+
             is RecyclerViewUiEvents.RequestCurrentLocation -> requestCurrentLocation(uiEvent)
             is RecyclerViewUiEvents.RequestLocationByMap -> requestLocationByMap(uiEvent)
             is RecyclerViewUiEvents.DisplayQRCode -> displayQRImage(uiEvent)
@@ -541,6 +545,7 @@ class FormView : Fragment() {
                     Intent.ACTION_DIAL -> {
                         data = Uri.parse("tel:${uiEvent.value}")
                     }
+
                     Intent.ACTION_SENDTO -> {
                         data = Uri.parse("mailto:${uiEvent.value}")
                     }
@@ -590,8 +595,10 @@ class FormView : Fragment() {
             offset = it.top
         }
 
+        val finalItems = onFieldsLoadingListener?.invoke(items) ?: items
+
         adapter.swap(
-            items
+            finalItems
         ) {
             dataEntryHeaderHelper.onItemsUpdatedCallback()
             viewModel.onItemsRendered()
@@ -607,9 +614,9 @@ class FormView : Fragment() {
             binding.recyclerView.layoutManager as LinearLayoutManager
         val lastVisiblePosition = layoutManager.findLastVisibleItemPosition()
         return lastVisiblePosition != -1 && (
-            lastVisiblePosition == adapter.itemCount - 1 ||
-                adapter.getItemViewType(lastVisiblePosition) == R.layout.form_section
-            )
+                lastVisiblePosition == adapter.itemCount - 1 ||
+                        adapter.getItemViewType(lastVisiblePosition) == R.layout.form_section
+                )
     }
 
     private fun handleKeyBoardOnFocusChange(items: List<FieldUiModel>) {
@@ -648,6 +655,7 @@ class FormView : Fragment() {
                                 datePicker.dayOfMonth
                             )
                         )
+
                         else -> intentHandler(
                             dialogDelegate.handleDateInput(
                                 intent.uid,
@@ -1034,6 +1042,7 @@ class FormView : Fragment() {
         onItemChangeListener: ((action: RowAction) -> Unit)?,
         onLoadingListener: ((loading: Boolean) -> Unit)?,
         onFieldsLoadedListener: ((List<FieldUiModel>) -> Unit)?,
+        onFieldsLoadingListener: ((List<FieldUiModel>) -> List<FieldUiModel>)?,
         onFocused: (() -> Unit)?,
         onFinishDataEntry: (() -> Unit)?,
         onActivityForResult: (() -> Unit)?,
@@ -1043,6 +1052,7 @@ class FormView : Fragment() {
         this.onItemChangeListener = onItemChangeListener
         this.onLoadingListener = onLoadingListener
         this.onFieldsLoadedListener = onFieldsLoadedListener
+        this.onFieldsLoadingListener = onFieldsLoadingListener
         this.onFocused = onFocused
         this.onFinishDataEntry = onFinishDataEntry
         this.onActivityForResult = onActivityForResult
@@ -1058,6 +1068,8 @@ class FormView : Fragment() {
         private var needToForceUpdate: Boolean = false
         private var onLoadingListener: ((loading: Boolean) -> Unit)? = null
         private var onFieldsLoadedListener: ((fields: List<FieldUiModel>) -> Unit)? = null
+        private var onFieldsLoadingListener: ((fields: List<FieldUiModel>) -> List<FieldUiModel>)? =
+            null
         private var onFocused: (() -> Unit)? = null
         private var onActivityForResult: (() -> Unit)? = null
         private var onFinishDataEntry: (() -> Unit)? = null
@@ -1098,6 +1110,12 @@ class FormView : Fragment() {
          * */
         fun onFieldsLoadedListener(callback: (fields: List<FieldUiModel>) -> Unit) =
             apply { this.onFieldsLoadedListener = callback }
+
+        /**
+         * Sets if loading started or finished to handle loadingfeedback
+         * */
+        fun onFieldsLoadingListener(callback: (fields: List<FieldUiModel>) -> List<FieldUiModel>) =
+            apply { this.onFieldsLoadingListener = callback }
 
         /**
          * It's triggered when form gets focus
@@ -1154,6 +1172,7 @@ class FormView : Fragment() {
                     needToForceUpdate,
                     onLoadingListener,
                     onFieldsLoadedListener,
+                    onFieldsLoadingListener,
                     onFocused,
                     onFinishDataEntry,
                     onActivityForResult,

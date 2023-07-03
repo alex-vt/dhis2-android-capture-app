@@ -266,7 +266,8 @@ class FieldViewModelFactoryImpl(
             id,
             layoutProvider.getLayoutForBiometricsVerification(),
             value,
-            programStageSection
+            programStageSection,
+            BiometricsVerificationStatus.NOT_DONE
         )
     }
 }
