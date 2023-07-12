@@ -3,8 +3,8 @@ package org.dhis2.data.biometrics
 import android.content.Context
 import org.dhis2.commons.prefs.PreferenceProviderImpl
 import org.dhis2.commons.prefs.SECURE_USER_NAME
-import org.dhis2.data.biometrics.BiometricsPreference.Companion.CONFIDENCE_SCORE_FILTER
-import org.dhis2.data.biometrics.BiometricsPreference.Companion.PROJECT_ID
+import org.dhis2.commons.biometrics.BiometricsPreference.Companion.CONFIDENCE_SCORE_FILTER
+import org.dhis2.commons.biometrics.BiometricsPreference.Companion.PROJECT_ID
 
 object BiometricsClientFactory {
     fun get( context:Context):BiometricsClient{

@@ -1,9 +1,10 @@
 package org.dhis2.data.biometrics
 
+import org.dhis2.commons.biometrics.BiometricsIcon
+import org.dhis2.commons.biometrics.BiometricsPreference
 import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.usescases.biometrics.BiometricsConfig
 import org.dhis2.usescases.biometrics.BiometricsConfigRepository
-import org.dhis2.usescases.biometrics.BiometricsIcon
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
 import timber.log.Timber
