@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.simprints.libsimprints.Constants
 import com.simprints.libsimprints.Identification
+import com.simprints.libsimprints.Metadata
 import com.simprints.libsimprints.RefusalForm
 import com.simprints.libsimprints.Registration
 import com.simprints.libsimprints.SimHelper
@@ -20,7 +21,6 @@ import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_REQUEST
 import org.dhis2.commons.biometrics.BIOMETRICS_IDENTIFY_REQUEST
 import org.dhis2.commons.biometrics.BIOMETRICS_VERIFY_REQUEST
 import timber.log.Timber
-import java.util.ArrayList
 
 sealed class RegisterResult {
     data class Completed(val guid: String) : RegisterResult()
@@ -40,6 +40,7 @@ sealed class VerifyResult {
     object NoMatch : VerifyResult()
     object Failure : VerifyResult()
 }
+
 
 class BiometricsClient(
     projectId: String,
@@ -79,7 +80,7 @@ class BiometricsClient(
         }
     }
 
-    fun verify(fragment: Fragment, guid: String, moduleId: String) {
+    fun verify(fragment: Fragment, guid: String, moduleId: String, extras: Map<String, String>) {
         if (guid == null) {
             Timber.i("Simprints Verification - Guid is Null - Please check again!")
             return
@@ -87,13 +88,17 @@ class BiometricsClient(
 
         Timber.d("Biometrics verify!")
         Timber.d("moduleId: $moduleId")
+        printExtras(extras)
 
         val intent = simHelper.verify(moduleId, guid)
+
+        extras.forEach { intent.putExtra(it.key, it.value) }
 
         if (fragment.context != null && checkSimprintsApp(fragment.requireContext(), intent)) {
             fragment.startActivityForResult(intent, BIOMETRICS_VERIFY_REQUEST)
         }
     }
+
 
     fun handleRegisterResponse(data: Intent): RegisterResult {
         val biometricsCompleted = checkBiometricsCompleted(data)
@@ -118,12 +123,15 @@ class BiometricsClient(
                         identifyResponse.sessionId
                     )
                 }
+
                 is IdentifyResult.BiometricsDeclined -> {
                     RegisterResult.Failure
                 }
+
                 is IdentifyResult.UserNotFound -> {
                     handleRegister()
                 }
+
                 is IdentifyResult.Failure -> {
                     RegisterResult.Failure
                 }
@@ -135,9 +143,11 @@ class BiometricsClient(
                 data.hasExtra(Constants.SIMPRINTS_IDENTIFICATIONS) -> {
                     handlePossibleDuplicates()
                 }
+
                 data.hasExtra(Constants.SIMPRINTS_REGISTRATION) -> {
                     handleRegister()
                 }
+
                 else -> {
                     RegisterResult.Failure
                 }
@@ -196,6 +206,7 @@ class BiometricsClient(
                             VerifyResult.NoMatch
                         }
                     }
+
                     Tier.TIER_5 -> VerifyResult.NoMatch
                 }
             } else {
@@ -206,24 +217,40 @@ class BiometricsClient(
         }
     }
 
-    fun confirmIdentify(activity: Activity, sessionId: String, guid: String) {
+    fun confirmIdentify(
+        activity: Activity,
+        sessionId: String,
+        guid: String,
+        extras: Map<String, String>
+    ) {
         Timber.d("Biometrics confirmIdentify!")
         Timber.d("sessionId: $sessionId")
         Timber.d("guid: $guid")
+        printExtras(extras)
 
         val intent = simHelper.confirmIdentity(activity, sessionId, guid)
+
+        extras.forEach { intent.putExtra(it.key, it.value) }
 
         if (checkSimprintsApp(activity, intent)) {
             activity.startActivityForResult(intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
         }
     }
 
-    fun confirmIdentify(fragment: Fragment, sessionId: String, guid: String) {
+    fun confirmIdentify(
+        fragment: Fragment,
+        sessionId: String,
+        guid: String,
+        extras: Map<String, String>
+    ) {
         Timber.d("Biometrics confirmIdentify!")
         Timber.d("sessionId: $sessionId")
         Timber.d("guid: $guid")
+        printExtras(extras)
 
         val intent = simHelper.confirmIdentity(fragment.requireContext(), sessionId, guid)
+
+        extras.forEach { intent.putExtra(it.key, it.value) }
 
         if (checkSimprintsApp(fragment.requireContext(), intent)) {
             fragment.startActivityForResult(intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
@@ -266,5 +293,23 @@ class BiometricsClient(
             Toast.makeText(context, R.string.biometrics_download_app, Toast.LENGTH_SHORT).show()
             false
         }
+    }
+
+    private fun printExtras(extras: Map<String, String>) {
+        Timber.d(
+            "extras: ${
+                extras.entries.joinToString(
+                    prefix = "[",
+                    separator = ", ",
+                    postfix = "]",
+                    limit = 2,
+                    truncated = "..."
+                )
+            }"
+        )
+    }
+
+    companion object {
+        const val SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID = "trackedEntityInstanceId"
     }
 }
