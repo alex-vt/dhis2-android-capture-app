@@ -160,20 +160,6 @@ android {
             versionName versions.vName
         }
 
-        widp {
-            applicationId "com.eyeseetea.widp"
-            dimension "default"
-            versionCode versions.vCode
-            versionName "2.7.1-widp-fork-1"
-        }
-
-        psi {
-            applicationId "org.dhis2.psi"
-            dimension "default"
-            versionCode versions.vCode
-            versionName "2.8.1.1-psi-fork-2"
-        }
-
         simprints {
             applicationId "org.simprints.dhis2"
             dimension "default"
