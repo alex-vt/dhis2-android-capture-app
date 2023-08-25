@@ -89,7 +89,7 @@ class BiometricsClient(
             if (registration == null) {
                 RegisterResult.Failure
             } else {
-                RegisterResult.Completed(registration?.guid)
+                RegisterResult.Completed(registration.guid)
             }
         }
 
