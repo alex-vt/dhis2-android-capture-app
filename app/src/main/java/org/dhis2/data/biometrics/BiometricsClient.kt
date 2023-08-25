@@ -7,7 +7,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.simprints.libsimprints.*
 import org.dhis2.R
-import org.dhis2.usescases.biometrics.*
+import org.dhis2.commons.biometrics.*
 import timber.log.Timber
 
 sealed class RegisterResult {
@@ -51,7 +51,7 @@ class BiometricsClient(
 
         val intent = simHelper.register(moduleId)
 
-        checkSimprintsApp(activity, intent, BIOMETRICS_ENROLL_REQUEST)
+        launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_ENROLL_REQUEST)
     }
 
     fun identify(activity: Activity) {
@@ -60,7 +60,7 @@ class BiometricsClient(
 
         val intent = simHelper.identify(defaultModuleId)
 
-        checkSimprintsApp(activity, intent, BIOMETRICS_IDENTIFY_REQUEST)
+        launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_IDENTIFY_REQUEST)
     }
 
     fun verify(fragment: Fragment, guid: String, moduleId: String) {
@@ -197,7 +197,7 @@ class BiometricsClient(
 
         val intent = simHelper.confirmIdentity(activity, sessionId, guid)
 
-        checkSimprintsApp(activity, intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
+        launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
     }
 
     fun confirmIdentify(fragment: Fragment, sessionId: String, guid: String) {
@@ -221,7 +221,7 @@ class BiometricsClient(
 
         val intent = simHelper.confirmIdentity(activity, sessionId, "none_selected")
 
-        checkSimprintsApp(activity, intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
+        launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
     }
 
     fun registerLast(activity: Activity, sessionId: String) {
@@ -231,13 +231,13 @@ class BiometricsClient(
 
         val intent = simHelper.registerLastBiometrics(defaultModuleId, sessionId)
 
-        checkSimprintsApp(activity, intent, BIOMETRICS_ENROLL_LAST_REQUEST)
+        launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_ENROLL_LAST_REQUEST)
     }
 
     private fun checkBiometricsCompleted(data: Intent) =
         data.getBooleanExtra(Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false)
 
-    private fun checkSimprintsApp(activity: Activity, intent: Intent, requestCode: Int) {
+    private fun launchSimprintsAppFromActivity(activity: Activity, intent: Intent, requestCode: Int) {
         try {
             activity.startActivityForResult(intent, requestCode)
         } catch (ex: ActivityNotFoundException){
