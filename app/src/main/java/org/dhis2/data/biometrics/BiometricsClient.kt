@@ -75,7 +75,7 @@ class BiometricsClient(
         val intent = simHelper.verify(moduleId, guid)
 
         if (fragment.context != null) {
-            fragment.startActivityForResult(intent, BIOMETRICS_VERIFY_REQUEST)
+            launchSimprintsAppFromFragment(fragment,intent,BIOMETRICS_VERIFY_REQUEST)
         }
     }
 
@@ -207,11 +207,7 @@ class BiometricsClient(
 
         val intent = simHelper.confirmIdentity(fragment.requireContext(), sessionId, guid)
 
-        try {
-            fragment.startActivityForResult(intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
-        } catch (ex: ActivityNotFoundException){
-            fragment.context?.let { Toast.makeText(it, R.string.biometrics_download_app, Toast.LENGTH_SHORT).show() }
-        }
+        launchSimprintsAppFromFragment(fragment,intent,BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
     }
 
     fun noneSelected(activity: Activity, sessionId: String) {
@@ -242,6 +238,14 @@ class BiometricsClient(
             activity.startActivityForResult(intent, requestCode)
         } catch (ex: ActivityNotFoundException){
             Toast.makeText(activity, R.string.biometrics_download_app, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun launchSimprintsAppFromFragment(fragment: Fragment, intent: Intent, requestCode: Int) {
+        try {
+            fragment.startActivityForResult(intent, requestCode)
+        } catch (ex: ActivityNotFoundException){
+            fragment.context?.let { Toast.makeText(it, R.string.biometrics_download_app, Toast.LENGTH_SHORT).show() }
         }
     }
 }
