@@ -29,6 +29,7 @@ sealed class VerifyResult {
     object Failure : VerifyResult()
 }
 
+
 class BiometricsClient(
     projectId: String,
     userId: String,
@@ -63,7 +64,7 @@ class BiometricsClient(
         launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_IDENTIFY_REQUEST)
     }
 
-    fun verify(fragment: Fragment, guid: String, moduleId: String) {
+    fun verify(fragment: Fragment, guid: String, moduleId: String, extras: Map<String, String>) {
         if (guid == null) {
             Timber.i("Simprints Verification - Guid is Null - Please check again!")
             return
@@ -71,13 +72,17 @@ class BiometricsClient(
 
         Timber.d("Biometrics verify!")
         Timber.d("moduleId: $moduleId")
+        printExtras(extras)
 
         val intent = simHelper.verify(moduleId, guid)
+
+        extras.forEach { intent.putExtra(it.key, it.value) }
 
         if (fragment.context != null) {
             launchSimprintsAppFromFragment(fragment,intent,BIOMETRICS_VERIFY_REQUEST)
         }
     }
+
 
     fun handleRegisterResponse(data: Intent): RegisterResult {
         val biometricsCompleted = checkBiometricsCompleted(data)
@@ -102,12 +107,15 @@ class BiometricsClient(
                         identifyResponse.sessionId
                     )
                 }
+
                 is IdentifyResult.BiometricsDeclined -> {
                     RegisterResult.Failure
                 }
+
                 is IdentifyResult.UserNotFound -> {
                     handleRegister()
                 }
+
                 is IdentifyResult.Failure -> {
                     RegisterResult.Failure
                 }
@@ -119,9 +127,11 @@ class BiometricsClient(
                 data.hasExtra(Constants.SIMPRINTS_IDENTIFICATIONS) -> {
                     handlePossibleDuplicates()
                 }
+
                 data.hasExtra(Constants.SIMPRINTS_REGISTRATION) -> {
                     handleRegister()
                 }
+
                 else -> {
                     RegisterResult.Failure
                 }
@@ -180,6 +190,7 @@ class BiometricsClient(
                             VerifyResult.NoMatch
                         }
                     }
+
                     Tier.TIER_5 -> VerifyResult.NoMatch
                 }
             } else {
@@ -190,22 +201,38 @@ class BiometricsClient(
         }
     }
 
-    fun confirmIdentify(activity: Activity, sessionId: String, guid: String) {
+    fun confirmIdentify(
+        activity: Activity,
+        sessionId: String,
+        guid: String,
+        extras: Map<String, String>
+    ) {
         Timber.d("Biometrics confirmIdentify!")
         Timber.d("sessionId: $sessionId")
         Timber.d("guid: $guid")
+        printExtras(extras)
 
         val intent = simHelper.confirmIdentity(activity, sessionId, guid)
+
+        extras.forEach { intent.putExtra(it.key, it.value) }
 
         launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
     }
 
-    fun confirmIdentify(fragment: Fragment, sessionId: String, guid: String) {
+    fun confirmIdentify(
+        fragment: Fragment,
+        sessionId: String,
+        guid: String,
+        extras: Map<String, String>
+    ) {
         Timber.d("Biometrics confirmIdentify!")
         Timber.d("sessionId: $sessionId")
         Timber.d("guid: $guid")
+        printExtras(extras)
 
         val intent = simHelper.confirmIdentity(fragment.requireContext(), sessionId, guid)
+
+        extras.forEach { intent.putExtra(it.key, it.value) }
 
         launchSimprintsAppFromFragment(fragment,intent,BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
     }
@@ -247,5 +274,23 @@ class BiometricsClient(
         } catch (ex: ActivityNotFoundException){
             fragment.context?.let { Toast.makeText(it, R.string.biometrics_download_app, Toast.LENGTH_SHORT).show() }
         }
+    }
+
+    private fun printExtras(extras: Map<String, String>) {
+        Timber.d(
+            "extras: ${
+                extras.entries.joinToString(
+                    prefix = "[",
+                    separator = ", ",
+                    postfix = "]",
+                    limit = 2,
+                    truncated = "..."
+                )
+            }"
+        )
+    }
+
+    companion object {
+        const val SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID = "trackedEntityInstanceId"
     }
 }
