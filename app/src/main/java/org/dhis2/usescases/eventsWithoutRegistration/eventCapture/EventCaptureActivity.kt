@@ -488,7 +488,7 @@ class EventCaptureActivity :
             eventUid: String,
             programUid: String,
             eventMode: EventMode,
-            guid: String,
+            guid: String?,
             status: Int,
             orgUnitUid: String
         ): Bundle {
