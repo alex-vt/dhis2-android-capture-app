@@ -29,7 +29,7 @@ class SelectBiometricsConfig(private val biometricsConfigRepository: BiometricsC
             userOrgUnitGroups.filter { ouGroup -> configOptions.any { config -> config.orgUnitGroup == ouGroup } }
 
         val configByUserOrgUnitGroup =
-            configOptions.find { it.orgUnitGroup == userOrgUnitGroupsInConfig[0] }
+            configOptions.find { userOrgUnitGroupsInConfig.isNotEmpty() && it.orgUnitGroup == userOrgUnitGroupsInConfig[0] }
 
         return configByProgram ?: if (userOrgUnitGroupsInConfig.size != 1) defaultConfig else
             configByUserOrgUnitGroup
