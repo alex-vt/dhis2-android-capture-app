@@ -15,6 +15,9 @@ import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 
 class BiometricsVerificationViewHolder(private val binding: ViewDataBinding) : FormViewHolder(binding) {
+    private val verificationContainer:LinearLayout = binding.root.findViewById(R.id.verification_container)
+    private val biometricsButton:LinearLayout = binding.root.findViewById(R.id.biometrics_button)
+
     private val tryAgainButton:LinearLayout = binding.root.findViewById(R.id.tryAgainButton)
     private val statusImageView:ImageView = binding.root.findViewById(R.id.statusImageView)
 
@@ -39,12 +42,25 @@ class BiometricsVerificationViewHolder(private val binding: ViewDataBinding) : F
         }
         uiModel.setCallback(itemCallback)
 
-
         tryAgainButton.setOnClickListener {
             (uiModel as BiometricsVerificationUiModelImpl).onRetryVerificationClick()
         }
 
-        when ((uiModel as BiometricsVerificationUiModelImpl).status) {
+        val uiVerificationUiModel = (uiModel as BiometricsVerificationUiModelImpl)
+
+        if (!uiVerificationUiModel.value.isNullOrEmpty()){
+            renderVerification(uiVerificationUiModel)
+        } else {
+            renderRegistration(uiVerificationUiModel)
+        }
+
+    }
+
+    private fun renderVerification(uiModel : BiometricsVerificationUiModelImpl){
+        verificationContainer.visibility = VISIBLE
+        biometricsButton.visibility = GONE
+
+        when (uiModel.status) {
             BiometricsVerificationStatus.SUCCESS -> {
                 statusImageView.visibility = VISIBLE
                 statusImageView.setImageDrawable(AppCompatResources.getDrawable(binding.root.context, R.drawable.ic_bio_available_yes));
@@ -60,5 +76,10 @@ class BiometricsVerificationViewHolder(private val binding: ViewDataBinding) : F
                 tryAgainButton.visibility = GONE
             }
         }
+    }
+
+    private fun renderRegistration(uiModel : BiometricsVerificationUiModelImpl){
+        verificationContainer.visibility = GONE
+        biometricsButton.visibility = VISIBLE
     }
 }
