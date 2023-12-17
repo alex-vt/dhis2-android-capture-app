@@ -14,7 +14,7 @@ import org.dhis2.form.ui.FormViewHolder
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 
-class BiometricsVerificationViewHolder(private val binding: ViewDataBinding) : FormViewHolder(binding) {
+class BiometricsDataElementViewHolder(private val binding: ViewDataBinding) : FormViewHolder(binding) {
     private val verificationContainer:LinearLayout = binding.root.findViewById(R.id.verification_container)
     private val biometricsButton:LinearLayout = binding.root.findViewById(R.id.biometrics_button)
 

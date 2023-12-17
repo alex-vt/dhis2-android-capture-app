@@ -14,8 +14,8 @@ import org.dhis2.form.model.SectionUiModelImpl
 import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
 import org.dhis2.form.model.biometrics.BiometricsDataElementUiModelImpl
 import org.dhis2.form.ui.FormViewHolder.FieldItemCallback
-import org.dhis2.form.ui.biometrics.BiometricsVerificationViewHolder
-import org.dhis2.form.ui.biometrics.BiometricsViewHolder
+import org.dhis2.form.ui.biometrics.BiometricsDataElementViewHolder
+import org.dhis2.form.ui.biometrics.BiometricsAttributeViewHolder
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 import org.hisp.dhis.android.core.common.ValueType
@@ -66,8 +66,8 @@ class DataEntryAdapter(private val searchStyle: Boolean) :
             DataBindingUtil.inflate<ViewDataBinding>(layoutInflater, viewType, parent, false)
 
         return when (viewType) {
-            R.layout.form_biometrics -> BiometricsViewHolder(binding)
-            R.layout.form_biometrics_verification -> BiometricsVerificationViewHolder(binding)
+            R.layout.form_biometrics -> BiometricsAttributeViewHolder(binding)
+            R.layout.form_biometrics_verification -> BiometricsDataElementViewHolder(binding)
             else -> FormViewHolder(binding)
         }
     }
@@ -78,9 +78,9 @@ class DataEntryAdapter(private val searchStyle: Boolean) :
         }
 
         if (getItem(position) is BiometricsAttributeUiModelImpl) {
-            (holder as BiometricsViewHolder).bind(getItem(position), this)
+            (holder as BiometricsAttributeViewHolder).bind(getItem(position), this)
         } else if (getItem(position) is BiometricsDataElementUiModelImpl) {
-            (holder as BiometricsVerificationViewHolder).bind(getItem(position), this)
+            (holder as BiometricsDataElementViewHolder).bind(getItem(position), this)
         } else {
             holder.bind(getItem(position), this, textWatcher, coordinateWatcher)
         }

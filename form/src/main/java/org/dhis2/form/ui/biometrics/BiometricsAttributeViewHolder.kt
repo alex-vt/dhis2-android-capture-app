@@ -17,7 +17,7 @@ import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 import timber.log.Timber
 
-class BiometricsViewHolder(private val binding: ViewDataBinding) : FormViewHolder(binding) {
+class BiometricsAttributeViewHolder(private val binding: ViewDataBinding) : FormViewHolder(binding) {
     private val biometricsButton: LinearLayout = binding.root.findViewById(R.id.biometrics_button)
     private val retakeButton: LinearLayout = binding.root.findViewById(R.id.biometrics_retake_button)
     private val biometricsButtonText : TextView = binding.root.findViewById(R.id.biometrics_button_text)
