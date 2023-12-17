@@ -1,6 +1,5 @@
 package org.dhis2.form.ui.biometrics
 
-import android.text.TextWatcher
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -8,14 +7,12 @@ import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.databinding.ViewDataBinding
-import androidx.recyclerview.widget.RecyclerView
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.commons.biometrics.*
 import org.dhis2.form.R
 import org.dhis2.form.model.FieldUiModel
-import org.dhis2.form.model.biometrics.BiometricsUiModelImpl
+import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
 import org.dhis2.form.ui.FormViewHolder
-import org.dhis2.form.ui.LatitudeLongitudeTextWatcher
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 import timber.log.Timber
@@ -48,11 +45,11 @@ class BiometricsViewHolder(private val binding: ViewDataBinding) : FormViewHolde
         uiModel.setCallback(itemCallback)
 
         biometricsButton.setOnClickListener {
-            (uiModel as BiometricsUiModelImpl).onBiometricsClick()
+            (uiModel as BiometricsAttributeUiModelImpl).onBiometricsClick()
         }
 
         retakeButton.setOnClickListener {
-            (uiModel as BiometricsUiModelImpl).onBiometricsClick()
+            (uiModel as BiometricsAttributeUiModelImpl).onBiometricsClick()
         }
 
         val value = uiModel.value

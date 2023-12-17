@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.ListAdapter
 import org.dhis2.form.R
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.SectionUiModelImpl
-import org.dhis2.form.model.biometrics.BiometricsUiModelImpl
-import org.dhis2.form.model.biometrics.BiometricsVerificationUiModelImpl
+import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
+import org.dhis2.form.model.biometrics.BiometricsDataElementUiModelImpl
 import org.dhis2.form.ui.FormViewHolder.FieldItemCallback
 import org.dhis2.form.ui.biometrics.BiometricsVerificationViewHolder
 import org.dhis2.form.ui.biometrics.BiometricsViewHolder
@@ -77,9 +77,9 @@ class DataEntryAdapter(private val searchStyle: Boolean) :
             updateSectionData(position, false)
         }
 
-        if (getItem(position) is BiometricsUiModelImpl) {
+        if (getItem(position) is BiometricsAttributeUiModelImpl) {
             (holder as BiometricsViewHolder).bind(getItem(position), this)
-        } else if (getItem(position) is BiometricsVerificationUiModelImpl) {
+        } else if (getItem(position) is BiometricsDataElementUiModelImpl) {
             (holder as BiometricsVerificationViewHolder).bind(getItem(position), this)
         } else {
             holder.bind(getItem(position), this, textWatcher, coordinateWatcher)

@@ -14,26 +14,16 @@ import org.dhis2.form.ui.style.FormUiModelStyle
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.option.Option
 
-enum class BiometricsVerificationStatus {
-    NOT_DONE,
-    SUCCESS,
-    FAILURE
-}
-
-data class BiometricsVerificationUiModelImpl(
+data class BiometricsAttributeUiModelImpl(
     override val uid: String,
     override val layoutId: Int,
     override val value: String? = null,
-    override val programStageSection: String?,
-    val status: BiometricsVerificationStatus
+    override val programStageSection: String?
 ) : FieldUiModel {
-
 
     private var callback: FieldUiModel.Callback? = null
 
-    private var biometricRetryListener: BiometricsReTryOnClickListener? = null
-
-    private var biometricRegisterListener: BiometricsRegisterClickListener? = null
+    private var biometricListener: BiometricsOnRegisterClickListener? = null
 
     fun isSelected(): Boolean = false
 
@@ -45,14 +35,14 @@ data class BiometricsVerificationUiModelImpl(
     }
 
     override fun equals(item: FieldUiModel): Boolean {
-        item as BiometricsVerificationUiModelImpl
+        item as BiometricsAttributeUiModelImpl
         return super.equals(item)
     }
 
     override val focused = false
-    override val error: String? = null
+    override val error:String? = null
     override val editable = false
-    override val warning: String? = null
+    override val warning:String? = null
     override val mandatory = false
     override val label = ""
     override val style: FormUiModelStyle? = null
@@ -137,8 +127,6 @@ data class BiometricsVerificationUiModelImpl(
 
     override fun setValue(value: String?) = this.copy(value = value)
 
-    fun setStatus(status: BiometricsVerificationStatus) = this.copy(status = status)
-
     override fun setIsLoadingData(isLoadingData: Boolean) = this.copy()
 
     override fun setDisplayName(displayName: String?) = this.copy()
@@ -159,27 +147,18 @@ data class BiometricsVerificationUiModelImpl(
 
     override fun isSectionWithFields() = false
 
-    fun onRetryVerificationClick() {
-        biometricRetryListener?.onRetryClick();
+    // We don't use the FieldUiModel onItemClick() to avoid infrastructure to listen in FormViewModel
+    // because we need listen in enrollmentPresenterImpl to register biometrics
+    fun onBiometricsClick() {
+        biometricListener?.onClick();
     }
 
-    fun onBiometricClick() {
-        biometricRegisterListener?.onClick();
+
+    fun setBiometricsRegisterListener(listener: BiometricsOnRegisterClickListener) {
+        this.biometricListener = listener
     }
 
-    fun setBiometricsRetryListener(listener: BiometricsReTryOnClickListener) {
-        this.biometricRetryListener = listener
-    }
-
-    fun setBiometricsRegisterListener(listener: BiometricsRegisterClickListener) {
-        this.biometricRegisterListener = listener
-    }
-
-    interface BiometricsReTryOnClickListener {
-        fun onRetryClick()
-    }
-
-    interface BiometricsRegisterClickListener {
+    interface BiometricsOnRegisterClickListener {
         fun onClick()
     }
 }
