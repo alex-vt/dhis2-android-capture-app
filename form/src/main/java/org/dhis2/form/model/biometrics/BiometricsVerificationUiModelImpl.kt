@@ -1,6 +1,11 @@
 package org.dhis2.form.model.biometrics
 
-import org.dhis2.form.model.*
+import org.dhis2.form.model.FieldUiModel
+import org.dhis2.form.model.KeyboardActionType
+import org.dhis2.form.model.LegendValue
+import org.dhis2.form.model.OptionSetConfiguration
+import org.dhis2.form.model.UiEventType
+import org.dhis2.form.model.UiRenderType
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.event.UiEventFactory
 import org.dhis2.form.ui.intent.FormIntent
@@ -27,6 +32,8 @@ data class BiometricsVerificationUiModelImpl(
     private var callback: FieldUiModel.Callback? = null
 
     private var biometricRetryListener: BiometricsReTryOnClickListener? = null
+
+    private var biometricRegisterListener: BiometricsRegisterClickListener? = null
 
     fun isSelected(): Boolean = false
 
@@ -156,11 +163,23 @@ data class BiometricsVerificationUiModelImpl(
         biometricRetryListener?.onRetryClick();
     }
 
+    fun onBiometricClick() {
+        biometricRegisterListener?.onClick();
+    }
+
     fun setBiometricsRetryListener(listener: BiometricsReTryOnClickListener) {
         this.biometricRetryListener = listener
     }
 
+    fun setBiometricsRegisterListener(listener: BiometricsRegisterClickListener) {
+        this.biometricRegisterListener = listener
+    }
+
     interface BiometricsReTryOnClickListener {
         fun onRetryClick()
+    }
+
+    interface BiometricsRegisterClickListener {
+        fun onClick()
     }
 }

@@ -9,13 +9,12 @@ import org.dhis2.form.data.SuccessfulResult
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.biometrics.BiometricsVerificationStatus
 import org.dhis2.form.model.biometrics.BiometricsVerificationUiModelImpl
+import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
+import org.dhis2.usescases.biometrics.isLastVerificationValid
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.event.EventEditableStatus
 import org.jetbrains.annotations.Nullable
-
-import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
-import org.dhis2.usescases.biometrics.isLastVerificationValid
 
 class EventCaptureFormPresenter(
     private val view: EventCaptureFormView,
@@ -82,6 +81,14 @@ class EventCaptureFormPresenter(
                 object : BiometricsVerificationUiModelImpl.BiometricsReTryOnClickListener {
                     override fun onRetryClick() {
                         view.verifyBiometrics(biometricsGuid, teiOrgUnit, trackedEntityInstanceId)
+                    }
+                }
+            )
+
+            biometricsVerificationUiModel?.setBiometricsRegisterListener(
+                object : BiometricsVerificationUiModelImpl.BiometricsRegisterClickListener {
+                    override fun onClick() {
+                        view.registerBiometrics(teiOrgUnit, trackedEntityInstanceId)
                     }
                 }
             )

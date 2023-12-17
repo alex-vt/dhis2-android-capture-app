@@ -42,10 +42,6 @@ class BiometricsVerificationViewHolder(private val binding: ViewDataBinding) : F
         }
         uiModel.setCallback(itemCallback)
 
-        tryAgainButton.setOnClickListener {
-            (uiModel as BiometricsVerificationUiModelImpl).onRetryVerificationClick()
-        }
-
         val uiVerificationUiModel = (uiModel as BiometricsVerificationUiModelImpl)
 
         if (!uiVerificationUiModel.value.isNullOrEmpty()){
@@ -57,6 +53,10 @@ class BiometricsVerificationViewHolder(private val binding: ViewDataBinding) : F
     }
 
     private fun renderVerification(uiModel : BiometricsVerificationUiModelImpl){
+        tryAgainButton.setOnClickListener {
+            (uiModel as BiometricsVerificationUiModelImpl).onRetryVerificationClick()
+        }
+
         verificationContainer.visibility = VISIBLE
         biometricsButton.visibility = GONE
 
@@ -81,5 +81,9 @@ class BiometricsVerificationViewHolder(private val binding: ViewDataBinding) : F
     private fun renderRegistration(uiModel : BiometricsVerificationUiModelImpl){
         verificationContainer.visibility = GONE
         biometricsButton.visibility = VISIBLE
+
+        biometricsButton.setOnClickListener {
+            uiModel.onBiometricClick()
+        }
     }
 }
