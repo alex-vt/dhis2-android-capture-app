@@ -66,8 +66,8 @@ class DataEntryAdapter(private val searchStyle: Boolean) :
             DataBindingUtil.inflate<ViewDataBinding>(layoutInflater, viewType, parent, false)
 
         return when (viewType) {
-            R.layout.form_biometrics -> BiometricsAttributeViewHolder(binding)
-            R.layout.form_biometrics_verification -> BiometricsDataElementViewHolder(binding)
+            R.layout.form_biometrics_attribute -> BiometricsAttributeViewHolder(binding)
+            R.layout.form_biometrics_data_element -> BiometricsDataElementViewHolder(binding)
             else -> FormViewHolder(binding)
         }
     }
