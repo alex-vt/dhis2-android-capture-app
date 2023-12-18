@@ -14,35 +14,7 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <LinearLayout
-            android:id="@+id/biometrics_button"
-            style="@style/ButtonRoundedGrey"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.7"
-            android:padding="8dp"
-            android:gravity="center">
-
-            <ImageView
-                android:id="@+id/biometrics_button_icon"
-                android:layout_width="27dp"
-                android:layout_height="27dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_bio_fingerprint"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/biometrics_button_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:fontFamily="@font/rubik_medium"
-                android:text="@string/biometrics_get"
-                android:textAllCaps="true"
-                android:textColor="@color/white"
-                android:textSize="12sp" />
-        </LinearLayout>
+        <include layout="@layout/form_biometrics_register" />
 
         <LinearLayout
             android:id="@+id/verification_container"
