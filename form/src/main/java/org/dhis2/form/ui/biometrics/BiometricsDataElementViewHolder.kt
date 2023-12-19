@@ -16,7 +16,7 @@ import org.dhis2.form.ui.intent.FormIntent
 
 class BiometricsDataElementViewHolder(private val binding: ViewDataBinding) : FormViewHolder(binding) {
     private val verificationContainer:LinearLayout = binding.root.findViewById(R.id.verification_container)
-    private val biometricsButton:LinearLayout = binding.root.findViewById(R.id.biometrics_button)
+    private val registrationContainer:LinearLayout = binding.root.findViewById(R.id.registration_container)
 
     private val tryAgainButton:LinearLayout = binding.root.findViewById(R.id.tryAgainButton)
     private val statusImageView:ImageView = binding.root.findViewById(R.id.statusImageView)
@@ -49,16 +49,15 @@ class BiometricsDataElementViewHolder(private val binding: ViewDataBinding) : Fo
         } else {
             renderRegistration(uiVerificationUiModel)
         }
-
     }
 
     private fun renderVerification(uiModel : BiometricsDataElementUiModelImpl){
         tryAgainButton.setOnClickListener {
-            (uiModel as BiometricsDataElementUiModelImpl).onRetryVerificationClick()
+            uiModel.onRetryVerificationClick()
         }
 
         verificationContainer.visibility = VISIBLE
-        biometricsButton.visibility = GONE
+        registrationContainer.visibility = GONE
 
         when (uiModel.status) {
             BiometricsDataElementStatus.SUCCESS -> {
@@ -80,10 +79,20 @@ class BiometricsDataElementViewHolder(private val binding: ViewDataBinding) : Fo
 
     private fun renderRegistration(uiModel : BiometricsDataElementUiModelImpl){
         verificationContainer.visibility = GONE
-        biometricsButton.visibility = VISIBLE
+        registrationContainer.visibility = VISIBLE
 
-        biometricsButton.setOnClickListener {
-            uiModel.onBiometricClick()
+        val renderer = BiometricsRegisterRenderer(binding)
+
+        when (uiModel.status) {
+            BiometricsDataElementStatus.SUCCESS -> {
+                renderer.onSuccess()
+            }
+            BiometricsDataElementStatus.FAILURE -> {
+                renderer.onFailure()
+            }
+            else -> {
+                renderer.onInitial(uiModel)
+            }
         }
     }
 }

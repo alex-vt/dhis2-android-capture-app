@@ -11,8 +11,7 @@
         android:id="@+id/rootView"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:layout_height="wrap_content">
 
         <include layout="@layout/form_biometrics_register" />
 

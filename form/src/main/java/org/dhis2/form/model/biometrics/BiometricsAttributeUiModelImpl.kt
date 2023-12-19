@@ -19,7 +19,7 @@ data class BiometricsAttributeUiModelImpl(
     override val layoutId: Int,
     override val value: String? = null,
     override val programStageSection: String?
-) : FieldUiModel {
+) : FieldUiModel, BiometricsRegistrationUIModel{
 
     private var callback: FieldUiModel.Callback? = null
 
@@ -149,10 +149,9 @@ data class BiometricsAttributeUiModelImpl(
 
     // We don't use the FieldUiModel onItemClick() to avoid infrastructure to listen in FormViewModel
     // because we need listen in enrollmentPresenterImpl to register biometrics
-    fun onBiometricsClick() {
+    override fun onBiometricsClick() {
         biometricListener?.onClick();
     }
-
 
     fun setBiometricsRegisterListener(listener: BiometricsOnRegisterClickListener) {
         this.biometricListener = listener

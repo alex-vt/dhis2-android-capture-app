@@ -23,46 +23,10 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        >
+
 
         <include layout="@layout/form_biometrics_register" />
-
-        <LinearLayout
-            android:id="@+id/biometrics_retake_button"
-            style="@style/ButtonRoundedGrey"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="0.3"
-            android:gravity="center"
-            android:padding="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:visibility="gone">
-
-            <ImageView
-                android:id="@+id/verification_button_icon"
-                android:layout_width="27dp"
-                android:layout_height="27dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_bio_retry"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/verification_button_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:fontFamily="@font/rubik_medium"
-                android:text="@string/biometrics_retake"
-                android:textAllCaps="true"
-                android:textColor="@color/white"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </LinearLayout>
 
     </LinearLayout>
 

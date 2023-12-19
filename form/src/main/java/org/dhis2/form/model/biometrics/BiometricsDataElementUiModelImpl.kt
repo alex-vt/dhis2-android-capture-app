@@ -26,7 +26,7 @@ data class BiometricsDataElementUiModelImpl(
     override val value: String? = null,
     override val programStageSection: String?,
     val status: BiometricsDataElementStatus
-) : FieldUiModel {
+) : FieldUiModel,BiometricsRegistrationUIModel {
 
 
     private var callback: FieldUiModel.Callback? = null
@@ -163,7 +163,7 @@ data class BiometricsDataElementUiModelImpl(
         biometricRetryListener?.onRetryClick();
     }
 
-    fun onBiometricClick() {
+    override fun onBiometricsClick() {
         biometricRegisterListener?.onClick();
     }
 
