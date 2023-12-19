@@ -40,6 +40,7 @@ class EventCaptureFormPresenter(
                 result.mandatoryFields,
                 result.warningFields
             )
+
             is FieldsWithWarningResult -> activityPresenter.attemptFinish(
                 result.canComplete,
                 result.onCompleteMessage,
@@ -47,6 +48,7 @@ class EventCaptureFormPresenter(
                 emptyMap(),
                 result.fieldUidWarningList
             )
+
             is MissingMandatoryResult -> activityPresenter.attemptFinish(
                 result.canComplete,
                 result.onCompleteMessage,
@@ -54,6 +56,7 @@ class EventCaptureFormPresenter(
                 result.mandatoryFields,
                 result.warningFields
             )
+
             is SuccessfulResult -> activityPresenter.attemptFinish(
                 result.canComplete,
                 result.onCompleteMessage,
@@ -61,13 +64,14 @@ class EventCaptureFormPresenter(
                 emptyMap(),
                 emptyList()
             )
+
             NotSavedResult -> {
                 // Nothing to do in this case
             }
         }
     }
 
-    fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel>  {
+    fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
         val updatedFields = updateBiometricsField(fields)
 
         if (BIOMETRICS_ENABLED) {
@@ -103,12 +107,12 @@ class EventCaptureFormPresenter(
 
     private fun updateBiometricsField(fields: List<FieldUiModel>?): MutableList<FieldUiModel> {
         return fields?.map {
-            if ( it is BiometricsDataElementUiModelImpl)
-             {
+            if (it is BiometricsDataElementUiModelImpl) {
                 val biometricsUiModel = it as BiometricsDataElementUiModelImpl
                 val status = mapVerificationStatus(biometricsVerificationStatus)
-                 biometricsUiModel.setValue(biometricsGuid)
-                 biometricsUiModel.setStatus(status)
+                biometricsUiModel
+                    .setValue(biometricsGuid)
+                    .setStatus(status)
             } else {
                 it
             }
@@ -133,7 +137,11 @@ class EventCaptureFormPresenter(
                     true
                 )
             ) {
-                view.verifyBiometrics(this.biometricsGuid, this.teiOrgUnit, this.trackedEntityInstanceId)
+                view.verifyBiometrics(
+                    this.biometricsGuid,
+                    this.teiOrgUnit,
+                    this.trackedEntityInstanceId
+                )
             } else {
                 refreshBiometricsVerificationStatus(1, false)
             }
