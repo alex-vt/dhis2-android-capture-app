@@ -175,15 +175,11 @@ class EventCaptureFormPresenter(
 
     fun refreshBiometricsVerificationStatus(
         biometricsVerificationStatus: Int,
-        saveValue: Boolean = true
+        updateBiometricsGuidInAttribute: Boolean = true
     ) {
-        if (biometricsVerificationUiModel != null) {
-            biometricsVerificationUiModel?.onSave(biometricsGuid)
-        }
-
         val status = mapVerificationStatus(biometricsVerificationStatus)
 
-        if (status == BiometricsDataElementStatus.SUCCESS && saveValue) {
+        if (status == BiometricsDataElementStatus.SUCCESS && updateBiometricsGuidInAttribute) {
             activityPresenter.updateBiometricsAttributeValueInTei(biometricsGuid)
         }
 
