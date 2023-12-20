@@ -14,7 +14,7 @@ import org.dhis2.form.R
 import org.dhis2.form.model.biometrics.BiometricsRegistrationUIModel
 import timber.log.Timber
 
-class BiometricsRegisterRenderer(private val binding: ViewDataBinding) {
+class BiometricsRegisterRenderer(private val binding: ViewDataBinding,private val uiModel: BiometricsRegistrationUIModel) {
     private val biometricsButton: LinearLayout = binding.root.findViewById(R.id.biometrics_button)
     private val retakeButton: LinearLayout =
         binding.root.findViewById(R.id.biometrics_retake_button)
@@ -23,7 +23,7 @@ class BiometricsRegisterRenderer(private val binding: ViewDataBinding) {
     private val biometricsButtonIcon: ImageView =
         binding.root.findViewById(R.id.biometrics_button_icon)
 
-    fun onInitial(uiModel: BiometricsRegistrationUIModel) {
+    fun onInitial() {
         Timber.tag("BiometricsView").d("onInitial");
 
         retakeButton.visibility = View.GONE;
@@ -36,8 +36,6 @@ class BiometricsRegisterRenderer(private val binding: ViewDataBinding) {
         )
 
         biometricsButton.setOnClickListener { uiModel.onBiometricsClick() }
-
-        retakeButton.setOnClickListener { uiModel.onBiometricsClick() }
     }
 
     fun onSuccess() {
@@ -63,6 +61,8 @@ class BiometricsRegisterRenderer(private val binding: ViewDataBinding) {
 
 
     fun onFailure() {
+        retakeButton.setOnClickListener { uiModel.onBiometricsClick() }
+
         Timber.tag("BiometricsView").d("onFailure");
         retakeButton.visibility = View.VISIBLE;
         biometricsButton.background = ContextCompat.getDrawable(

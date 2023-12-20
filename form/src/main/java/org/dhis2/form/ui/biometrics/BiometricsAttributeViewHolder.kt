@@ -34,7 +34,7 @@ class BiometricsAttributeViewHolder(private val binding: ViewDataBinding) :
         }
         uiModel.setCallback(itemCallback)
 
-        val renderer = BiometricsRegisterRenderer(binding)
+        val renderer = BiometricsRegisterRenderer(binding, uiModel as BiometricsRegistrationUIModel)
 
         val value = uiModel.value
 
@@ -47,7 +47,7 @@ class BiometricsAttributeViewHolder(private val binding: ViewDataBinding) :
                 renderer.onSuccess()
             }
         } else {
-            renderer.onInitial(uiModel as BiometricsRegistrationUIModel)
+            renderer.onInitial()
         }
     }
 }

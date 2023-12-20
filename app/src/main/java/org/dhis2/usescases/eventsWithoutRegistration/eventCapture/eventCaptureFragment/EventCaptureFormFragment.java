@@ -183,11 +183,11 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
 
                     if (result instanceof VerifyResult.Match) {
-                        presenter.refreshBiometricsVerificationStatus(1, true);
+                        presenter.refreshBiometricsStatus(1, true, null);
                     } else if (result instanceof VerifyResult.NoMatch) {
-                        presenter.refreshBiometricsVerificationStatus(0, true);
+                        presenter.refreshBiometricsStatus(0, true,null);
                     } else if (result instanceof VerifyResult.Failure) {
-                        presenter.refreshBiometricsVerificationStatus(0, true);
+                        presenter.refreshBiometricsStatus(0, true,null);
                     }
                 }
                 break;
@@ -199,9 +199,9 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
 
                     if (result instanceof RegisterResult.Completed) {
-                        presenter.refreshBiometricsVerificationStatus(1, true);
+                        presenter.refreshBiometricsStatus(1, true,((RegisterResult.Completed) result).getGuid());
                     } else if (result instanceof RegisterResult.Failure) {
-                        presenter.refreshBiometricsVerificationStatus(0, true);
+                        presenter.refreshBiometricsStatus(0, true, null);
                     } else if (result instanceof RegisterResult.PossibleDuplicates) {
                    /*     presenter.onBiometricsPossibleDuplicates(
                                 result.guids,

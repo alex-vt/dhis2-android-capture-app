@@ -143,7 +143,7 @@ class EventCaptureFormPresenter(
                     this.trackedEntityInstanceId
                 )
             } else {
-                refreshBiometricsVerificationStatus(1, false)
+                refreshBiometricsStatus(1, false)
             }
         }
     }
@@ -173,10 +173,15 @@ class EventCaptureFormPresenter(
         this.trackedEntityInstanceId = trackedEntityInstanceId
     }
 
-    fun refreshBiometricsVerificationStatus(
+    fun refreshBiometricsStatus(
         biometricsVerificationStatus: Int,
-        updateBiometricsGuidInAttribute: Boolean = true
+        updateBiometricsGuidInAttribute: Boolean = true,
+        newBiometricsGuid: String? = null
     ) {
+        if (newBiometricsGuid != null){
+            biometricsGuid = newBiometricsGuid
+        }
+
         val status = mapVerificationStatus(biometricsVerificationStatus)
 
         if (status == BiometricsDataElementStatus.SUCCESS && updateBiometricsGuidInAttribute) {

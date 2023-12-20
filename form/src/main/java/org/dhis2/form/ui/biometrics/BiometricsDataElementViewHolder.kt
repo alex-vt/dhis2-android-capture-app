@@ -10,6 +10,7 @@ import org.dhis2.form.R
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.biometrics.BiometricsDataElementStatus
 import org.dhis2.form.model.biometrics.BiometricsDataElementUiModelImpl
+import org.dhis2.form.model.biometrics.BiometricsRegistrationUIModel
 import org.dhis2.form.ui.FormViewHolder
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
@@ -81,7 +82,8 @@ class BiometricsDataElementViewHolder(private val binding: ViewDataBinding) : Fo
         verificationContainer.visibility = GONE
         registrationContainer.visibility = VISIBLE
 
-        val renderer = BiometricsRegisterRenderer(binding)
+        val renderer = BiometricsRegisterRenderer(binding, uiModel as BiometricsRegistrationUIModel)
+
 
         when (uiModel.status) {
             BiometricsDataElementStatus.SUCCESS -> {
@@ -91,7 +93,7 @@ class BiometricsDataElementViewHolder(private val binding: ViewDataBinding) : Fo
                 renderer.onFailure()
             }
             else -> {
-                renderer.onInitial(uiModel)
+                renderer.onInitial()
             }
         }
     }
