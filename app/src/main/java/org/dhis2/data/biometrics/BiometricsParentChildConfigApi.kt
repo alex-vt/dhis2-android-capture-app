@@ -1,6 +1,6 @@
 package org.dhis2.data.biometrics
 
-import org.dhis2.usescases.biometrics.BiometricsParentChildConfig
+import org.dhis2.usescases.biometrics.entities.BiometricsParentChildConfig
 import retrofit2.Call
 import retrofit2.http.GET
 

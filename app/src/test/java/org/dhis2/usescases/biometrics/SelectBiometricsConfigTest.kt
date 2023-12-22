@@ -2,6 +2,9 @@ package org.dhis2.usescases.biometrics
 
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import org.dhis2.usescases.biometrics.entities.BiometricsConfig
+import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.usecases.SelectBiometricsConfig
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock

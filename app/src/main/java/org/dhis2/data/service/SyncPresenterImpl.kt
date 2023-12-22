@@ -25,8 +25,8 @@ import org.dhis2.data.service.workManager.WorkManagerController
 import org.dhis2.data.service.workManager.WorkerItem
 import org.dhis2.data.service.workManager.WorkerType
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
-import org.dhis2.usescases.biometrics.BiometricsConfigRepository
-import org.dhis2.usescases.biometrics.BiometricsParentChildConfigRepository
+import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.repositories.BiometricsParentChildConfigRepository
 
 import org.dhis2.utils.DateUtils
 import org.dhis2.utils.analytics.AnalyticsHelper

@@ -1,6 +1,5 @@
 package org.dhis2.data.service
 
-import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.Context
 import dagger.Module
@@ -13,8 +12,8 @@ import org.dhis2.data.biometrics.BiometricsConfigRepositoryImpl
 import org.dhis2.data.biometrics.BiometricsParentChildConfigApi
 import org.dhis2.data.biometrics.BiometricsParentChildConfigRepositoryImpl
 import org.dhis2.data.service.workManager.WorkManagerController
-import org.dhis2.usescases.biometrics.BiometricsConfigRepository
-import org.dhis2.usescases.biometrics.BiometricsParentChildConfigRepository
+import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.repositories.BiometricsParentChildConfigRepository
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.hisp.dhis.android.core.D2
 

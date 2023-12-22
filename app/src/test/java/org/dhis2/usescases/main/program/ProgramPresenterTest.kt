@@ -14,13 +14,12 @@ import java.util.concurrent.TimeUnit
 import org.dhis2.commons.R
 import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.matomo.MatomoAnalyticsController
-import org.dhis2.data.biometrics.BiometricsConfigRepositoryImpl
 import org.dhis2.data.schedulers.TestSchedulerProvider
 import org.dhis2.data.service.SyncStatusController
 import org.dhis2.data.service.SyncStatusData
 import org.dhis2.ui.MetadataIconData
-import org.dhis2.usescases.biometrics.BiometricsConfigRepository
-import org.dhis2.usescases.biometrics.SelectBiometricsConfig
+import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.usecases.SelectBiometricsConfig
 import org.hisp.dhis.android.core.common.State
 import org.junit.Assert.assertTrue
 import org.junit.Before

@@ -1,5 +1,7 @@
-package org.dhis2.usescases.biometrics
+package org.dhis2.usescases.biometrics.usecases
 
+import org.dhis2.usescases.biometrics.entities.BiometricsConfig
+import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
 import timber.log.Timber
 import java.lang.Exception
 import java.util.Locale

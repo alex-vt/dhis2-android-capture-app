@@ -2,7 +2,7 @@ package org.dhis2.data.biometrics
 
 import org.dhis2.commons.biometrics.BiometricsPreference
 import org.dhis2.commons.prefs.BasicPreferenceProvider
-import org.dhis2.usescases.biometrics.BiometricsParentChildConfigRepository
+import org.dhis2.usescases.biometrics.repositories.BiometricsParentChildConfigRepository
 import timber.log.Timber
 
 class BiometricsParentChildConfigRepositoryImpl(

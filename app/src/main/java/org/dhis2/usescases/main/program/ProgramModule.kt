@@ -11,11 +11,11 @@ import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.biometrics.BiometricsConfigApi
 import org.dhis2.data.biometrics.BiometricsConfigRepositoryImpl
-import org.dhis2.usescases.biometrics.SelectBiometricsConfig
+import org.dhis2.usescases.biometrics.usecases.SelectBiometricsConfig
 import org.dhis2.data.dhislogic.DhisProgramUtils
 import org.dhis2.data.dhislogic.DhisTrackedEntityInstanceUtils
 import org.dhis2.data.service.SyncStatusController
-import org.dhis2.usescases.biometrics.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
 import org.hisp.dhis.android.core.D2
 
 @Module
@@ -108,7 +108,7 @@ class ProgramModule(private val view: ProgramView) {
     @Provides
     @PerFragment
     fun selectBiometricsConfig(
-        biometricsConfigRepository:BiometricsConfigRepository
+        biometricsConfigRepository: BiometricsConfigRepository
     ): SelectBiometricsConfig {
         return SelectBiometricsConfig(biometricsConfigRepository)
     }

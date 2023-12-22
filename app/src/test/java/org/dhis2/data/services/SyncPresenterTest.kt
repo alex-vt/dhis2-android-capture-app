@@ -16,7 +16,7 @@ import org.dhis2.data.service.SyncRepository
 import org.dhis2.data.service.SyncResult
 import org.dhis2.data.service.SyncStatusController
 import org.dhis2.data.service.workManager.WorkManagerController
-import org.dhis2.usescases.biometrics.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.call.BaseD2Progress

@@ -10,7 +10,7 @@ import org.dhis2.commons.matomo.Categories.Companion.HOME
 import org.dhis2.commons.matomo.Labels.Companion.CLICK_ON
 import org.dhis2.commons.matomo.MatomoAnalyticsController
 import org.dhis2.commons.schedulers.SchedulerProvider
-import org.dhis2.usescases.biometrics.SelectBiometricsConfig
+import org.dhis2.usescases.biometrics.usecases.SelectBiometricsConfig
 import org.dhis2.data.service.SyncStatusController
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit

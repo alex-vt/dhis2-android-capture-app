@@ -1,4 +1,4 @@
-package org.dhis2.usescases.biometrics
+package org.dhis2.usescases.biometrics.entities
 
 data class BiometricsConfig(
     val orgUnitGroup: String?,
