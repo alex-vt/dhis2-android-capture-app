@@ -10,8 +10,11 @@ import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.data.biometrics.BiometricsConfigApi
 import org.dhis2.data.biometrics.BiometricsConfigRepositoryImpl
+import org.dhis2.data.biometrics.BiometricsParentChildConfigApi
+import org.dhis2.data.biometrics.BiometricsParentChildConfigRepositoryImpl
 import org.dhis2.data.service.workManager.WorkManagerController
 import org.dhis2.usescases.biometrics.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.BiometricsParentChildConfigRepository
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.hisp.dhis.android.core.D2
 
@@ -44,6 +47,18 @@ class ReservedValuesWorkerModule {
 
     @Provides
     @PerService
+    fun biometricsParentChildConfigRepository(
+        d2: D2,
+        basicPreferences: BasicPreferenceProvider
+    ): BiometricsParentChildConfigRepository {
+        val biometricsConfigApi = d2.retrofit().create(
+            BiometricsParentChildConfigApi::class.java
+        )
+        return BiometricsParentChildConfigRepositoryImpl(basicPreferences, biometricsConfigApi)
+    }
+
+    @Provides
+    @PerService
     internal fun syncPresenter(
         d2: D2,
         preferences: PreferenceProvider,
@@ -51,8 +66,8 @@ class ReservedValuesWorkerModule {
         analyticsHelper: AnalyticsHelper,
         syncStatusController: SyncStatusController,
         syncRepository: SyncRepository,
-        biometricsConfigRepository: BiometricsConfigRepository
-
+        biometricsConfigRepository: BiometricsConfigRepository,
+        biometricsParentChildConfigRepository: BiometricsParentChildConfigRepository
     ): SyncPresenter {
         return SyncPresenterImpl(
             d2,
@@ -61,7 +76,8 @@ class ReservedValuesWorkerModule {
             analyticsHelper,
             syncStatusController,
             syncRepository,
-            biometricsConfigRepository
+            biometricsConfigRepository,
+            biometricsParentChildConfigRepository
         )
     }
 }

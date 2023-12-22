@@ -26,6 +26,7 @@ import org.dhis2.data.service.workManager.WorkerItem
 import org.dhis2.data.service.workManager.WorkerType
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.biometrics.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.BiometricsParentChildConfigRepository
 
 import org.dhis2.utils.DateUtils
 import org.dhis2.utils.analytics.AnalyticsHelper
@@ -50,7 +51,8 @@ class SyncPresenterImpl(
     private val analyticsHelper: AnalyticsHelper,
     private val syncStatusController: SyncStatusController,
     private val syncRepository: SyncRepository,
-    private val biometricsConfigRepository: BiometricsConfigRepository
+    private val biometricsConfigRepository: BiometricsConfigRepository,
+    private val biometricsParentChildConfigRepository: BiometricsParentChildConfigRepository
 ) : SyncPresenter {
 
     override fun initSyncControllerMap() {
@@ -634,5 +636,6 @@ class SyncPresenterImpl(
 
     private fun downloadBiometricsConfig() {
         biometricsConfigRepository.sync()
+        biometricsParentChildConfigRepository.sync()
     }
 }
