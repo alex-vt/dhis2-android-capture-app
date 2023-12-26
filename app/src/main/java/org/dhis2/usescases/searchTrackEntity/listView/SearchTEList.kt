@@ -3,6 +3,7 @@ package org.dhis2.usescases.searchTrackEntity.listView
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -296,6 +297,10 @@ class SearchTEList : FragmentGlobalAbstract() {
             it?.takeIf { view != null }?.apply {
                 removeObservers(viewLifecycleOwner)
                 observe(viewLifecycleOwner) { results ->
+
+                    viewModel.onBiometricsDataLoaded(liveAdapter.itemCount)
+
+                    Log.d("Search:SearchTELIst", results.size.toString())
                     liveAdapter.submitList(results) {
                         onInitDataLoaded()
                     }
@@ -321,6 +326,8 @@ class SearchTEList : FragmentGlobalAbstract() {
             isLandscape = isLandscape(),
             onlineErrorCode = liveAdapter.currentList?.lastOrNull()?.onlineErrorCode
         )
+
+        viewModel.onBiometricsDataLoaded( programResultCount = liveAdapter.itemCount)
     }
 
     private fun onGlobalDataLoaded() {

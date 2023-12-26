@@ -1,5 +1,6 @@
 package org.dhis2.usescases.searchTrackEntity
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -68,6 +69,8 @@ class SearchTEIViewModel(
 
     private val _filtersOpened = MutableLiveData(false)
     val filtersOpened: LiveData<Boolean> = _filtersOpened
+
+    var searchingChildren: Boolean = false
 
     init {
         viewModelScope.launch(dispatchers.io()) {
@@ -233,6 +236,8 @@ class SearchTEIViewModel(
     }
 
     fun fetchListResults(onPagedListReady: (LiveData<PagedList<SearchTeiModel>>?) -> Unit) {
+        this.searchingChildren = false;
+
         viewModelScope.launch {
             val resultPagedList = when {
                 searching -> loadSearchResults()
@@ -397,6 +402,16 @@ class SearchTEIViewModel(
         presenter.onTEIClick(teiUid, enrollmentUid, online)
     }
 
+    fun onBiometricsDataLoaded( programResultCount: Int){
+        val hasBiometrics = searchRepository.programHasBiometrics().blockingSingle()
+
+        if(hasBiometrics && !searchingChildren && queryData.isNotEmpty()){
+            Log.d("Search:onLoaded", "launch biometrics children")
+        }
+
+        presenter.onDataLoaded(programResultCount)
+    }
+
     fun onDataLoaded(
         programResultCount: Int,
         globalResultCount: Int? = null,
@@ -427,8 +442,6 @@ class SearchTEIViewModel(
         }
 
         SearchIdlingResourceSingleton.decrement()
-
-        presenter.onDataLoaded(programResultCount)
     }
 
     private fun handleDisplayInListResult(hasProgramResults: Boolean, isLandscape: Boolean) {
