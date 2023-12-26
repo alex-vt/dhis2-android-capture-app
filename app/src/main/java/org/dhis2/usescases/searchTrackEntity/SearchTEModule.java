@@ -14,11 +14,16 @@ import org.dhis2.commons.filters.data.FilterRepository;
 import org.dhis2.commons.filters.workingLists.TeiFilterToWorkingListItemMapper;
 import org.dhis2.commons.matomo.MatomoAnalyticsController;
 import org.dhis2.commons.network.NetworkUtils;
+import org.dhis2.commons.prefs.BasicPreferenceProvider;
 import org.dhis2.commons.prefs.PreferenceProvider;
 import org.dhis2.commons.reporting.CrashReportController;
 import org.dhis2.commons.reporting.CrashReportControllerImpl;
 import org.dhis2.commons.resources.ResourceManager;
 import org.dhis2.commons.schedulers.SchedulerProvider;
+import org.dhis2.data.biometrics.BiometricsConfigApi;
+import org.dhis2.data.biometrics.BiometricsParentChildConfigApi;
+import org.dhis2.data.biometrics.BiometricsParentChildConfigRepositoryImpl;
+import org.dhis2.data.biometrics.BiometricsTEIRepositoryImpl;
 import org.dhis2.data.dhislogic.DhisEnrollmentUtils;
 import org.dhis2.data.dhislogic.DhisPeriodUtils;
 import org.dhis2.data.enrollment.EnrollmentUiDataHelper;
@@ -58,6 +63,9 @@ import org.dhis2.maps.mapper.MapRelationshipToRelationshipMapModel;
 import org.dhis2.maps.usecases.MapStyleConfiguration;
 import org.dhis2.maps.utils.DhisMapUtils;
 import org.dhis2.ui.ThemeManager;
+import org.dhis2.usescases.biometrics.repositories.BiometricsParentChildConfigRepository;
+import org.dhis2.usescases.biometrics.repositories.BiometricsTEIRepository;
+import org.dhis2.usescases.biometrics.usecases.GetChildrenTEIByParentUid;
 import org.dhis2.utils.DateUtils;
 import org.dhis2.utils.analytics.AnalyticsHelper;
 import org.hisp.dhis.android.core.D2;
@@ -93,6 +101,33 @@ public class SearchTEModule {
     @PerActivity
     SearchTEContractsModule.View provideView(SearchTEActivity searchTEActivity) {
         return searchTEActivity;
+    }
+
+    @Provides
+    @PerActivity
+    BiometricsParentChildConfigRepository biometricsParentChildConfigRepository(
+            D2 d2,
+            BasicPreferenceProvider basicPreferences
+    ) {
+        BiometricsParentChildConfigApi biometricsParentChildConfigApi = d2.retrofit().create(BiometricsParentChildConfigApi.class);
+
+        return new BiometricsParentChildConfigRepositoryImpl(basicPreferences, biometricsParentChildConfigApi);
+    }
+
+    @Provides
+    @PerActivity
+    BiometricsTEIRepository biometricsTEIRepository(
+            D2 d2
+    ) {
+        return new BiometricsTEIRepositoryImpl(d2);
+    }
+
+    @Provides
+    @PerActivity
+    GetChildrenTEIByParentUid provideGetChildrenTEIByParentUid(
+            BiometricsParentChildConfigRepository biometricsParentChildConfigRepository,
+            BiometricsTEIRepository biometricsTEIRepository) {
+        return new GetChildrenTEIByParentUid(biometricsParentChildConfigRepository,biometricsTEIRepository );
     }
 
     @Provides
@@ -241,7 +276,8 @@ public class SearchTEModule {
             SearchRepository searchRepository,
             MapDataRepository mapDataRepository,
             NetworkUtils networkUtils,
-            D2 d2) {
+            D2 d2,
+            GetChildrenTEIByParentUid getChildrenTEIByParentUid) {
         return new SearchTeiViewModelFactory(
                 presenter,
                 searchRepository,
@@ -251,7 +287,8 @@ public class SearchTEModule {
                 mapDataRepository,
                 networkUtils,
                 new SearchDispatchers(),
-                new MapStyleConfiguration(d2)
+                new MapStyleConfiguration(d2),
+                getChildrenTEIByParentUid
         );
     }
 

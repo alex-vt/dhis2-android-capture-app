@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import org.dhis2.commons.network.NetworkUtils
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.maps.usecases.MapStyleConfiguration
+import org.dhis2.usescases.biometrics.usecases.GetChildrenTEIByParentUid
 
 @Suppress("UNCHECKED_CAST")
 class SearchTeiViewModelFactory(
@@ -16,7 +17,8 @@ class SearchTeiViewModelFactory(
     private val mapDataRepository: MapDataRepository,
     private val networkUtils: NetworkUtils,
     private val dispatchers: DispatcherProvider,
-    private val mapStyleConfig: MapStyleConfiguration
+    private val mapStyleConfig: MapStyleConfiguration,
+    private val getChildrenTEIByParentUid: GetChildrenTEIByParentUid
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return SearchTEIViewModel(
@@ -28,7 +30,8 @@ class SearchTeiViewModelFactory(
             mapDataRepository,
             networkUtils,
             dispatchers,
-            mapStyleConfig
+            mapStyleConfig,
+            getChildrenTEIByParentUid
         ) as T
     }
 }

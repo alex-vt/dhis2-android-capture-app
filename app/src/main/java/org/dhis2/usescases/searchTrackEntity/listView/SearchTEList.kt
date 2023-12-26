@@ -298,11 +298,11 @@ class SearchTEList : FragmentGlobalAbstract() {
                 removeObservers(viewLifecycleOwner)
                 observe(viewLifecycleOwner) { results ->
 
-                    viewModel.onBiometricsDataLoaded(liveAdapter.itemCount)
-
                     Log.d("Search:SearchTELIst", results.size.toString())
                     liveAdapter.submitList(results) {
                         onInitDataLoaded()
+
+                        viewModel.onBiometricsDataLoaded(results)
                     }
 
                     for (i in 0 until results.size) {
@@ -326,8 +326,6 @@ class SearchTEList : FragmentGlobalAbstract() {
             isLandscape = isLandscape(),
             onlineErrorCode = liveAdapter.currentList?.lastOrNull()?.onlineErrorCode
         )
-
-        viewModel.onBiometricsDataLoaded( programResultCount = liveAdapter.itemCount)
     }
 
     private fun onGlobalDataLoaded() {

@@ -41,6 +41,7 @@ import org.dhis2.metadata.usecases.FileResourceConfiguration;
 import org.dhis2.metadata.usecases.ProgramConfiguration;
 import org.dhis2.metadata.usecases.TrackedEntityInstanceConfiguration;
 import org.dhis2.ui.ThemeManager;
+import org.dhis2.usescases.biometrics.usecases.GetChildrenTEIByParentUid;
 import org.dhis2.usescases.teiDownload.TeiDownloader;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
@@ -103,6 +104,7 @@ public class SearchRepositoryImpl implements SearchRepository {
     private final ResourceManager resources;
     private final D2 d2;
     private final SearchSortingValueSetter sortingValueSetter;
+
     private TrackedEntityInstanceQueryCollectionRepository trackedEntityInstanceQuery;
     private SearchParametersModel savedSearchParameters;
     private FilterManager savedFilters;
