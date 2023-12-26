@@ -9,7 +9,6 @@ import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
 import timber.log.Timber
-import java.lang.Exception
 
 class BiometricsConfigRepositoryImpl(
     private val d2: D2,
@@ -68,6 +67,9 @@ class BiometricsConfigRepositoryImpl(
 
     override fun saveSelectedConfig(config: BiometricsConfig) {
         preferenceProvider.setValue(BiometricsPreference.PROJECT_ID, config.projectId)
+
+        preferenceProvider.setValue(BiometricsPreference.USER_ID, config.userId)
+
         preferenceProvider.setValue(
             BiometricsPreference.CONFIDENCE_SCORE_FILTER,
             config.confidenceScoreFilter ?: 0
@@ -88,6 +90,7 @@ class BiometricsConfigRepositoryImpl(
         Timber.d("orgUnitGroup: ${config.orgUnitGroup}")
         Timber.d("program: ${config.program}")
         Timber.d("projectId: ${config.projectId}")
+        Timber.d("userId: ${config.userId}")
         Timber.d("confidenceScoreFilter: ${config.confidenceScoreFilter}")
         Timber.d("icon: $icon")
         Timber.d("lastVerificationDuration: ${config.lastVerificationDuration}")
