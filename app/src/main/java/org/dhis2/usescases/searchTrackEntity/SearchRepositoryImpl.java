@@ -237,8 +237,13 @@ public class SearchRepositoryImpl implements SearchRepository {
         for (int i = 0; i < searchParametersModel.getQueryData().keySet().size(); i++) {
 
             String dataId = searchParametersModel.getQueryData().keySet().toArray()[i].toString();
-            String dataValue = searchParametersModel.getQueryData().get(dataId);
+            String dataValue;
 
+            if (searchParametersModel.getUIds().size() == 0) {
+                dataValue =searchParametersModel.getQueryData().get(dataId);
+            } else {
+                dataValue ="%DELETE%";
+            }
 
             boolean isTETypeAttribute = d2.trackedEntityModule().trackedEntityTypeAttributes()
                     .byTrackedEntityTypeUid().eq(teiType)
@@ -261,6 +266,10 @@ public class SearchRepositoryImpl implements SearchRepository {
                 } else
                     trackedEntityInstanceQuery = trackedEntityInstanceQuery.byAttribute(dataId).like(dataValue);
             }
+        }
+
+        if (searchParametersModel.getUIds().size() >0){
+            trackedEntityInstanceQuery = trackedEntityInstanceQuery.byUIds().in(searchParametersModel.getUIds());
         }
 
         return trackedEntityInstanceQuery;

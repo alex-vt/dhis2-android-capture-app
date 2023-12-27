@@ -297,12 +297,12 @@ class SearchTEList : FragmentGlobalAbstract() {
             it?.takeIf { view != null }?.apply {
                 removeObservers(viewLifecycleOwner)
                 observe(viewLifecycleOwner) { results ->
-
                     Log.d("Search:SearchTELIst", results.size.toString())
                     liveAdapter.submitList(results) {
                         onInitDataLoaded()
 
                         viewModel.onBiometricsDataLoaded(results)
+                        viewModel.evaluateIfNewRequestIdRequired(results)
                     }
 
                     for (i in 0 until results.size) {

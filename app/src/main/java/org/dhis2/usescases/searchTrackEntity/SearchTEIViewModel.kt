@@ -1,6 +1,5 @@
 package org.dhis2.usescases.searchTrackEntity
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -72,7 +71,8 @@ class SearchTEIViewModel(
     private val _filtersOpened = MutableLiveData(false)
     val filtersOpened: LiveData<Boolean> = _filtersOpened
 
-    var searchingChildren: Boolean = false
+    private var searchingChildren: Boolean = false
+    private val uIds = mutableListOf<String>()
 
     init {
         viewModelScope.launch(dispatchers.io()) {
@@ -238,8 +238,6 @@ class SearchTEIViewModel(
     }
 
     fun fetchListResults(onPagedListReady: (LiveData<PagedList<SearchTeiModel>>?) -> Unit) {
-        this.searchingChildren = false;
-
         viewModelScope.launch {
             val resultPagedList = when {
                 searching -> loadSearchResults()
@@ -254,7 +252,8 @@ class SearchTEIViewModel(
         return@withContext searchRepository.searchTrackedEntities(
             SearchParametersModel(
                 selectedProgram = searchRepository.getProgram(initialProgramUid),
-                queryData = queryData
+                queryData = queryData,
+                uIds = uIds
             ),
             searching && networkUtils.isOnline()
         )
@@ -264,7 +263,8 @@ class SearchTEIViewModel(
         return@withContext searchRepository.searchTrackedEntities(
             SearchParametersModel(
                 selectedProgram = searchRepository.getProgram(initialProgramUid),
-                queryData = queryData
+                queryData = queryData,
+                uIds = uIds
             ),
             false
         )
@@ -275,7 +275,8 @@ class SearchTEIViewModel(
             searchRepository.searchTrackedEntities(
                 SearchParametersModel(
                     selectedProgram = null,
-                    queryData = queryData
+                    queryData = queryData,
+                    uIds = uIds
                 ),
                 searching && networkUtils.isOnline()
             )
@@ -405,15 +406,30 @@ class SearchTEIViewModel(
     }
 
     fun onBiometricsDataLoaded( results: List<SearchTeiModel>){
+        presenter.onDataLoaded(results.size)
+    }
+
+    fun evaluateIfNewRequestIdRequired( results: List<SearchTeiModel>){
         val hasBiometrics = searchRepository.programHasBiometrics().blockingSingle()
 
-        if(hasBiometrics && !searchingChildren && queryData.isNotEmpty()){
+        if(hasBiometrics && !searchingChildren && queryData.isNotEmpty() && results.isNotEmpty()){
             val uIds = results.map { it.uid() }
-            val childrenUIds = this.getChildrenTEIByParentUid(uIds)
-            Log.d("Search:childrenUIds", childrenUIds.toString())
-        }
 
-        presenter.onDataLoaded(results.size)
+            val childrenUIds = this.getChildrenTEIByParentUid(uIds)
+
+            if (childrenUIds.isNotEmpty()){
+                this.uIds.addAll(uIds + childrenUIds)
+                searchingChildren = true
+
+                onSearchClick()
+            } else {
+                this.uIds.clear()
+                this.searchingChildren = false
+            }
+        } else {
+            this.uIds.clear()
+            this.searchingChildren = false
+        }
     }
 
     fun onDataLoaded(
