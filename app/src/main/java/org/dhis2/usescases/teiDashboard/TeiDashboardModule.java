@@ -3,6 +3,8 @@ package org.dhis2.usescases.teiDashboard;
 import androidx.annotation.NonNull;
 
 import org.dhis2.commons.di.dagger.PerActivity;
+import org.dhis2.commons.di.dagger.PerFragment;
+import org.dhis2.commons.prefs.BasicPreferenceProvider;
 import org.dhis2.commons.prefs.PreferenceProvider;
 import org.dhis2.data.forms.EnrollmentFormRepository;
 import org.dhis2.data.forms.FormRepository;
@@ -10,6 +12,11 @@ import org.dhis2.form.data.RulesRepository;
 import org.dhis2.data.forms.dataentry.EnrollmentRuleEngineRepository;
 import org.dhis2.data.forms.dataentry.RuleEngineRepository;
 import org.dhis2.commons.schedulers.SchedulerProvider;
+import org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.EventRelationshipConfiguration;
+import org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipConfiguration;
+import org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipRepository;
+import org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipRepositoryImpl;
+import org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.TrackerRelationshipConfiguration;
 import org.dhis2.utils.analytics.AnalyticsHelper;
 import org.dhis2.commons.matomo.MatomoAnalyticsController;
 import org.dhis2.utils.customviews.navigationbar.NavigationPageConfigurator;
@@ -69,8 +76,8 @@ public class TeiDashboardModule {
 
     @Provides
     @PerActivity
-    DashboardRepository dashboardRepository(D2 d2, Charts charts, ResourceManager resources, TeiAttributesProvider teiAttributesProvider) {
-        return new DashboardRepositoryImpl(d2, charts, teiUid, programUid, enrollmentUid, resources, teiAttributesProvider);
+    DashboardRepository dashboardRepository(D2 d2, Charts charts, ResourceManager resources, TeiAttributesProvider teiAttributesProvider, BasicPreferenceProvider basicPreferenceProvider) {
+        return new DashboardRepositoryImpl(d2, charts, teiUid, programUid, enrollmentUid, resources, teiAttributesProvider,basicPreferenceProvider);
     }
 
     @Provides

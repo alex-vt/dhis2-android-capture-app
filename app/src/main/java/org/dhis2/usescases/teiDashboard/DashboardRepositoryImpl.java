@@ -1,12 +1,19 @@
 package org.dhis2.usescases.teiDashboard;
 
+import static org.dhis2.commons.date.DateUtils.DATE_FORMAT_EXPRESSION;
+import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.dhis2.R;
 import org.dhis2.commons.data.tuples.Pair;
 import org.dhis2.commons.data.tuples.Trio;
+import org.dhis2.commons.prefs.BasicPreferenceProvider;
 import org.dhis2.commons.resources.ResourceManager;
+import org.dhis2.data.biometrics.GetBiometricsParentChildConfigKt;
+import org.dhis2.usescases.biometrics.entities.BiometricsParentChildConfig;
+import org.dhis2.usescases.biometrics.entities.DateOfBirthAttributeByProgram;
 import org.dhis2.utils.AuthorityException;
 import org.dhis2.utils.DateUtils;
 import org.dhis2.utils.ValueUtils;
@@ -32,6 +39,9 @@ import org.hisp.dhis.android.core.program.ProgramIndicator;
 import org.hisp.dhis.android.core.program.ProgramRuleActionType;
 import org.hisp.dhis.android.core.program.ProgramStage;
 import org.hisp.dhis.android.core.program.ProgramTrackedEntityAttribute;
+import org.hisp.dhis.android.core.relationship.Relationship;
+import org.hisp.dhis.android.core.relationship.RelationshipItem;
+import org.hisp.dhis.android.core.relationship.RelationshipItemTrackedEntityInstance;
 import org.hisp.dhis.android.core.relationship.RelationshipType;
 import org.hisp.dhis.android.core.systeminfo.SystemInfo;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute;
@@ -39,9 +49,15 @@ import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityType;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityTypeAttribute;
+import org.joda.time.DateTime;
+import org.joda.time.Months;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import dhis2.org.analytics.charts.Charts;
 import io.reactivex.Flowable;
@@ -63,6 +79,7 @@ public class DashboardRepositoryImpl implements DashboardRepository {
 
     private TeiAttributesProvider teiAttributesProvider;
 
+    private BasicPreferenceProvider basicPreferenceProvider;
 
     public DashboardRepositoryImpl(D2 d2,
                                    @Nullable Charts charts,
@@ -70,7 +87,8 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                                    String programUid,
                                    String enrollmentUid,
                                    ResourceManager resources,
-                                   TeiAttributesProvider teiAttributesProvider) {
+                                   TeiAttributesProvider teiAttributesProvider,
+                                   BasicPreferenceProvider basicPreferenceProvider) {
         this.d2 = d2;
         this.teiUid = teiUid;
         this.programUid = programUid;
@@ -78,6 +96,7 @@ public class DashboardRepositoryImpl implements DashboardRepository {
         this.resources = resources;
         this.charts = charts;
         this.teiAttributesProvider = teiAttributesProvider;
+        this.basicPreferenceProvider = basicPreferenceProvider;
     }
 
     @Override
@@ -235,7 +254,7 @@ public class DashboardRepositoryImpl implements DashboardRepository {
     @Override
     public Observable<List<TrackedEntityAttributeValue>> getTEIAttributeValues(String programUid, String teiUid) {
         if (programUid != null) {
-            return teiAttributesProvider.getValuesFromProgramTrackedEntityAttributesByProgram(programUid, teiUid)
+            List<TrackedEntityAttributeValue> attributeValues =  teiAttributesProvider.getValuesFromProgramTrackedEntityAttributesByProgram(programUid, teiUid)
                     .map(attributesValues -> {
                         List<TrackedEntityAttributeValue> formattedValues = new ArrayList<>();
                         for (TrackedEntityAttributeValue attributeValue : attributesValues) {
@@ -257,8 +276,12 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                             }
                         }
                         return formattedValues;
-                    }).toObservable();
+                    }).blockingGet();
 
+
+            addParentBiometricsAttributeValueIfRequired(attributeValues,programUid,teiUid);
+
+            return Observable.just(attributeValues);
         } else {
             String teType = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet().trackedEntityType();
             List<TrackedEntityAttributeValue> attributeValues = new ArrayList<>();
@@ -531,5 +554,118 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                         .get()
                         .toObservable()
         ).blockingFirst().displayName();
+    }
+
+    private void addParentBiometricsAttributeValueIfRequired(
+            List<TrackedEntityAttributeValue> attributeValues,
+            String programUid,
+            String teiUid) {
+        if (BIOMETRICS_ENABLED) {
+            TrackedEntityInstance tei = getTrackedEntityInstance(teiUid).blockingSingle();
+
+            if (!existBiometricsAttributeValue(attributeValues)){
+                if (isUnderAgeThreshold(attributeValues, programUid)){
+                    Optional<String> relatedTeiUidOptional = getRelatedTei(teiUid);
+
+                    if (relatedTeiUidOptional.isPresent()){
+                        List<TrackedEntityAttributeValue> relatedAttributeValues =
+                                teiAttributesProvider.getValuesFromProgramTrackedEntityAttributesByProgram(programUid, relatedTeiUidOptional.get()).blockingGet();
+
+                        String biometricsAttribute = getBiometricsTrackedEntityAttribute();
+
+                        Optional<TrackedEntityAttributeValue> attValueOptional =
+                                getTrackedEntityAttributeValueByAttribute(biometricsAttribute, relatedAttributeValues);
+
+                        if (attValueOptional.isPresent()){
+                            attributeValues.add(attValueOptional.get());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private Optional<String> getRelatedTei(String teiUid) {
+        BiometricsParentChildConfig config =
+                GetBiometricsParentChildConfigKt.getBiometricsParentChildConfig(basicPreferenceProvider);
+
+
+        List<Relationship> relationships = d2.relationshipModule().relationships().getByItem(
+                RelationshipItem.builder().trackedEntityInstance(
+                        RelationshipItemTrackedEntityInstance.builder().trackedEntityInstance(teiUid)
+                                .build()
+                ).build()
+        ).stream().filter(relationship ->
+                relationship.relationshipType().equals(
+                        config.getParentChildRelationship())).collect(Collectors.toList());
+
+        Optional<String> relatedTeiUid = relationships.stream().map(relationship -> {
+            if (relationship.from().elementUid().equals(teiUid)){
+                return relationship.to().elementUid();
+            } else{
+                return relationship.from().elementUid();
+            }
+        }).collect(Collectors.toList()).stream().findFirst();
+
+        return relatedTeiUid;
+    }
+
+    private boolean existBiometricsAttributeValue(
+            List<TrackedEntityAttributeValue> attributeValues
+    ){
+        String biometricsAttribute = getBiometricsTrackedEntityAttribute();
+
+        Optional<TrackedEntityAttributeValue> attValueOptional =
+                getTrackedEntityAttributeValueByAttribute(biometricsAttribute, attributeValues);
+
+        return attValueOptional.isPresent();
+    }
+
+    private String getBiometricsTrackedEntityAttribute(){
+        Optional<TrackedEntityAttribute> attributeOptional = d2.trackedEntityModule().trackedEntityAttributes()
+                .byDisplayFormName().eq("Biometrics").blockingGet().stream().findFirst();
+
+        return attributeOptional.get().uid();
+    }
+
+    private Optional<TrackedEntityAttributeValue> getTrackedEntityAttributeValueByAttribute(
+            String attribute,
+            List<TrackedEntityAttributeValue> attributeValues
+    ){
+        return attributeValues.stream().filter(attributeValue ->
+                attributeValue.trackedEntityAttribute().equals(attribute)).findFirst();
+    }
+
+    private boolean isUnderAgeThreshold(List<TrackedEntityAttributeValue> attributeValues, String programUid) {
+        BiometricsParentChildConfig config =
+                GetBiometricsParentChildConfigKt.getBiometricsParentChildConfig(basicPreferenceProvider);
+
+        int ageThreshold = config.getAgeThresholdMonths();
+
+        Optional<DateOfBirthAttributeByProgram> birthdayAttributeOptional =
+                config.getDateOfBirthAttributeByProgram().stream()
+                .filter(attByProgram ->attByProgram.getProgram().equals(programUid)).findFirst();
+
+        if (birthdayAttributeOptional.isPresent()){
+            DateOfBirthAttributeByProgram birthdayAttribute = birthdayAttributeOptional.get();
+
+            Optional<TrackedEntityAttributeValue> birthdateAttValueOptional =
+                    getTrackedEntityAttributeValueByAttribute(birthdayAttribute.getAttribute(), attributeValues);
+
+            if (birthdateAttValueOptional.isPresent()){
+                TrackedEntityAttributeValue birthdateAttValue = birthdateAttValueOptional.get();
+
+                DateTimeFormatter formatter = DateTimeFormat.forPattern(DATE_FORMAT_EXPRESSION);
+                DateTime dateValue = formatter.parseDateTime(birthdateAttValue.value());
+
+                int moths = Months.monthsBetween(dateValue,DateTime.now()).getMonths();
+
+                return moths <= ageThreshold;
+            }else{
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }
