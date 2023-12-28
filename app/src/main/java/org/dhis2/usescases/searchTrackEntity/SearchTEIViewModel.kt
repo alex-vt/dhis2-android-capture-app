@@ -17,7 +17,7 @@ import org.dhis2.form.model.ActionType
 import org.dhis2.form.model.RowAction
 import org.dhis2.maps.layer.basemaps.BaseMapStyle
 import org.dhis2.maps.usecases.MapStyleConfiguration
-import org.dhis2.usescases.biometrics.usecases.GetChildrenTEIByParentUid
+import org.dhis2.usescases.biometrics.usecases.GetRelatedTEIUIdsByUid
 import org.dhis2.usescases.searchTrackEntity.listView.SearchResult
 import org.dhis2.usescases.searchTrackEntity.ui.UnableToSearchOutsideData
 import org.dhis2.utils.customviews.navigationbar.NavigationPageConfigurator
@@ -36,7 +36,7 @@ class SearchTEIViewModel(
     private val networkUtils: NetworkUtils,
     private val dispatchers: DispatcherProvider,
     private val mapStyleConfig: MapStyleConfiguration,
-    private val getChildrenTEIByParentUid: GetChildrenTEIByParentUid
+    private val getRelatedTEIUidsByUid: GetRelatedTEIUIdsByUid
 ) : ViewModel() {
 
     private val _pageConfiguration = MutableLiveData<NavigationPageConfigurator>()
@@ -415,7 +415,7 @@ class SearchTEIViewModel(
         if(hasBiometrics && !searchingChildren && queryData.isNotEmpty() && results.isNotEmpty()){
             val uIds = results.map { it.uid() }
 
-            val childrenUIds = this.getChildrenTEIByParentUid(uIds)
+            val childrenUIds = this.getRelatedTEIUidsByUid(results)
 
             if (childrenUIds.isNotEmpty()){
                 this.uIds.addAll(uIds + childrenUIds)

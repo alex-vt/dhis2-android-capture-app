@@ -20,10 +20,8 @@ import org.dhis2.commons.reporting.CrashReportController;
 import org.dhis2.commons.reporting.CrashReportControllerImpl;
 import org.dhis2.commons.resources.ResourceManager;
 import org.dhis2.commons.schedulers.SchedulerProvider;
-import org.dhis2.data.biometrics.BiometricsConfigApi;
 import org.dhis2.data.biometrics.BiometricsParentChildConfigApi;
 import org.dhis2.data.biometrics.BiometricsParentChildConfigRepositoryImpl;
-import org.dhis2.data.biometrics.BiometricsTEIRepositoryImpl;
 import org.dhis2.data.dhislogic.DhisEnrollmentUtils;
 import org.dhis2.data.dhislogic.DhisPeriodUtils;
 import org.dhis2.data.enrollment.EnrollmentUiDataHelper;
@@ -64,8 +62,7 @@ import org.dhis2.maps.usecases.MapStyleConfiguration;
 import org.dhis2.maps.utils.DhisMapUtils;
 import org.dhis2.ui.ThemeManager;
 import org.dhis2.usescases.biometrics.repositories.BiometricsParentChildConfigRepository;
-import org.dhis2.usescases.biometrics.repositories.BiometricsTEIRepository;
-import org.dhis2.usescases.biometrics.usecases.GetChildrenTEIByParentUid;
+import org.dhis2.usescases.biometrics.usecases.GetRelatedTEIUIdsByUid;
 import org.dhis2.utils.DateUtils;
 import org.dhis2.utils.analytics.AnalyticsHelper;
 import org.hisp.dhis.android.core.D2;
@@ -116,18 +113,9 @@ public class SearchTEModule {
 
     @Provides
     @PerActivity
-    BiometricsTEIRepository biometricsTEIRepository(
-            D2 d2
-    ) {
-        return new BiometricsTEIRepositoryImpl(d2);
-    }
-
-    @Provides
-    @PerActivity
-    GetChildrenTEIByParentUid provideGetChildrenTEIByParentUid(
-            BiometricsParentChildConfigRepository biometricsParentChildConfigRepository,
-            BiometricsTEIRepository biometricsTEIRepository) {
-        return new GetChildrenTEIByParentUid(biometricsParentChildConfigRepository,biometricsTEIRepository );
+    GetRelatedTEIUIdsByUid provideGetRelatedTEIUIdsByUid(
+            BiometricsParentChildConfigRepository biometricsParentChildConfigRepository) {
+        return new GetRelatedTEIUIdsByUid(biometricsParentChildConfigRepository);
     }
 
     @Provides
@@ -277,7 +265,7 @@ public class SearchTEModule {
             MapDataRepository mapDataRepository,
             NetworkUtils networkUtils,
             D2 d2,
-            GetChildrenTEIByParentUid getChildrenTEIByParentUid) {
+            GetRelatedTEIUIdsByUid getRelatedTEIUidsByUid) {
         return new SearchTeiViewModelFactory(
                 presenter,
                 searchRepository,
@@ -288,7 +276,7 @@ public class SearchTEModule {
                 networkUtils,
                 new SearchDispatchers(),
                 new MapStyleConfiguration(d2),
-                getChildrenTEIByParentUid
+                getRelatedTEIUidsByUid
         );
     }
 

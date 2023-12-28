@@ -41,7 +41,6 @@ import org.dhis2.metadata.usecases.FileResourceConfiguration;
 import org.dhis2.metadata.usecases.ProgramConfiguration;
 import org.dhis2.metadata.usecases.TrackedEntityInstanceConfiguration;
 import org.dhis2.ui.ThemeManager;
-import org.dhis2.usescases.biometrics.usecases.GetChildrenTEIByParentUid;
 import org.dhis2.usescases.teiDownload.TeiDownloader;
 
 import static org.dhis2.usescases.biometrics.BiometricConstantsKt.BIOMETRICS_ENABLED;
