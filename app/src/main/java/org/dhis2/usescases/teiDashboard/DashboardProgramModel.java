@@ -173,12 +173,31 @@ public class DashboardProgramModel extends BaseObservable {
     }
 
     public boolean isTrackedBiometricEntityExistAndHasValue(){
-        String biometricValue = this.getTrackedBiometricEntityValue();
+        TrackedEntityAttributeValue biometricValue = this.getBiometricTrackedEntityValue();
 
-        return biometricValue != null && !biometricValue.isEmpty();
+        return biometricValue != null && biometricValue.value() != null &&
+                !biometricValue.value().isEmpty();
     }
 
-    public String getTrackedBiometricEntityValue(){
+    public String getBiometricValue(){
+        String biometricUid = getTrackedBiometricEntityAttributeUid();
+
+        if(biometricUid != null){
+            for(TrackedEntityAttributeValue value: trackedEntityAttributeValues){
+                if(biometricUid.equalsIgnoreCase(value.trackedEntityAttribute())){
+                    if(value.value() == null || value.value().isEmpty()){
+                        return null;
+                    }else{
+                        return value.value();
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public TrackedEntityAttributeValue getBiometricTrackedEntityValue(){
         String biometricUid = getTrackedBiometricEntityAttributeUid();
 
         if(biometricUid != null){
@@ -187,7 +206,7 @@ public class DashboardProgramModel extends BaseObservable {
                     if(value==null || value.value().isEmpty()){
                         return null;
                     }else{
-                        return value.value();
+                        return value;
                     }
                 }
             }

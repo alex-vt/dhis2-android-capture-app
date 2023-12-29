@@ -4,15 +4,15 @@ import io.reactivex.Single
 import org.dhis2.Bindings.applyFilters
 import org.dhis2.commons.bindings.blockingSetCheck
 import org.dhis2.commons.bindings.userFriendlyValue
+import org.dhis2.commons.biometrics.isBiometricAttribute
 import org.dhis2.commons.data.EventViewModel
 import org.dhis2.commons.data.EventViewModelType
 import org.dhis2.commons.data.StageSection
 import org.dhis2.commons.filters.Filters
 import org.dhis2.commons.filters.sorting.SortingItem
 import org.dhis2.commons.filters.sorting.SortingStatus
-import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.getProgramStageName
 import org.dhis2.data.dhislogic.DhisPeriodUtils
-import org.dhis2.commons.biometrics.isBiometricAttribute
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.getProgramStageName
 import org.dhis2.utils.DateUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
@@ -161,8 +161,9 @@ class TeiDataRepositoryImpl(
             .organisationUnits().uid(orgUnitUid).blockingGet().displayName() ?: ""
     }
 
-    override fun updateBiometricsAttributeValueInTei(value: String) {
-        val tei = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
+    override fun updateBiometricsAttributeValueInTei(value: String, parentTeiUid:String?) {
+        val teiUidToUpdate = parentTeiUid?:teiUid
+        val tei = d2.trackedEntityModule().trackedEntityInstances().uid(teiUidToUpdate).blockingGet()
         val attributes = d2.programModule().programTrackedEntityAttributes()
             .byProgram().eq(programUid).blockingGet()
 

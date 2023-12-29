@@ -557,7 +557,7 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
             bundle.putString(EVENT_CREATION_TYPE, eventCreationType.name());
             bundle.putInt(EVENT_SCHEDULE_INTERVAL, scheduleIntervalDays);
 
-            bundle.putString(BIOMETRICS_GUID, dashboardModel.getTrackedBiometricEntityValue());
+            bundle.putString(BIOMETRICS_GUID, dashboardModel.getBiometricValue());
             bundle.putInt(BIOMETRICS_VERIFICATION_STATUS, -1);
             bundle.putString(BIOMETRICS_TEI_ORGANISATION_UNIT,
                     dashboardModel.getCurrentOrgUnit().uid());
@@ -676,7 +676,7 @@ public class TEIDataFragment extends FragmentGlobalAbstract implements TEIDataCo
         bundle.putString(Constants.PROGRAM_STAGE_UID, programStage.uid());
         bundle.putInt(EVENT_SCHEDULE_INTERVAL, programStage.standardInterval() != null ? programStage.standardInterval() : 0);
 
-        bundle.putString(BIOMETRICS_GUID, dashboardModel.getTrackedBiometricEntityValue());
+        bundle.putString(BIOMETRICS_GUID, dashboardModel.getBiometricValue());
         bundle.putInt(BIOMETRICS_VERIFICATION_STATUS, -1);
         bundle.putString(BIOMETRICS_TEI_ORGANISATION_UNIT,
                 dashboardModel.getCurrentOrgUnit().uid());

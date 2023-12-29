@@ -4,11 +4,7 @@ import static android.text.TextUtils.isEmpty;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ACTIVE_FOLLOW_UP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.FOLLOW_UP;
 
-import static android.text.TextUtils.isEmpty;
-
 import static org.dhis2.usescases.biometrics.VerificationKt.isLastVerificationValid;
-import static org.dhis2.utils.analytics.AnalyticsConstants.ACTIVE_FOLLOW_UP;
-import static org.dhis2.utils.analytics.AnalyticsConstants.FOLLOW_UP;
 
 import android.content.Intent;
 import android.view.View;
@@ -31,13 +27,11 @@ import org.dhis2.commons.filters.FilterManager;
 import org.dhis2.commons.filters.data.FilterRepository;
 import org.dhis2.commons.prefs.Preference;
 import org.dhis2.commons.prefs.PreferenceProvider;
-import org.dhis2.commons.filters.data.FilterRepository;
 import org.dhis2.commons.biometrics.BiometricsPreference;
 import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.data.forms.dataentry.RuleEngineRepository;
 import org.dhis2.commons.resources.ResourceManager;
 import org.dhis2.commons.schedulers.SchedulerProvider;
-import org.dhis2.data.forms.dataentry.RuleEngineRepository;
 import org.dhis2.form.data.FormValueStore;
 import org.dhis2.form.data.RuleUtilsProviderResult;
 import org.dhis2.form.data.RulesUtilsProviderImpl;
@@ -66,6 +60,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Flowable;
@@ -419,7 +414,7 @@ public class TEIDataPresenter {
         if (eventStatus == EventStatus.ACTIVE || eventStatus == EventStatus.COMPLETED) {
             uidForEvent = uid;
 
-            launchEventCapture(uid, dashboardModel.getTrackedBiometricEntityValue(), -1);
+            launchEventCapture(uid, dashboardModel.getBiometricValue(), -1);
         } else {
             Event event = d2.eventModule().events().uid(uid).blockingGet();
             Intent intent = new Intent(view.getContext(), EventInitialActivity.class);
@@ -429,7 +424,7 @@ public class TEIDataPresenter {
                     event.organisationUnit(), event.programStage(),
                     dashboardModel.getCurrentEnrollment().uid(), 0,
                     dashboardModel.getCurrentEnrollment().status(),
-                    dashboardModel.getTrackedBiometricEntityValue(), -1, orgUnitUid
+                    dashboardModel.getBiometricValue(), -1, orgUnitUid
             ));
 
             view.openEventInitial(intent);
@@ -448,7 +443,7 @@ public class TEIDataPresenter {
     }
 
     public void verifyBiometrics() {
-        view.launchBiometricsVerification(this.dashboardModel.getTrackedBiometricEntityValue(),
+        view.launchBiometricsVerification(this.dashboardModel.getBiometricValue(),
                 this.dashboardModel.getCurrentOrgUnit().uid(), this.dashboardModel.getTei().uid());
     }
 
@@ -460,8 +455,17 @@ public class TEIDataPresenter {
 
     private void renderVerificationResult(VerifyResult result) {
         if (result instanceof VerifyResult.Match) {
-            teiDataRepository.updateBiometricsAttributeValueInTei(
-                    this.dashboardModel.getTrackedBiometricEntityValue());
+            String currentTeiUid = this.dashboardModel.getTei().uid();
+
+            TrackedEntityAttributeValue attValue = this.dashboardModel.getBiometricTrackedEntityValue();
+
+            if (!Objects.equals(attValue.trackedEntityInstance(), currentTeiUid)){
+                teiDataRepository.updateBiometricsAttributeValueInTei(
+                        this.dashboardModel.getBiometricValue(), attValue.trackedEntityInstance());
+            } else {
+                teiDataRepository.updateBiometricsAttributeValueInTei(
+                        this.dashboardModel.getBiometricValue(),null);
+            }
 
             view.verificationStatusMatch();
         } else if (result instanceof VerifyResult.NoMatch) {
