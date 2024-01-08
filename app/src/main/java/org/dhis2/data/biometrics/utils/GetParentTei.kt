@@ -1,11 +1,10 @@
-package org.dhis2.data.biometrics
+package org.dhis2.data.biometrics.utils
 
 import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.prefs.BasicPreferenceProvider
-import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
+import org.dhis2.data.biometrics.getBiometricsParentChildConfig
 import org.dhis2.usescases.biometrics.entities.BiometricsParentChildConfig
 import org.dhis2.usescases.biometrics.entities.DateOfBirthAttributeByProgram
-import org.dhis2.usescases.teiDashboard.TeiAttributesProvider
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.relationship.Relationship
 import org.hisp.dhis.android.core.relationship.RelationshipItem
@@ -15,18 +14,16 @@ import org.joda.time.DateTime
 import org.joda.time.Months
 import org.joda.time.format.DateTimeFormat
 
-fun addParentBiometricsAttributeValueIfRequired(
+fun getParentTeiUid(
     d2: D2,
-    teiAttributesProvider: TeiAttributesProvider,
     basicPreferenceProvider: BasicPreferenceProvider,
     attributeValues: MutableList<TrackedEntityAttributeValue>,
     programUid: String,
     teiUid: String
-) {
-    if (BIOMETRICS_ENABLED) {
+):String? {
         val biometricsParentChildConfig = getBiometricsParentChildConfig(basicPreferenceProvider)
 
-        val biometricsAttribute = getBiometricsTrackedEntityAttribute(d2) ?: return
+        val biometricsAttribute = getBiometricsTrackedEntityAttribute(d2) ?: return null
 
         val existBiometricsValue =
             existBiometricsAttributeValue(biometricsAttribute, attributeValues)
@@ -36,24 +33,10 @@ fun addParentBiometricsAttributeValueIfRequired(
 
         val searchParentBiometricsIsRequired = !existBiometricsValue && isUnderAgeThreshold
 
-        if (searchParentBiometricsIsRequired) {
-
-            val relatedTeiUid = getRelatedTei(d2, biometricsParentChildConfig, teiUid) ?: return
-
-            val relatedAttributeValues: List<TrackedEntityAttributeValue> =
-                teiAttributesProvider.getValuesFromProgramTrackedEntityAttributesByProgram(
-                    programUid,
-                    relatedTeiUid
-                ).blockingGet()
-
-            val attValue = getTrackedEntityAttributeValueByAttribute(
-                biometricsAttribute,
-                relatedAttributeValues
-            )
-            if (attValue != null) {
-                attributeValues.add(attValue)
-            }
-        }
+    return if (searchParentBiometricsIsRequired) {
+        getRelatedTei(d2, biometricsParentChildConfig, teiUid)
+    } else {
+        null
     }
 }
 
@@ -65,19 +48,6 @@ private fun existBiometricsAttributeValue(
         getTrackedEntityAttributeValueByAttribute(biometricsAttribute, attributeValues)
 
     return attValueOptional != null
-}
-
-private fun getBiometricsTrackedEntityAttribute(d2: D2): String? {
-    return d2.trackedEntityModule().trackedEntityAttributes()
-        .byDisplayFormName().eq("Biometrics").blockingGet().firstOrNull()?.uid()
-}
-
-private fun getTrackedEntityAttributeValueByAttribute(
-    attribute: String,
-    attributeValues: List<TrackedEntityAttributeValue>
-): TrackedEntityAttributeValue? {
-    return attributeValues
-        .find { attributeValue -> attributeValue.trackedEntityAttribute() == attribute }
 }
 
 private fun isUnderAgeThreshold(

@@ -2,15 +2,14 @@ package org.dhis2.usescases.teiDashboard.dashboardfragments.teidata
 
 import io.reactivex.Single
 import org.dhis2.Bindings.applyFilters
-import org.dhis2.commons.bindings.blockingSetCheck
 import org.dhis2.commons.bindings.userFriendlyValue
-import org.dhis2.commons.biometrics.isBiometricAttribute
 import org.dhis2.commons.data.EventViewModel
 import org.dhis2.commons.data.EventViewModelType
 import org.dhis2.commons.data.StageSection
 import org.dhis2.commons.filters.Filters
 import org.dhis2.commons.filters.sorting.SortingItem
 import org.dhis2.commons.filters.sorting.SortingStatus
+import org.dhis2.data.biometrics.utils.updateBiometricsAttributeValue
 import org.dhis2.data.dhislogic.DhisPeriodUtils
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.getProgramStageName
 import org.dhis2.utils.DateUtils
@@ -162,24 +161,7 @@ class TeiDataRepositoryImpl(
     }
 
     override fun updateBiometricsAttributeValueInTei(value: String, parentTeiUid:String?) {
-        val teiUidToUpdate = parentTeiUid?:teiUid
-        val tei = d2.trackedEntityModule().trackedEntityInstances().uid(teiUidToUpdate).blockingGet()
-        val attributes = d2.programModule().programTrackedEntityAttributes()
-            .byProgram().eq(programUid).blockingGet()
-
-        var attributeUid: String? = null
-
-        for (attribute in attributes) {
-            if (attribute.isBiometricAttribute()) {
-                attributeUid = attribute.trackedEntityAttribute()?.uid()
-                break
-            }
-        }
-        if (attributeUid != null) {
-            val valueRepository = d2.trackedEntityModule().trackedEntityAttributeValues()
-                .value(attributeUid, tei.uid())
-            valueRepository.blockingSetCheck(d2, attributeUid, value)
-        }
+        updateBiometricsAttributeValue(d2, teiUid,value, parentTeiUid)
     }
 
     private fun getGroupedEvents(
