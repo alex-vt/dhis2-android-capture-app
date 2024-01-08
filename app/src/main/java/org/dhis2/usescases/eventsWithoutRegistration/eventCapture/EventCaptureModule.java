@@ -8,6 +8,7 @@ import org.dhis2.R;
 import org.dhis2.commons.data.EntryMode;
 import org.dhis2.commons.di.dagger.PerActivity;
 import org.dhis2.commons.network.NetworkUtils;
+import org.dhis2.commons.prefs.BasicPreferenceProvider;
 import org.dhis2.commons.prefs.PreferenceProvider;
 import org.dhis2.commons.reporting.CrashReportController;
 import org.dhis2.commons.reporting.CrashReportControllerImpl;
@@ -67,8 +68,10 @@ public class EventCaptureModule {
 
     @Provides
     @PerActivity
-    EventCaptureContract.EventCaptureRepository provideRepository(D2 d2) {
-        return new EventCaptureRepositoryImpl(eventUid, d2);
+    EventCaptureContract.EventCaptureRepository provideRepository(
+            D2 d2,
+            BasicPreferenceProvider basicPreferenceProvider) {
+        return new EventCaptureRepositoryImpl(eventUid, d2, basicPreferenceProvider);
     }
 
     @Provides
