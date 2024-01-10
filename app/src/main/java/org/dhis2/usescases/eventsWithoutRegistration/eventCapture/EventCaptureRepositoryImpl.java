@@ -1,6 +1,7 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture;
 
 import static org.dhis2.data.biometrics.utils.GetBiometricsTrackedEntityAttributeKt.getBiometricsTrackedEntityAttribute;
+import static org.dhis2.data.biometrics.utils.GetTeiByUidKt.getTeiByUid;
 import static org.dhis2.data.biometrics.utils.GetTrackedEntityAttributeValueByAttributeKt.getTrackedEntityAttributeValueByAttribute;
 import static org.dhis2.data.biometrics.utils.UpdateBiometricsAttributeValueKt.updateBiometricsAttributeValue;
 import static org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureRepositoryFunctionsKt.getProgramStageName;
@@ -240,7 +241,7 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
                 getCurrentEvent().program(),tei.uid());
 
         if (parentTeiUid != null){
-            tei = getTeiByUid(parentTeiUid);
+            tei = getTeiByUid(d2, parentTeiUid);
         }
 
         String attributeUid = getBiometricsTrackedEntityAttribute(d2);
@@ -275,16 +276,10 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
             Enrollment enrollment = d2.enrollmentModule().enrollments()
                     .uid(enrollmentUid).blockingGet();
 
-            return getTeiByUid(enrollment.trackedEntityInstance());
+            return getTeiByUid(d2, enrollment.trackedEntityInstance());
         }else {
             return null;
         }
-    }
-
-    private TrackedEntityInstance getTeiByUid(String teiUid) {
-        return d2.trackedEntityModule().trackedEntityInstances()
-                .withTrackedEntityAttributeValues().uid(
-                        teiUid).blockingGet();
     }
 }
 

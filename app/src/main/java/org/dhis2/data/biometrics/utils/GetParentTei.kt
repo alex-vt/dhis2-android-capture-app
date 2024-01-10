@@ -17,7 +17,7 @@ import org.joda.time.format.DateTimeFormat
 fun getParentTeiUid(
     d2: D2,
     basicPreferenceProvider: BasicPreferenceProvider,
-    attributeValues: MutableList<TrackedEntityAttributeValue>,
+    attributeValues: List<TrackedEntityAttributeValue>,
     programUid: String,
     teiUid: String
 ):String? {

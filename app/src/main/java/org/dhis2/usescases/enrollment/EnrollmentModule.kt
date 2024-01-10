@@ -9,6 +9,7 @@ import org.dhis2.commons.data.EntryMode
 import org.dhis2.commons.di.dagger.PerActivity
 import org.dhis2.commons.matomo.MatomoAnalyticsController
 import org.dhis2.commons.network.NetworkUtils
+import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.reporting.CrashReportController
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider
@@ -143,7 +144,8 @@ class EnrollmentModule(
         analyticsHelper: AnalyticsHelper,
         matomoAnalyticsController: MatomoAnalyticsController,
         eventCollectionRepository: EventCollectionRepository,
-        teiAttributesProvider: TeiAttributesProvider
+        teiAttributesProvider: TeiAttributesProvider,
+        basicPreferenceProvider: BasicPreferenceProvider
     ): EnrollmentPresenterImpl {
         return EnrollmentPresenterImpl(
             enrollmentView,
@@ -157,7 +159,8 @@ class EnrollmentModule(
             analyticsHelper,
             matomoAnalyticsController,
             eventCollectionRepository,
-            teiAttributesProvider
+            teiAttributesProvider,
+            basicPreferenceProvider
         )
     }
 

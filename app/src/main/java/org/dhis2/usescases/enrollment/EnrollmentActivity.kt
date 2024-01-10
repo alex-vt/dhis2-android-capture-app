@@ -18,6 +18,8 @@ import org.dhis2.commons.Constants
 import org.dhis2.commons.Constants.ENROLLMENT_UID
 import org.dhis2.commons.Constants.PROGRAM_UID
 import org.dhis2.commons.Constants.TEI_UID
+import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_REQUEST
 import org.dhis2.commons.data.TeiAttributesInfo
 import org.dhis2.commons.dialogs.imagedetail.ImageDetailBottomDialog
 import org.dhis2.data.biometrics.BiometricsClientFactory
@@ -32,12 +34,8 @@ import org.dhis2.maps.views.MapSelectorActivity
 import org.dhis2.ui.dialogs.bottomsheet.BottomSheetDialog
 import org.dhis2.ui.dialogs.bottomsheet.BottomSheetDialogUiModel
 import org.dhis2.ui.dialogs.bottomsheet.DialogButtonStyle
-import org.dhis2.usescases.events.ScheduledEventActivity
-import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
-import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_REQUEST
-import org.dhis2.commons.dialogs.AlertBottomDialog
-import org.dhis2.form.data.DataIntegrityCheckResult
 import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialog
+import org.dhis2.usescases.events.ScheduledEventActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity
 import org.dhis2.usescases.general.ActivityGlobalAbstract
@@ -136,6 +134,9 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
             .openErrorLocation(openErrorLocation)
             .onFieldsLoadedListener {
                 presenter.onFieldsLoaded(it)
+            }
+            .onFieldsLoadingListener {
+                presenter.onFieldsLoading(it)
             }
             .build()
 
