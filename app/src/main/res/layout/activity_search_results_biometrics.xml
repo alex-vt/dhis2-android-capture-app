@@ -58,7 +58,7 @@
             android:layout_height="wrap_content"
             android:paddingVertical="4dp"
             android:paddingHorizontal="8dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="72dp"
             android:layout_marginHorizontal="8dp"
             android:onClick="@{()->presenter.onBiometricsEnrolmentLastClick()}"
             android:gravity="center"
