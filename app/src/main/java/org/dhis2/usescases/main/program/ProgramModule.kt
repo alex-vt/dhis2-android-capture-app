@@ -7,6 +7,7 @@ import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.filters.data.FilterPresenter
 import org.dhis2.commons.matomo.MatomoAnalyticsController
 import org.dhis2.commons.prefs.BasicPreferenceProvider
+import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.dhislogic.DhisProgramUtils
@@ -16,7 +17,6 @@ import org.dhis2.data.notifications.NotificationsApi
 import org.dhis2.data.notifications.UserD2Repository
 import org.dhis2.data.notifications.UserGroupsApi
 import org.dhis2.data.service.SyncStatusController
-import org.dhis2.ui.ThemeManager
 import org.dhis2.usescases.notifications.domain.GetNotifications
 import org.dhis2.usescases.notifications.domain.MarkNotificationAsRead
 import org.dhis2.usescases.notifications.domain.NotificationRepository
@@ -36,19 +36,17 @@ class ProgramModule(
     internal fun programPresenter(
         programRepository: ProgramRepository,
         schedulerProvider: SchedulerProvider,
-        themeManager: ThemeManager,
         filterManager: FilterManager,
         matomoAnalyticsController: MatomoAnalyticsController,
-        syncStatusController: SyncStatusController
+        syncStatusController: SyncStatusController,
     ): ProgramPresenter {
         return ProgramPresenter(
             view,
             programRepository,
             schedulerProvider,
-            themeManager,
             filterManager,
             matomoAnalyticsController,
-            syncStatusController
+            syncStatusController,
         )
     }
 
@@ -59,15 +57,16 @@ class ProgramModule(
         filterPresenter: FilterPresenter,
         dhisProgramUtils: DhisProgramUtils,
         dhisTrackedEntityInstanceUtils: DhisTrackedEntityInstanceUtils,
-        schedulerProvider: SchedulerProvider
+        schedulerProvider: SchedulerProvider,
+        colorUtils: ColorUtils,
     ): ProgramRepository {
         return ProgramRepositoryImpl(
             d2,
             filterPresenter,
             dhisProgramUtils,
             dhisTrackedEntityInstanceUtils,
-            ResourceManager(view.context),
-            schedulerProvider
+            ResourceManager(view.context, colorUtils),
+            schedulerProvider,
         )
     }
 

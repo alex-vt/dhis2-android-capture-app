@@ -6,7 +6,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.ListenableWorker
 import io.reactivex.Completable
 import io.reactivex.Observable
-import org.dhis2.Bindings.toSeconds
+import org.dhis2.bindings.toSeconds
 import org.dhis2.commons.prefs.Preference.Companion.DATA
 import org.dhis2.commons.prefs.Preference.Companion.EVENT_MAX
 import org.dhis2.commons.prefs.Preference.Companion.EVENT_MAX_DEFAULT
@@ -30,7 +30,6 @@ import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.call.D2Progress
 import org.hisp.dhis.android.core.arch.call.D2ProgressStatus
 import org.hisp.dhis.android.core.common.State
-import org.hisp.dhis.android.core.fileresource.FileResourceValueType
 import org.hisp.dhis.android.core.imports.TrackerImportConflict
 import org.hisp.dhis.android.core.program.ProgramType
 import org.hisp.dhis.android.core.settings.GeneralSettings
@@ -95,9 +94,9 @@ class SyncPresenterImpl(
                             syncStatusController.updateDownloadProcess(
                                 d2Progress.programs().filter { entry ->
                                     programEventUids.contains(entry.key)
-                                }
+                                },
                             )
-                        }
+                        },
                 )
                     .doOnError {
                         Timber.d("error while downloading Events")
@@ -105,9 +104,9 @@ class SyncPresenterImpl(
                     .onErrorComplete()
                     .doOnComplete {
                         syncStatusController.finishDownloadingEvents(
-                            programEventUids
+                            programEventUids,
                         )
-                    }
+                    },
             ).blockingAwait()
     }
 
@@ -119,7 +118,7 @@ class SyncPresenterImpl(
 
         val eventLimit = globalProgramSettings?.eventsDownload() ?: preferences.getInt(
             EVENT_MAX,
-            EVENT_MAX_DEFAULT
+            EVENT_MAX_DEFAULT,
         )
 
         val limitByOU = globalProgramSettings?.settingDownload()?.let {
@@ -167,17 +166,17 @@ class SyncPresenterImpl(
                             syncStatusController.updateDownloadProcess(
                                 data.programs().filter { entry ->
                                     trackerProgramUids.contains(entry.key)
-                                }
+                                },
                             )
-                        }
+                        },
                 )
                     .doOnError { Timber.d("error while downloading TEIs") }
                     .onErrorComplete()
                     .doOnComplete {
                         syncStatusController.finishDownloadingTracker(
-                            trackerProgramUids
+                            trackerProgramUids,
                         )
-                    }
+                    },
             )
             .blockingAwait()
     }
@@ -187,15 +186,15 @@ class SyncPresenterImpl(
             Completable.fromObservable(d2.dataValueModule().dataValues().upload())
                 .andThen(
                     Completable.fromObservable(
-                        d2.dataSetModule().dataSetCompleteRegistrations().upload()
-                    )
+                        d2.dataSetModule().dataSetCompleteRegistrations().upload(),
+                    ),
                 )
                 .andThen(
                     Completable.fromObservable(
                         d2.aggregatedModule().data().download().doOnNext {
                             syncStatusController.updateDownloadProcess(it.dataSets())
-                        }
-                    )
+                        },
+                    ),
                 ).blockingAwait()
         }
     }
@@ -214,7 +213,7 @@ class SyncPresenterImpl(
                 }
 
         ).andThen(
-            d2.mapsModule().mapLayersDownloader().downloadMetadata()
+            d2.mapsModule().mapLayersDownloader().downloadMetadata(),
         ).blockingAwait()
     }
 
@@ -222,19 +221,19 @@ class SyncPresenterImpl(
         val globalSettings = getSettings()
 
         globalSettings?.let {
-            if (!globalSettings.numberSmsToSend().isNullOrEmpty()) {
-                d2.smsModule().configCase().setGatewayNumber(globalSettings.numberSmsToSend())
+            if (!globalSettings.smsGateway().isNullOrEmpty()) {
+                d2.smsModule().configCase().setGatewayNumber(globalSettings.smsGateway())
                     .andThen(
-                        if (!globalSettings.numberSmsConfirmation().isNullOrEmpty()) {
+                        if (!globalSettings.smsResultSender().isNullOrEmpty()) {
                             d2.smsModule().configCase()
-                                .setConfirmationSenderNumber(globalSettings.numberSmsConfirmation())
+                                .setConfirmationSenderNumber(globalSettings.smsResultSender())
                         } else {
                             Completable.complete()
-                        }
+                        },
                     ).andThen(
-                        d2.smsModule().configCase().setModuleEnabled(true)
+                        d2.smsModule().configCase().setModuleEnabled(true),
                     ).andThen(
-                        d2.smsModule().configCase().refreshMetadataIds()
+                        d2.smsModule().configCase().refreshMetadataIds(),
                     ).blockingAwait()
             }
         }
@@ -244,9 +243,7 @@ class SyncPresenterImpl(
         if (d2.systemInfoModule().versionManager().isGreaterThan(DHISVersion.V2_32)) {
             syncStatusController.initDownloadMedia()
             Completable.fromObservable(
-                d2.fileResourceModule().fileResourceDownloader()
-                    .byValueType().eq(FileResourceValueType.IMAGE)
-                    .download()
+                d2.fileResourceModule().fileResourceDownloader().download(),
             ).blockingAwait()
         }
     }
@@ -257,7 +254,7 @@ class SyncPresenterImpl(
         } ?: 100
         Completable.fromObservable(
             d2.trackedEntityModule().reservedValueManager()
-                .downloadAllReservedValues(maxNumberOfValuesToReserve)
+                .downloadAllReservedValues(maxNumberOfValuesToReserve),
         ).blockingAwait()
     }
 
@@ -366,15 +363,15 @@ class SyncPresenterImpl(
         orgUnitUid: String,
         attrOptionCombo: String,
         periodId: String,
-        catOptionCombo: Array<String>
+        catOptionCombo: Array<String>,
     ): ListenableWorker.Result {
         Completable.fromObservable(
-            syncGranularDataValues(orgUnitUid, attrOptionCombo, periodId, catOptionCombo)
+            syncGranularDataValues(orgUnitUid, attrOptionCombo, periodId, catOptionCombo),
         )
             .andThen(
                 Completable.fromObservable(
-                    syncGranularDataSetComplete(dataSetUid, orgUnitUid, attrOptionCombo, periodId)
-                )
+                    syncGranularDataSetComplete(dataSetUid, orgUnitUid, attrOptionCombo, periodId),
+                ),
             )
             .blockingAwait()
         return if (!checkSyncDataValueStatus(orgUnitUid, attrOptionCombo, periodId)) {
@@ -390,14 +387,14 @@ class SyncPresenterImpl(
                 if (program.programType() == ProgramType.WITH_REGISTRATION) {
                     Completable.fromObservable(
                         d2.trackedEntityModule().trackedEntityInstances().byProgramUids(listOf(uid))
-                            .upload()
+                            .upload(),
                     ).blockingAwait()
 
                     d2.trackedEntityModule().trackedEntityInstanceDownloader().byProgramUid(uid)
                         .download()
                 } else {
                     Completable.fromObservable(
-                        d2.eventModule().events().byProgramUid().eq(uid).upload()
+                        d2.eventModule().events().byProgramUid().eq(uid).upload(),
                     ).blockingAwait()
                     d2.eventModule().eventDownloader().byProgramUid(uid).download()
                 }
@@ -408,13 +405,13 @@ class SyncPresenterImpl(
         val enrollment = d2.enrollmentModule().enrollments().uid(uid).blockingGet()
         Completable.fromObservable(
             d2.trackedEntityModule().trackedEntityInstances()
-                .byUid().eq(enrollment.trackedEntityInstance()!!)
-                .byProgramUids(listOf(enrollment.program()!!))
-                .upload()
+                .byUid().eq(enrollment?.trackedEntityInstance())
+                .byProgramUids(enrollment?.program()?.let { listOf(it) } ?: emptyList())
+                .upload(),
         ).blockingAwait()
         return d2.trackedEntityModule().trackedEntityInstanceDownloader()
-            .byUid().eq(enrollment.trackedEntityInstance())
-            .byProgramUid(enrollment.program()!!)
+            .byUid().eq(enrollment?.trackedEntityInstance())
+            .byProgramUid(enrollment?.program() ?: "")
             .download()
     }
 
@@ -434,7 +431,7 @@ class SyncPresenterImpl(
         orgUnit: String,
         attributeOptionCombo: String,
         period: String,
-        catOptionCombos: Array<String>
+        catOptionCombos: Array<String>,
     ): Observable<D2Progress> {
         return d2.dataValueModule().dataValues()
             .byAttributeOptionComboUid().eq(attributeOptionCombo)
@@ -448,7 +445,7 @@ class SyncPresenterImpl(
         dataSetUid: String,
         orgUnit: String,
         attributeOptionCombo: String,
-        period: String
+        period: String,
     ): Observable<D2Progress> {
         return d2.dataSetModule().dataSetCompleteRegistrations()
             .byDataSetUid().eq(dataSetUid)
@@ -509,7 +506,7 @@ class SyncPresenterImpl(
     override fun checkSyncDataValueStatus(
         orgUnit: String,
         attributeOptionCombo: String,
-        period: String
+        period: String,
     ): Boolean {
         return d2.dataValueModule().dataValues().byPeriod().eq(period)
             .byOrganisationUnitUid().eq(orgUnit)
@@ -578,7 +575,7 @@ class SyncPresenterImpl(
                 DATA,
                 WorkerType.DATA,
                 seconds.toLong(),
-                policy = ExistingWorkPolicy.REPLACE
+                policy = ExistingWorkPolicy.REPLACE,
             )
 
             workManagerController.syncDataForWorker(workerItem)
@@ -595,7 +592,7 @@ class SyncPresenterImpl(
                 META,
                 WorkerType.METADATA,
                 seconds.toLong(),
-                policy = ExistingWorkPolicy.REPLACE
+                policy = ExistingWorkPolicy.REPLACE,
             )
 
             workManagerController.syncDataForWorker(workerItem)
@@ -614,7 +611,7 @@ class SyncPresenterImpl(
         analyticsHelper.setEvent(
             eventName,
             (millisToFinish / 60000.0).toString(),
-            eventName
+            eventName,
         )
     }
 
@@ -624,7 +621,7 @@ class SyncPresenterImpl(
                 analyticsHelper.updateMatomoSecondaryTracker(
                     it.matomoURL()!!,
                     it.matomoID()!!,
-                    DEFAULT_EXTERNAL_TRACKER_NAME
+                    DEFAULT_EXTERNAL_TRACKER_NAME,
                 )
             }
         } ?: analyticsHelper.clearMatomoSecondaryTracker()
