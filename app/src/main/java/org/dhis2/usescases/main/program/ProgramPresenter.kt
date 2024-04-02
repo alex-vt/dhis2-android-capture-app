@@ -3,7 +3,6 @@ package org.dhis2.usescases.main.program
 import androidx.lifecycle.MutableLiveData
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.PublishProcessor
-import java.util.concurrent.TimeUnit
 import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.matomo.Actions.Companion.SYNC_BTN
 import org.dhis2.commons.matomo.Categories.Companion.HOME
@@ -14,8 +13,8 @@ import org.dhis2.usescases.biometrics.usecases.SelectBiometricsConfig
 import org.dhis2.data.service.SyncStatusController
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
-import org.hisp.dhis.android.core.program.ProgramType
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
 class ProgramPresenter internal constructor(
     private val view: ProgramView,
@@ -24,8 +23,6 @@ class ProgramPresenter internal constructor(
     private val filterManager: FilterManager,
     private val matomoAnalyticsController: MatomoAnalyticsController,
     private val syncStatusController: SyncStatusController,
-    private val identifyProgramType: IdentifyProgramType,
-    private val stockManagementMapper: StockManagementMapper,
     private val selectBiometricsConfig: SelectBiometricsConfig
 ) {
 
@@ -43,10 +40,10 @@ class ProgramPresenter internal constructor(
                     refreshData.debounce(
                         500,
                         TimeUnit.MILLISECONDS,
-                        schedulerProvider.io()
+                        schedulerProvider.io(),
                     ).startWith(Unit).switchMap {
                         programRepository.homeItems(
-                            syncStatusController.observeDownloadProcess().value!!
+                            syncStatusController.observeDownloadProcess().value!!,
                         )
                     }
                 }
@@ -58,8 +55,8 @@ class ProgramPresenter internal constructor(
                         view.swapProgramModelData(programs)
                     },
                     { throwable -> Timber.d(throwable) },
-                    { Timber.tag("INIT DATA").d("LOADING ENDED") }
-                )
+                    { Timber.tag("INIT DATA").d("LOADING ENDED") },
+                ),
         )
 
         disposable.add(
@@ -72,8 +69,8 @@ class ProgramPresenter internal constructor(
                         view.showFilterProgress()
                         applyFiler.onNext(filterManager)
                     },
-                    { Timber.e(it) }
-                )
+                    { Timber.e(it) },
+                ),
         )
 
         disposable.add(
@@ -82,8 +79,8 @@ class ProgramPresenter internal constructor(
                 .observeOn(schedulerProvider.ui())
                 .subscribe(
                     { view.openOrgUnitTreeSelector() },
-                    { Timber.e(it) }
-                )
+                    { Timber.e(it) },
+                ),
         )
     }
 
@@ -99,29 +96,10 @@ class ProgramPresenter internal constructor(
     }
 
     fun onItemClick(programModel: ProgramViewModel) {
-        when (getHomeItemType(programModel)) {
-            HomeItemType.PROGRAM_STOCK ->
-                view.navigateToStockManagement(stockManagementMapper.map(programModel))
-            else ->
-                view.navigateTo(programModel)
-        }
+        view.navigateTo(programModel)
 
         if (BIOMETRICS_ENABLED) {
             selectBiometricsConfig(programModel.uid)
-        }
-    }
-
-    private fun getHomeItemType(programModel: ProgramViewModel): HomeItemType {
-        return when (programModel.programType) {
-            ProgramType.WITH_REGISTRATION.name -> {
-                identifyProgramType(programModel.uid)
-            }
-            ProgramType.WITHOUT_REGISTRATION.name -> {
-                HomeItemType.EVENTS
-            }
-            else -> {
-                HomeItemType.DATA_SET
-            }
         }
     }
 

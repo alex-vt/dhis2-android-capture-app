@@ -1,12 +1,5 @@
 package org.dhis2.usescases.teiDashboard.dashboardfragments.data
 
-import android.view.View
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.eq
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import io.reactivex.Single
 import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.filters.data.FilterRepository
@@ -15,18 +8,25 @@ import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.forms.dataentry.RuleEngineRepository
 import org.dhis2.data.schedulers.TrampolineSchedulerProvider
 import org.dhis2.form.data.FormValueStore
+import org.dhis2.form.data.OptionsRepository
 import org.dhis2.usescases.teiDashboard.DashboardRepository
+import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.EventCreationOptionsMapper
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.TEIDataContracts
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.TEIDataPresenter
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.TeiDataRepository
+import org.dhis2.usescases.teiDashboard.domain.GetNewEventCreationTypeOptions
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
-import org.hisp.dhis.android.core.program.ProgramStage
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class TeiDataPresenterTest {
 
@@ -46,6 +46,9 @@ class TeiDataPresenterTest {
     private lateinit var teiDataPresenter: TEIDataPresenter
     private val valueStore: FormValueStore = mock()
     private val resources: ResourceManager = mock()
+    private val optionsRepository: OptionsRepository = mock()
+    private val getNewEventCreationTypeOptions: GetNewEventCreationTypeOptions = mock()
+    private val eventCreationOptionsMapper: EventCreationOptionsMapper = mock()
 
     @Before
     fun setUp() {
@@ -64,57 +67,47 @@ class TeiDataPresenterTest {
             filterManager,
             filterRepository,
             valueStore,
-            resources
+            resources,
+            optionsRepository,
+            getNewEventCreationTypeOptions,
+            eventCreationOptionsMapper,
         )
-    }
-
-    @Test
-    fun `Should hide schedule event when hideDueDate is true`() {
-        val programStage: ProgramStage = mock {
-            on { hideDueDate() } doReturn true
-        }
-
-        val anyView: View = any()
-        teiDataPresenter.onAddNewEvent(anyView, eq(programStage))
-
-        verify(view).showNewEventOptions(anyView, programStage)
-        verify(view).hideDueDate()
     }
 
     @Test
     fun `Should return false if orgUnit does not belong to the capture scope`() {
         whenever(
+            d2.organisationUnitModule().organisationUnits(),
+        ) doReturn mock()
+        whenever(
             d2.organisationUnitModule().organisationUnits()
+                .byOrganisationUnitScope(OrganisationUnit.Scope.SCOPE_DATA_CAPTURE),
         ) doReturn mock()
         whenever(
             d2.organisationUnitModule().organisationUnits()
                 .byOrganisationUnitScope(OrganisationUnit.Scope.SCOPE_DATA_CAPTURE)
+                .byUid(),
         ) doReturn mock()
         whenever(
             d2.organisationUnitModule().organisationUnits()
                 .byOrganisationUnitScope(OrganisationUnit.Scope.SCOPE_DATA_CAPTURE)
-                .byUid()
+                .byUid().eq("orgUnitUid"),
         ) doReturn mock()
         whenever(
             d2.organisationUnitModule().organisationUnits()
                 .byOrganisationUnitScope(OrganisationUnit.Scope.SCOPE_DATA_CAPTURE)
                 .byUid().eq("orgUnitUid")
-        ) doReturn mock()
-        whenever(
-            d2.organisationUnitModule().organisationUnits()
-                .byOrganisationUnitScope(OrganisationUnit.Scope.SCOPE_DATA_CAPTURE)
-                .byUid().eq("orgUnitUid")
-                .blockingIsEmpty()
+                .blockingIsEmpty(),
         ) doReturn false
         assertTrue(
-            teiDataPresenter.enrollmentOrgUnitInCaptureScope("orgUnitUid")
+            teiDataPresenter.enrollmentOrgUnitInCaptureScope("orgUnitUid"),
         )
     }
 
     @Test
     fun `Should show category combo dialog`() {
         whenever(
-            teiDataRepository.eventsWithoutCatCombo()
+            teiDataRepository.eventsWithoutCatCombo(),
         ) doReturn Single.just(mock())
         teiDataPresenter.getEventsWithoutCatCombo()
         verify(view).displayCatComboOptionSelectorForEvents(any())

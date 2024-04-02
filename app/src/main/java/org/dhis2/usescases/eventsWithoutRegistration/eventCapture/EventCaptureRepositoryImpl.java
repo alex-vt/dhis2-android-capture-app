@@ -8,9 +8,12 @@ import static org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCa
 
 import org.dhis2.commons.prefs.BasicPreferenceProvider;
 import org.dhis2.data.biometrics.utils.GetParentTeiKt;
+import org.dhis2.commons.bindings.SdkExtensionsKt;
 import org.dhis2.data.dhislogic.AuthoritiesKt;
 import org.dhis2.utils.DateUtils;
 import org.hisp.dhis.android.core.D2;
+import org.hisp.dhis.android.core.common.BaseIdentifiableObject;
+import org.hisp.dhis.android.core.common.ValidationStrategy;
 import org.hisp.dhis.android.core.enrollment.Enrollment;
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus;
 import org.hisp.dhis.android.core.event.Event;
@@ -33,6 +36,7 @@ import java.util.Objects;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import timber.log.Timber;
 
 public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCaptureRepository {
 
@@ -109,7 +113,7 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
                 d2.eventModule().events().uid(eventUid).setStatus(EventStatus.COMPLETED);
                 return true;
             } catch (D2Error d2Error) {
-                d2Error.printStackTrace();
+                Timber.e(d2Error);
                 return false;
             }
         });
@@ -228,6 +232,15 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
         return !d2.relationshipModule().relationshipTypes()
                 .byAvailableForEvent(eventUid)
                 .blockingIsEmpty();
+    }
+
+    @Override
+    public ValidationStrategy validationStrategy() {
+        ValidationStrategy validationStrategy =
+                SdkExtensionsKt.programStage(d2, programStage().blockingFirst())
+                        .validationStrategy();
+
+        return validationStrategy != null ? validationStrategy : ValidationStrategy.ON_COMPLETE;
     }
 
     @Override

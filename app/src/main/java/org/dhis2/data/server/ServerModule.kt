@@ -6,18 +6,23 @@ import dagger.Provides
 import dhis2.org.analytics.charts.Charts
 import dhis2.org.analytics.charts.DhisAnalyticCharts
 import okhttp3.Interceptor
-import org.dhis2.Bindings.app
 import org.dhis2.BuildConfig
 import org.dhis2.R
+import org.dhis2.bindings.app
 import org.dhis2.commons.di.dagger.PerServer
 import org.dhis2.commons.filters.data.GetFiltersApplyingWebAppConfig
 import org.dhis2.commons.prefs.PreferenceProvider
+import org.dhis2.commons.reporting.CrashReportController
+import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.dhislogic.DhisPeriodUtils
 import org.dhis2.data.service.SyncStatusController
 import org.dhis2.data.service.VersionRepository
+import org.dhis2.form.data.FileController
+import org.dhis2.form.data.OptionsRepository
 import org.dhis2.form.data.RulesUtilsProvider
 import org.dhis2.form.data.RulesUtilsProviderImpl
+import org.dhis2.form.data.UniqueAttributeController
 import org.dhis2.metadata.usecases.DataSetConfiguration
 import org.dhis2.metadata.usecases.ProgramConfiguration
 import org.dhis2.metadata.usecases.TrackedEntityTypeConfiguration
@@ -55,8 +60,8 @@ class ServerModule {
 
     @Provides
     @PerServer
-    fun rulesUtilsProvider(d2: D2?): RulesUtilsProvider {
-        return RulesUtilsProviderImpl(d2!!)
+    fun rulesUtilsProvider(d2: D2?, optionsRepository: OptionsRepository): RulesUtilsProvider {
+        return RulesUtilsProviderImpl(d2!!, optionsRepository)
     }
 
     @Provides
@@ -84,7 +89,7 @@ class ServerModule {
             d2,
             context.getString(R.string.period_span_default_label),
             context.getString(R.string.week_period_span_default_label),
-            context.getString(R.string.biweek_period_span_default_label)
+            context.getString(R.string.biweek_period_span_default_label),
         )
     }
 
@@ -99,14 +104,16 @@ class ServerModule {
     fun providesThemeManager(
         userManager: UserManager,
         d2: D2,
-        preferenceProvider: PreferenceProvider
+        preferenceProvider: PreferenceProvider,
+        colorUtils: ColorUtils,
     ): ThemeManager {
         return ThemeManager(
             userManager,
             ProgramConfiguration(d2),
             DataSetConfiguration(d2),
             TrackedEntityTypeConfiguration(d2),
-            preferenceProvider
+            preferenceProvider,
+            colorUtils,
         )
     }
 
@@ -122,6 +129,24 @@ class ServerModule {
         return VersionRepository(d2)
     }
 
+    @Provides
+    @PerServer
+    fun providesFileController(): FileController {
+        return FileController()
+    }
+
+    @Provides
+    @PerServer
+    fun providesUniqueAttributeController(
+        d2: D2,
+        crashReportController: CrashReportController,
+    ): UniqueAttributeController {
+        return UniqueAttributeController(
+            d2,
+            crashReportController,
+        )
+    }
+
     companion object {
         @JvmStatic
         fun getD2Configuration(context: Context): D2Configuration {
@@ -132,8 +157,8 @@ class ServerModule {
             }
             interceptors.add(
                 AnalyticsInterceptor(
-                    AnalyticsHelper(context.app().appComponent().matomoController())
-                )
+                    AnalyticsHelper(context.app().appComponent().matomoController()),
+                ),
             )
             return D2Configuration.builder()
                 .appName(BuildConfig.APPLICATION_ID)
@@ -145,5 +170,11 @@ class ServerModule {
                 .context(context)
                 .build()
         }
+    }
+
+    @Provides
+    @PerServer
+    fun provideOptionsRepository(d2: D2): OptionsRepository {
+        return OptionsRepository(d2)
     }
 }

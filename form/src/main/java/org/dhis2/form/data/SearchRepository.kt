@@ -12,9 +12,9 @@ import org.dhis2.form.extensions.isBiometricText;
 class SearchRepository(
     private val d2: D2,
     private val fieldViewModelFactory: FieldViewModelFactory,
-    private val programUid: String?,
+    override val programUid: String?,
     private val teiTypeUid: String,
-    private val currentSearchValues: Map<String, String>
+    private val currentSearchValues: Map<String, String>,
 ) : DataEntryBaseRepository(d2, fieldViewModelFactory) {
 
     override fun list(): Flowable<List<FieldUiModel>> {
@@ -23,7 +23,7 @@ class SearchRepository(
         } ?: trackedEntitySearchFields()
     }
 
-    override fun sectionUids(): Flowable<MutableList<String>> {
+    override fun sectionUids(): Flowable<List<String>> {
         return Flowable.just(mutableListOf())
     }
 
@@ -38,31 +38,32 @@ class SearchRepository(
                 .bySearchable().isTrue
                 .blockingGet()
 
-            return@fromCallable teTypeAttributes.map { typeAttribute ->
-                val attribute =
-                    d2.trackedEntityModule().trackedEntityAttributes()
-                        .uid(typeAttribute.trackedEntityAttribute()!!.uid())
-                        .blockingGet()
-                val optionSetConfiguration = attribute.optionSet()?.let {
-                    OptionSetConfiguration.config(
-                        d2.optionModule().options()
-                            .byOptionSetUid().eq(attribute.optionSet()!!.uid())
-                            .blockingCount()
-                    ) {
-                        d2.optionModule().options()
-                            .byOptionSetUid().eq(attribute.optionSet()!!.uid())
-                            .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
-                            .blockingGet()
-                    }
-                }
+            return@fromCallable teTypeAttributes.mapNotNull { typeAttribute ->
+                d2.trackedEntityModule().trackedEntityAttributes()
+                    .uid(typeAttribute.trackedEntityAttribute()!!.uid())
+                    .blockingGet()?.let { attribute ->
 
-                fieldViewModelFactory.createForAttribute(
-                    attribute,
-                    null,
-                    currentSearchValues[attribute.uid()],
-                    true,
-                    optionSetConfiguration
-                )
+                        val optionSetConfiguration = attribute.optionSet()?.let {
+                            OptionSetConfiguration.config(
+                                d2.optionModule().options()
+                                    .byOptionSetUid().eq(attribute.optionSet()!!.uid())
+                                    .blockingCount(),
+                            ) {
+                                d2.optionModule().options()
+                                    .byOptionSetUid().eq(attribute.optionSet()!!.uid())
+                                    .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
+                                    .blockingGet()
+                            }
+                        }
+
+                        fieldViewModelFactory.createForAttribute(
+                            attribute,
+                            null,
+                            currentSearchValues[attribute.uid()],
+                            true,
+                            optionSetConfiguration,
+                        )
+                    }
             }.filter { item: FieldUiModel ->
                 item.valueType !== ValueType.IMAGE &&
                         item.valueType !== ValueType.COORDINATE
@@ -81,34 +82,34 @@ class SearchRepository(
                     val isSearcheable = programAttribute.searchable()!!
                     val isUnique = d2.trackedEntityModule().trackedEntityAttributes()
                         .uid(programAttribute.trackedEntityAttribute()!!.uid())
-                        .blockingGet().unique() === java.lang.Boolean.TRUE
+                        .blockingGet()?.unique() === java.lang.Boolean.TRUE
                     isSearcheable || isUnique
                 }
-            searchableAttributes.map { programAttribute ->
-                val attribute =
-                    d2.trackedEntityModule().trackedEntityAttributes()
-                        .uid(programAttribute.trackedEntityAttribute()!!.uid())
-                        .blockingGet()
+            searchableAttributes.mapNotNull { programAttribute ->
+                d2.trackedEntityModule().trackedEntityAttributes()
+                    .uid(programAttribute.trackedEntityAttribute()!!.uid())
+                    .blockingGet()?.let { attribute ->
 
-                val optionSetConfiguration = attribute.optionSet()?.let {
-                    OptionSetConfiguration.config(
-                        d2.optionModule().options()
-                            .byOptionSetUid().eq(attribute.optionSet()!!.uid())
-                            .blockingCount()
-                    ) {
-                        d2.optionModule().options()
-                            .byOptionSetUid().eq(attribute.optionSet()!!.uid())
-                            .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
-                            .blockingGet()
+                        val optionSetConfiguration = attribute.optionSet()?.let {
+                            OptionSetConfiguration.config(
+                                d2.optionModule().options()
+                                    .byOptionSetUid().eq(attribute.optionSet()!!.uid())
+                                    .blockingCount(),
+                            ) {
+                                d2.optionModule().options()
+                                    .byOptionSetUid().eq(attribute.optionSet()!!.uid())
+                                    .orderBySortOrder(RepositoryScope.OrderByDirection.ASC)
+                                    .blockingGet()
+                            }
+                        }
+                        fieldViewModelFactory.createForAttribute(
+                            attribute,
+                            programAttribute,
+                            currentSearchValues[attribute.uid()],
+                            true,
+                            optionSetConfiguration,
+                        )
                     }
-                }
-                fieldViewModelFactory.createForAttribute(
-                    attribute,
-                    programAttribute,
-                    currentSearchValues[attribute.uid()],
-                    true,
-                    optionSetConfiguration
-                )
             }.filter { item: FieldUiModel? ->
                 item!!.valueType !== ValueType.IMAGE &&
                         item!!.valueType !== ValueType.COORDINATE &&

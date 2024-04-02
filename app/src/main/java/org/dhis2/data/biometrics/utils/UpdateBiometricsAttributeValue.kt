@@ -6,6 +6,7 @@ import org.hisp.dhis.android.core.D2
 fun updateBiometricsAttributeValue(d2: D2, teiUid:String, value: String, parentTeiUid:String?) {
     val teiUidToUpdate = parentTeiUid?:teiUid
     val tei = d2.trackedEntityModule().trackedEntityInstances().uid(teiUidToUpdate).blockingGet()
+        ?: return
 
     val attributeUid = getBiometricsTrackedEntityAttribute(d2)
 

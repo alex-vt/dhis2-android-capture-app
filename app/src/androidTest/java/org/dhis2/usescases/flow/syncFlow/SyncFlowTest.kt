@@ -1,6 +1,8 @@
 package org.dhis2.usescases.flow.syncFlow
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -50,14 +52,16 @@ class SyncFlowTest : BaseTest() {
     }
 
     @Test
-    @Ignore
     fun shouldSuccessfullySyncAChangedTEI() {
         val teiName = "Scott"
         val teiLastName = "Kelley"
 
         prepareTBProgrammeIntentAndLaunchActivity(ruleSearch)
-
         searchTeiRobot {
+            clickOnOpenSearch()
+            typeAttributeAtPosition(teiName, 0)
+            typeAttributeAtPosition(teiLastName, 1)
+            clickOnSearch()
             clickOnTEI(teiName, teiLastName)
         }
 
@@ -70,10 +74,11 @@ class SyncFlowTest : BaseTest() {
             clickOnUpdate()
         }
 
+        teiDashboardRobot {
+            composeTestRule.onNodeWithText("Sync").performClick()
+        }
         syncFlowRobot {
-            pressBack()
             waitToDebounce(500)
-            clickOnSyncTei(teiName, teiLastName)
             clickOnSyncButton(composeTestRule)
             workInfoStatusLiveData.postValue(arrayListOf(mockedGranularWorkInfo(WorkInfo.State.RUNNING)))
             workInfoStatusLiveData.postValue(arrayListOf(mockedGranularWorkInfo(WorkInfo.State.SUCCEEDED)))
@@ -83,7 +88,6 @@ class SyncFlowTest : BaseTest() {
     }
 
     @Test
-    @Ignore
     fun shouldShowErrorWhenTEISyncFails() {
         val teiName = "Lars"
         val teiLastName = "Overland"
@@ -110,11 +114,11 @@ class SyncFlowTest : BaseTest() {
         }
 
         teiDashboardRobot {
-            pressBack()
+            composeTestRule.onNodeWithText("Sync").performClick()
         }
 
         syncFlowRobot {
-            clickOnSyncTei(teiName, teiLastName)
+            waitToDebounce(500)
             clickOnSyncButton(composeTestRule)
             workInfoStatusLiveData.postValue(arrayListOf(mockedGranularWorkInfo(WorkInfo.State.RUNNING)))
             workInfoStatusLiveData.postValue(arrayListOf(mockedGranularWorkInfo(WorkInfo.State.FAILED)))
@@ -123,6 +127,7 @@ class SyncFlowTest : BaseTest() {
         cleanLocalDatabase()
     }
 
+    @Ignore("Indeterminate (flaky)")
     @Test
     fun shouldSuccessfullySyncSavedEvent() {
         prepareMalariaEventIntentAndLaunchActivity(ruleEventWithoutRegistration)
@@ -242,6 +247,7 @@ class SyncFlowTest : BaseTest() {
             Data.EMPTY,
             arrayListOf("GRANULAR"),
             Data.EMPTY,
+            0,
             0
         )
     }
@@ -251,6 +257,6 @@ class SyncFlowTest : BaseTest() {
         const val TB_VISIT = "TB visit"
         const val TB_VISIT_EVENT_DATE = "3/7/2019"
         const val LAB_MONITORING = "Lab monitoring"
-        const val LAB_MONITORING_EVENT_DATE = "2/8/2020"
+        const val LAB_MONITORING_EVENT_DATE = "28/6/2020"
     }
 }

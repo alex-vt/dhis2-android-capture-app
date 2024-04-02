@@ -26,15 +26,15 @@ const val OPEN_ERROR_LOCATION = "OPEN_ERROR_LOCATION"
 
 class SyncStatusDialogNavigator(
     private val context: Context,
-    private val onSyncNavigationListener: OnSyncNavigationListener?
+    private val onSyncNavigationListener: OnSyncNavigationListener?,
 ) {
-    fun navigateTo(syncStatusItem: SyncStatusItem) {
+    fun navigateTo(syncStatusItem: SyncStatusItem, onNavigation: () -> Unit) {
         val intent = when (syncStatusItem.type) {
             is SyncStatusType.DataSet ->
                 navigateToDataSetInstances(syncStatusItem.type as SyncStatusType.DataSet)
             is SyncStatusType.DataSetInstance ->
                 navigateToDataSetInstanceTable(
-                    syncStatusItem.type as SyncStatusType.DataSetInstance
+                    syncStatusItem.type as SyncStatusType.DataSetInstance,
                 )
             is SyncStatusType.Event ->
                 navigateToEvent(syncStatusItem.type as SyncStatusType.Event)
@@ -48,6 +48,10 @@ class SyncStatusDialogNavigator(
                 navigateToStockUsecase(syncStatusItem.type as SyncStatusType.StockProgram)
             is SyncStatusType.Enrollment ->
                 navigateToEnrollmentFormScreen(syncStatusItem.type as SyncStatusType.Enrollment)
+        }
+
+        if (intent?.hasExtra(OPEN_ERROR_LOCATION) == false) {
+            onNavigation()
         }
 
         if (onSyncNavigationListener != null) {
@@ -64,14 +68,14 @@ class SyncStatusDialogNavigator(
     }
 
     private fun navigateToEnrollmentFormScreen(
-        enrollmentSyncItem: SyncStatusType.Enrollment
+        enrollmentSyncItem: SyncStatusType.Enrollment,
     ): Intent? {
         return if (context !is EnrollmentActivity) {
             EnrollmentActivity.getIntent(
                 context,
                 enrollmentSyncItem.enrollmentUid,
                 enrollmentSyncItem.programUid,
-                EnrollmentActivity.EnrollmentMode.CHECK
+                EnrollmentActivity.EnrollmentMode.CHECK,
             )
                 .openErrorLocation()
         } else {
@@ -80,14 +84,14 @@ class SyncStatusDialogNavigator(
     }
 
     private fun navigateToSearchScreen(
-        trackerProgramSyncItem: SyncStatusType.TrackerProgram
+        trackerProgramSyncItem: SyncStatusType.TrackerProgram,
     ): Intent {
         return SearchTEActivity.getIntent(
             context,
             trackerProgramSyncItem.programUid,
             trackerProgramSyncItem.trackedEntityTypeUid,
             null,
-            false
+            false,
         ).launchSyncDialog()
     }
 
@@ -95,7 +99,7 @@ class SyncStatusDialogNavigator(
         return if (context !is HomeActivity) {
             Intent(
                 context,
-                HomeActivity::class.java
+                HomeActivity::class.java,
             ).apply {
                 putExtra(
                     Constants.INTENT_EXTRA_APP_CONFIG,
@@ -107,8 +111,8 @@ class SyncStatusDialogNavigator(
                         distributedTo = stockProgramSyncItem.stockUsecase.distributedTo(),
                         stockDistribution = stockProgramSyncItem.stockUsecase.stockDistribution(),
                         stockCount = stockProgramSyncItem.stockUsecase.stockCount(),
-                        stockDiscarded = stockProgramSyncItem.stockUsecase.stockDiscarded()
-                    )
+                        stockDiscarded = stockProgramSyncItem.stockUsecase.stockDiscarded(),
+                    ),
                 )
             }
         } else {
@@ -122,7 +126,7 @@ class SyncStatusDialogNavigator(
                 context,
                 teiSyncType.teiUid,
                 teiSyncType.programUid,
-                teiSyncType.enrollmentUid
+                teiSyncType.enrollmentUid,
             ).launchSyncDialog()
         } else {
             null
@@ -132,7 +136,7 @@ class SyncStatusDialogNavigator(
     private fun navigateToEventProgram(eventProgramSyncItem: SyncStatusType.EventProgram): Intent {
         return ProgramEventDetailActivity.intent(
             context,
-            eventProgramSyncItem.programUid
+            eventProgramSyncItem.programUid,
         ).launchSyncDialog()
     }
 
@@ -143,7 +147,7 @@ class SyncStatusDialogNavigator(
                 eventSyncItem.eventUid,
                 eventSyncItem.programUid,
                 eventSyncItem.hasNullDataElementConflict,
-                EventMode.CHECK
+                EventMode.CHECK,
             )
             intent.openErrorLocation()
             if (eventSyncItem.hasNullDataElementConflict) {
@@ -162,7 +166,7 @@ class SyncStatusDialogNavigator(
     }
 
     private fun navigateToDataSetInstanceTable(
-        tableSyncItem: SyncStatusType.DataSetInstance
+        tableSyncItem: SyncStatusType.DataSetInstance,
     ): Intent? {
         return if (context !is DataSetTableActivity) {
             DataSetTableActivity.intent(
@@ -170,7 +174,7 @@ class SyncStatusDialogNavigator(
                 tableSyncItem.dataSetUid,
                 tableSyncItem.orgUnitUid,
                 tableSyncItem.periodId,
-                tableSyncItem.attrOptComboUid
+                tableSyncItem.attrOptComboUid,
             ).openErrorLocation()
         } else {
             null
@@ -180,7 +184,7 @@ class SyncStatusDialogNavigator(
     private fun navigateToDataSetInstances(dataSetSyncItem: SyncStatusType.DataSet): Intent {
         return DataSetDetailActivity.intent(
             context,
-            dataSetSyncItem.dataSetUid
+            dataSetSyncItem.dataSetUid,
         ).launchSyncDialog()
     }
 

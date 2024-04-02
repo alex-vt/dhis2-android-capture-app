@@ -1,10 +1,5 @@
 package org.dhis2.usescases.datasets
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.forms.dataentry.tablefields.edittext.EditTextViewModel
 import org.dhis2.usescases.datasets.dataSetTable.dataSetSection.DataValueRepository
@@ -13,6 +8,11 @@ import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 const val UNSUPPORTED_VALUES = "Unsupported Values"
 const val DATAELEMENT_UID = "dataElement_uid"
@@ -48,7 +48,7 @@ class MapFieldValueToUserTest {
             0,
             1,
             "1",
-            ""
+            "",
         )
         val dataElement =
             DataElement.builder().uid(DATAELEMENT_UID).valueType(ValueType.BOOLEAN).build()
@@ -78,7 +78,7 @@ class MapFieldValueToUserTest {
             0,
             1,
             "1",
-            ""
+            "",
         )
         val dataElement =
             DataElement.builder().uid(DATAELEMENT_UID).valueType(ValueType.ORGANISATION_UNIT)
@@ -108,7 +108,7 @@ class MapFieldValueToUserTest {
             0,
             1,
             "1",
-            ""
+            "",
         )
         whenever(resources.getString(any())) doReturn UNSUPPORTED_VALUES
         val dataElement =
@@ -138,7 +138,7 @@ class MapFieldValueToUserTest {
             0,
             1,
             "1",
-            ""
+            "",
         )
         val dataElement =
             DataElement.builder().uid(DATAELEMENT_UID).valueType(ValueType.FILE_RESOURCE).build()
@@ -166,7 +166,7 @@ class MapFieldValueToUserTest {
             0,
             1,
             "1",
-            ""
+            "",
         )
         whenever(resources.getString(any())) doReturn UNSUPPORTED_VALUES
         val dataElement =
@@ -196,7 +196,7 @@ class MapFieldValueToUserTest {
             0,
             1,
             "1",
-            ""
+            "",
         )
         whenever(resources.getString(any())) doReturn UNSUPPORTED_VALUES
         val dataElement =
@@ -225,7 +225,7 @@ class MapFieldValueToUserTest {
             0,
             1,
             "1",
-            ""
+            "",
         )
         whenever(resources.getString(any())) doReturn UNSUPPORTED_VALUES
         val dataElement =
@@ -254,7 +254,7 @@ class MapFieldValueToUserTest {
             0,
             1,
             "1",
-            ""
+            "",
         )
         whenever(resources.getString(any())) doReturn UNSUPPORTED_VALUES
         val dataElement =

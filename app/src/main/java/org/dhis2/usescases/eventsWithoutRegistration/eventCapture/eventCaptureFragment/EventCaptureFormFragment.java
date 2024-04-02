@@ -27,6 +27,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.dhis2.R;
 import org.dhis2.commons.Constants;
+import org.dhis2.commons.featureconfig.data.FeatureConfigRepository;
+import org.dhis2.commons.featureconfig.model.Feature;
 import org.dhis2.data.biometrics.BiometricsClient;
 import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.data.biometrics.RegisterResult;
@@ -34,7 +36,9 @@ import org.dhis2.data.biometrics.VerifyResult;
 import org.dhis2.databinding.SectionSelectorFragmentBinding;
 import org.dhis2.form.model.EventRecords;
 import org.dhis2.form.ui.FormView;
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureAction;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity;
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract;
 import org.dhis2.usescases.general.FragmentGlobalAbstract;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,6 +53,9 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
 
     @Inject
     EventCaptureFormPresenter presenter;
+
+    @Inject
+    FeatureConfigRepository featureConfig;
 
     private EventCaptureActivity activity;
     private SectionSelectorFragmentBinding binding;
@@ -135,6 +142,9 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                 .factory(activity.getSupportFragmentManager())
                 .setRecords(new EventRecords(getArguments().getString(Constants.EVENT_UID)))
                 .openErrorLocation(getArguments().getBoolean(OPEN_ERROR_LOCATION, false))
+                .useComposeForm(
+                        featureConfig.isFeatureEnable(Feature.COMPOSE_FORMS)
+                )
                 .onFieldsLoadingListener ( fields -> presenter.onFieldsLoading(fields))
                 .build();
         activity.setFormEditionListener(this);
@@ -145,7 +155,17 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = DataBindingUtil.inflate(inflater, R.layout.section_selector_fragment, container, false);
-        binding.setPresenter(activity.getPresenter());
+        EventCaptureContract.Presenter activityPresenter = activity.getPresenter();
+        binding.setPresenter(activityPresenter);
+
+        activityPresenter.observeActions().observe(getViewLifecycleOwner(), action ->
+        {
+            if (action == EventCaptureAction.ON_BACK) {
+                formView.onSaveClick();
+                activityPresenter.emitAction(EventCaptureAction.NONE);
+            }
+        });
+
         binding.actionButton.setOnClickListener(view -> {
             closeKeyboard(view);
             performSaveClick();

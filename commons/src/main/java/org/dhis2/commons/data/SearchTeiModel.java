@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class SearchTeiModel implements CarouselItemModel {
 
@@ -28,6 +29,7 @@ public class SearchTeiModel implements CarouselItemModel {
     private TrackedEntityInstance tei;
     private String profilePicturePath;
     private String defaultTypeIcon;
+    private String header;
 
     private Enrollment selectedEnrollment;
     private List<Enrollment> enrollments;
@@ -144,6 +146,15 @@ public class SearchTeiModel implements CarouselItemModel {
         return defaultTypeIcon;
     }
 
+    public void setHeader(String header) {
+        this.header = header;
+    }
+
+    @Nullable
+    public String getHeader() {
+        return header;
+    }
+
     public void setCurrentEnrollment(Enrollment enrollment) {
         this.selectedEnrollment = enrollment;
     }
@@ -162,7 +173,17 @@ public class SearchTeiModel implements CarouselItemModel {
 
     public List<Program> getProgramInfo() {
         Collections.sort(programInfo, (program1, program2) -> program1.displayName().compareToIgnoreCase(program2.displayName()));
-        return programInfo;
+        if (selectedEnrollment != null) {
+            List<Program> programs = new ArrayList<>();
+            for (Program program : programInfo) {
+                if (!Objects.equals(selectedEnrollment.program(), program.uid())) {
+                    programs.add(program);
+                }
+            }
+            return programs;
+        } else {
+            return programInfo;
+        }
     }
 
     public void setOverdueDate(Date dateToShow) {

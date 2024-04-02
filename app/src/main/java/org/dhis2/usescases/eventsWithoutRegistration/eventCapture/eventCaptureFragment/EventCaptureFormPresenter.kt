@@ -20,7 +20,7 @@ class EventCaptureFormPresenter(
     private val view: EventCaptureFormView,
     private val activityPresenter: EventCaptureContract.Presenter,
     private val d2: D2,
-    private val eventUid: String
+    private val eventUid: String,
 ) {
 
     private var biometricsVerificationStatus: Int = -1
@@ -38,7 +38,7 @@ class EventCaptureFormPresenter(
                 result.onCompleteMessage,
                 result.fieldUidErrorList,
                 result.mandatoryFields,
-                result.warningFields
+                result.warningFields,
             )
 
             is FieldsWithWarningResult -> activityPresenter.attemptFinish(
@@ -46,7 +46,7 @@ class EventCaptureFormPresenter(
                 result.onCompleteMessage,
                 emptyList(),
                 emptyMap(),
-                result.fieldUidWarningList
+                result.fieldUidWarningList,
             )
 
             is MissingMandatoryResult -> activityPresenter.attemptFinish(
@@ -54,7 +54,7 @@ class EventCaptureFormPresenter(
                 result.onCompleteMessage,
                 result.errorFields,
                 result.mandatoryFields,
-                result.warningFields
+                result.warningFields,
             )
 
             is SuccessfulResult -> activityPresenter.attemptFinish(
@@ -62,7 +62,7 @@ class EventCaptureFormPresenter(
                 result.onCompleteMessage,
                 emptyList(),
                 emptyMap(),
-                emptyList()
+                emptyList(),
             )
 
             NotSavedResult -> {

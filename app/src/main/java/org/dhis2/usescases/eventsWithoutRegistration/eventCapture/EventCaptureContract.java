@@ -1,10 +1,15 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventCapture;
 
+import androidx.lifecycle.LiveData;
+
 import org.dhis2.ui.dialogs.bottomsheet.FieldWithIssue;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.model.EventCompletionDialog;
 import org.dhis2.usescases.general.AbstractActivityContracts;
+import org.hisp.dhis.android.core.common.ValidationStrategy;
 import org.hisp.dhis.android.core.event.EventStatus;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,8 +51,6 @@ public class EventCaptureContract {
 
         void attemptToReschedule();
 
-        void showErrorSnackBar();
-
         void showEventIntegrityAlert();
 
         void updateNoteBadge(int numberOfNotes);
@@ -65,6 +68,8 @@ public class EventCaptureContract {
 
     public interface Presenter extends AbstractActivityContracts.Presenter {
 
+        LiveData<EventCaptureAction> observeActions();
+
         void init();
 
         Date getBiometricsAttributeValueInTeiLastUpdated(String deUid);
@@ -72,7 +77,7 @@ public class EventCaptureContract {
         void onBackClick();
 
         void attemptFinish(boolean canComplete,
-                           String onCompleteMessage,
+                           @Nullable String onCompleteMessage,
                            List<FieldWithIssue> errorFields,
                            Map<String, String> emptyMandatoryFields,
                            List<FieldWithIssue> warningFields);
@@ -102,6 +107,8 @@ public class EventCaptureContract {
         void showProgress();
 
         boolean getCompletionPercentageVisibility();
+
+        void emitAction(@NotNull EventCaptureAction onBack);
 
         void setValueChanged(@NotNull String uid);
 
@@ -153,6 +160,8 @@ public class EventCaptureContract {
         boolean hasAnalytics();
 
         boolean hasRelationships();
+
+        ValidationStrategy validationStrategy();
 
         Date getBiometricsAttributeValueInTeiLastUpdated();
 

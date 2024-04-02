@@ -13,7 +13,7 @@ import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 
 open class FormViewHolder(private val binding: ViewDataBinding) : RecyclerView.ViewHolder(
-    binding.root
+    binding.root,
 ) {
 
     init {
@@ -25,7 +25,7 @@ open class FormViewHolder(private val binding: ViewDataBinding) : RecyclerView.V
         uiModel: FieldUiModel,
         callback: FieldItemCallback,
         textWatcher: TextWatcher,
-        coordinateTextWatcher: LatitudeLongitudeTextWatcher
+        coordinateTextWatcher: LatitudeLongitudeTextWatcher,
     ) {
         val itemCallback: FieldUiModel.Callback = object : FieldUiModel.Callback {
             override fun recyclerViewUiEvents(uiEvent: RecyclerViewUiEvents) {
@@ -36,7 +36,7 @@ open class FormViewHolder(private val binding: ViewDataBinding) : RecyclerView.V
                 var formIntent = intent
                 if (intent is FormIntent.OnNext) {
                     formIntent = intent.copy(
-                        position = layoutPosition
+                        position = layoutPosition,
                     )
                 }
                 callback.intent(formIntent)

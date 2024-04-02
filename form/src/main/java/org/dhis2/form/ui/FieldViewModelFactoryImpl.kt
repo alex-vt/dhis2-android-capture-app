@@ -2,6 +2,7 @@ package org.dhis2.form.ui
 
 import androidx.databinding.ObservableField
 import org.dhis2.commons.extensions.Preconditions.Companion.isNull
+import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.FieldUiModelImpl
 import org.dhis2.form.model.OptionSetConfiguration
@@ -10,6 +11,7 @@ import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
 import org.dhis2.form.model.biometrics.BiometricsDataElementStatus
 import org.dhis2.form.model.biometrics.BiometricsDataElementUiModelImpl
 import org.dhis2.form.ui.event.UiEventFactoryImpl
+import org.dhis2.form.ui.provider.AutoCompleteProvider
 import org.dhis2.form.ui.provider.DisplayNameProvider
 import org.dhis2.form.ui.provider.HintProvider
 import org.dhis2.form.ui.provider.KeyboardActionProvider
@@ -33,7 +35,8 @@ class FieldViewModelFactoryImpl(
     private val displayNameProvider: DisplayNameProvider,
     private val uiEventTypesProvider: UiEventTypesProvider,
     private val keyboardActionProvider: KeyboardActionProvider,
-    private val legendValueProvider: LegendValueProvider
+    private val legendValueProvider: LegendValueProvider,
+    private val autoCompleteProvider: AutoCompleteProvider,
 ) : FieldViewModelFactory {
     private val currentSection = ObservableField("")
 
@@ -53,7 +56,10 @@ class FieldViewModelFactoryImpl(
         objectStyle: ObjectStyle,
         fieldMask: String?,
         optionSetConfiguration: OptionSetConfiguration?,
-        featureType: FeatureType?
+        featureType: FeatureType?,
+        autoCompleteList: List<String>?,
+        orgUnitSelectorScope: OrgUnitSelectorScope?,
+        url: String?
     ): FieldUiModel {
         var isMandatory = mandatory
         isNull(valueType, "type must be supplied")
@@ -64,7 +70,7 @@ class FieldViewModelFactoryImpl(
                 valueType,
                 fieldRendering?.type(),
                 optionSet,
-                renderingType
+                renderingType,
             ),
             value = value,
             focused = false,
@@ -87,17 +93,20 @@ class FieldViewModelFactoryImpl(
                 description,
                 valueType,
                 allowFutureDates,
-                optionSet
+                optionSet,
             ),
             displayName = displayNameProvider.provideDisplayName(valueType, value, optionSet),
             renderingType = uiEventTypesProvider.provideUiRenderType(
                 featureType,
                 fieldRendering?.type(),
-                renderingType
+                renderingType,
             ),
             optionSetConfiguration = optionSetConfiguration,
             keyboardActionType = keyboardActionProvider.provideKeyboardAction(valueType),
-            fieldMask = fieldMask
+            fieldMask = fieldMask,
+            autocompleteList = autoCompleteProvider.provideAutoCompleteValues(id),
+            orgUnitSelectorScope = orgUnitSelectorScope,
+            url = url,
         )
     }
 
@@ -106,7 +115,7 @@ class FieldViewModelFactoryImpl(
         programTrackedEntityAttribute: ProgramTrackedEntityAttribute?,
         value: String?,
         editable: Boolean,
-        optionSetConfiguration: OptionSetConfiguration?
+        optionSetConfiguration: OptionSetConfiguration?,
     ): FieldUiModel {
         isNull(trackedEntityAttribute.valueType(), "type must be supplied")
         return create(
@@ -130,7 +139,8 @@ class FieldViewModelFactoryImpl(
                 FeatureType.POINT
             } else {
                 null
-            }
+            },
+            url = null
         )
     }
 
@@ -159,12 +169,13 @@ class FieldViewModelFactoryImpl(
             null,
             null,
             true,
+            null,
             0,
             0,
             0,
             0,
             SectionRenderingType.LISTING.name,
-            currentSection
+            currentSection,
         )
     }
 
@@ -175,7 +186,7 @@ class FieldViewModelFactoryImpl(
         isOpen: Boolean,
         totalFields: Int,
         completedFields: Int,
-        rendering: String?
+        rendering: String?,
     ): FieldUiModel {
         return SectionUiModelImpl(
             sectionUid,
@@ -201,12 +212,13 @@ class FieldViewModelFactoryImpl(
             null,
             null,
             isOpen,
+            null,
             totalFields,
             completedFields,
             0,
             0,
             rendering,
-            currentSection
+            currentSection,
         )
     }
 
@@ -235,12 +247,13 @@ class FieldViewModelFactoryImpl(
             null,
             null,
             false,
+            null,
             0,
             0,
             0,
             0,
             SectionRenderingType.LISTING.name,
-            currentSection
+            currentSection,
         )
     }
 
@@ -253,7 +266,10 @@ class FieldViewModelFactoryImpl(
             id,
             layoutProvider.getLayoutForBiometrics(),
             value,
-            programStageSection
+            programStageSection,
+            null,
+            null,
+            null
         )
     }
 
@@ -267,7 +283,10 @@ class FieldViewModelFactoryImpl(
             layoutProvider.getLayoutForBiometricsVerification(),
             value,
             programStageSection,
-            BiometricsDataElementStatus.NOT_DONE
+            BiometricsDataElementStatus.NOT_DONE,
+            null,
+            null,
+            null
         )
     }
 }

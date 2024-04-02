@@ -5,7 +5,9 @@ import static org.dhis2.commons.biometrics.ExtensionsKt.isBiometricAttribute;
 
 import androidx.databinding.BaseObservable;
 
+import org.dhis2.commons.data.tuples.Pair;
 import org.hisp.dhis.android.core.common.ObjectStyle;
+import org.hisp.dhis.android.core.common.State;
 import org.hisp.dhis.android.core.enrollment.Enrollment;
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus;
 import org.hisp.dhis.android.core.event.Event;
@@ -13,13 +15,18 @@ import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 import org.hisp.dhis.android.core.program.Program;
 import org.hisp.dhis.android.core.program.ProgramStage;
 import org.hisp.dhis.android.core.program.ProgramTrackedEntityAttribute;
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import javax.annotation.Nullable;
 
 /**
  * QUADRAM. Created by ppajuelo on 04/12/2017.
@@ -27,7 +34,7 @@ import java.util.Objects;
 public class DashboardProgramModel extends BaseObservable {
 
     private TrackedEntityInstance tei;
-    private List<ProgramTrackedEntityAttribute> trackedEntityAttributes;
+    private List<Pair<TrackedEntityAttribute, TrackedEntityAttributeValue>> trackedEntityAttributes;
     private List<TrackedEntityAttributeValue> trackedEntityAttributeValues;
     private List<Event> eventModels;
     private Enrollment currentEnrollment;
@@ -36,12 +43,19 @@ public class DashboardProgramModel extends BaseObservable {
     private List<OrganisationUnit> orgsUnits;
     private List<Enrollment> teiEnrollments;
 
+    private String teiHeader;
+    private String avatarPath;
+
+    private EnrollmentStatus currentEnrollmentStatus;
+    private State enrollmentState;
+
+
     public DashboardProgramModel(
             TrackedEntityInstance tei,
             Enrollment currentEnrollment,
             List<ProgramStage> programStages,
             List<Event> events,
-            List<ProgramTrackedEntityAttribute> trackedEntityAttributes,
+            List<Pair<TrackedEntityAttribute, TrackedEntityAttributeValue>> trackedEntityAttributes,
             List<TrackedEntityAttributeValue> trackedEntityAttributeValues,
             List<OrganisationUnit> orgsUnits,
             List<Program> enrollmentPrograms) {
@@ -54,16 +68,16 @@ public class DashboardProgramModel extends BaseObservable {
         this.eventModels = events;
         this.trackedEntityAttributes = trackedEntityAttributes;
         this.trackedEntityAttributeValues = trackedEntityAttributeValues;
+        this.currentEnrollmentStatus = currentEnrollment.status();
+        this.enrollmentState = currentEnrollment.aggregatedSyncState();
     }
 
     public DashboardProgramModel(TrackedEntityInstance tei,
-                                 List<ProgramTrackedEntityAttribute> trackedEntityAttributes,
                                  List<TrackedEntityAttributeValue> trackedEntityAttributeValues,
                                  List<OrganisationUnit> orgsUnits,
                                  List<Program> enrollmentPrograms,
                                  List<Enrollment> teiEnrollments) {
         this.tei = tei;
-        this.trackedEntityAttributes = trackedEntityAttributes;
         this.trackedEntityAttributeValues = trackedEntityAttributeValues;
         this.orgsUnits = orgsUnits;
         this.enrollmentPrograms = enrollmentPrograms;
@@ -96,17 +110,8 @@ public class DashboardProgramModel extends BaseObservable {
         return currentOrgUnit;
     }
 
-    public String getAttributeBySortOrder(int sortOrder) {
-        TrackedEntityAttributeValue attributeValue = null;
-        sortOrder--;
-        if (sortOrder < trackedEntityAttributes.size())
-            for (TrackedEntityAttributeValue attribute : trackedEntityAttributeValues)
-                if (trackedEntityAttributes != null &&
-                        Objects.equals(attribute.trackedEntityAttribute(), trackedEntityAttributes.get(sortOrder).trackedEntityAttribute().uid()))
-                    attributeValue = attribute;
-
-
-        return attributeValue != null ? attributeValue.value() : "";
+    public List<Pair<TrackedEntityAttribute, TrackedEntityAttributeValue>> getAttributes() {
+        return trackedEntityAttributes;
     }
 
     public List<Program> getProgramsWithActiveEnrollment() {
@@ -133,7 +138,7 @@ public class DashboardProgramModel extends BaseObservable {
         return selectedProgram;
     }
 
-    public List<TrackedEntityAttributeValue> getTrackedEntityAttributeValues() {
+    public List<TrackedEntityAttributeValue>  getTrackedEntityAttributeValues() {
         return trackedEntityAttributeValues;
     }
 
@@ -165,6 +170,46 @@ public class DashboardProgramModel extends BaseObservable {
         if (foundProgram != null && foundProgram.style() != null)
             return foundProgram.style();
         else return null;
+    }
+
+    public void setTeiHeader(@Nullable String header) {
+        teiHeader = header;
+    }
+    public String getTeiHeader() {
+        return teiHeader;
+    }
+
+    public void setAvatarPath(String path) {
+        avatarPath = path;
+    }
+
+    public String getAvatarPath() { return avatarPath; }
+
+    public List<Program> getEnrollmentActivePrograms(){
+        Collections.sort(enrollmentPrograms, (program1, program2) -> program1.displayName().compareToIgnoreCase(program2.displayName()));
+        List<Program> programs = new ArrayList<>();
+        for(Program program: enrollmentPrograms) {
+            if (!Objects.equals(currentEnrollment.program(), program.uid())) {
+                programs.add(program);
+            }
+        }
+        return programs;
+    }
+
+    public void setCurrentEnrollmentStatus(EnrollmentStatus status){
+        currentEnrollmentStatus = status;
+    }
+
+    public EnrollmentStatus getCurrentEnrollmentStatus() {
+        return currentEnrollmentStatus;
+    }
+
+    public void setEnrollmentState(State state){
+        enrollmentState = state;
+    }
+
+    public State getEnrollmentState() {
+        return enrollmentState;
     }
 
     public boolean isBiometricsEnabled(){
@@ -218,9 +263,9 @@ public class DashboardProgramModel extends BaseObservable {
     public String getTrackedBiometricEntityAttributeUid(){
         String biometricUid = null;
 
-        for(ProgramTrackedEntityAttribute trackedEntityAttribute: trackedEntityAttributes){
-            if(isBiometricAttribute(trackedEntityAttribute)){
-                biometricUid =  trackedEntityAttribute.trackedEntityAttribute().uid();
+        for(Pair<TrackedEntityAttribute, TrackedEntityAttributeValue> attribute: trackedEntityAttributes){
+            if(isBiometricAttribute(attribute.val0())){
+                biometricUid =  attribute.val0().uid();
                 break;
             }
         }
