@@ -175,7 +175,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
 
             binding.filterLayout.adapter = filtersAdapter
 
-            binding.cardFront.verificationButtonIcon.setImageDrawable(
+            binding.verificationButtonIcon?.setImageDrawable(
                 AppCompatResources.getDrawable(requireContext(), requireContext().getBioIconBasic())
             )
         }.root
@@ -625,45 +625,45 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     }
 
     override fun resetVerificationStatus() {
-        binding.cardFront.verificationButton.background = ContextCompat.getDrawable(
+        binding.verificationButton?.background = ContextCompat.getDrawable(
             requireContext(),
             R.drawable.button_round_2
         )
-        binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_not_done)
-        binding.cardFront.verificationButtonIcon.setImageDrawable(
+        binding.verificationButtonText?.setText(R.string.biometrics_verification_not_done)
+        binding.verificationButtonIcon?.setImageDrawable(
             AppCompatResources.getDrawable(requireContext(), requireContext().getBioIconSuccess())
         )
     }
 
     override fun verificationStatusMatch() {
-        binding.cardFront.verificationButton.background = ContextCompat.getDrawable(
+        binding.verificationButton?.background = ContextCompat.getDrawable(
             requireContext(),
             R.drawable.button_round_success
         )
-        binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_match)
-        binding.cardFront.verificationButtonIcon.setImageDrawable(
+        binding.verificationButtonText?.setText(R.string.biometrics_verification_match)
+        binding.verificationButtonIcon?.setImageDrawable(
             AppCompatResources.getDrawable(requireContext(), requireContext().getBioIconSuccess())
         )
     }
 
     override fun verificationStatusNoMatch() {
-        binding.cardFront.verificationButton.background = ContextCompat.getDrawable(
+        binding.verificationButton?.background = ContextCompat.getDrawable(
             requireContext(),
             R.drawable.button_round_fail
         )
-        binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_no_match)
-        binding.cardFront.verificationButtonIcon.setImageDrawable(
+        binding.verificationButtonText?.setText(R.string.biometrics_verification_no_match)
+        binding.verificationButtonIcon?.setImageDrawable(
             AppCompatResources.getDrawable(requireContext(), requireContext().getBioIconFailed())
         )
     }
 
     override fun verificationStatusFailed() {
-        binding.cardFront.verificationButton.background = ContextCompat.getDrawable(
+        binding.verificationButton?.background = ContextCompat.getDrawable(
             requireContext(),
             R.drawable.button_round_warning
         )
-        binding.cardFront.verificationButtonText.setText(R.string.biometrics_verification_failed)
-        binding.cardFront.verificationButtonIcon.setImageDrawable(
+        binding.verificationButtonText?.setText(R.string.biometrics_verification_failed)
+        binding.verificationButtonIcon?.setImageDrawable(
             AppCompatResources.getDrawable(requireContext(), requireContext().getBioIconWarning())
         )
     }

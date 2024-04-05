@@ -57,42 +57,6 @@
             android:orientation="vertical"
             app:layout_constraintGuide_percent=".5" />
 
-        <LinearLayout
-            android:id="@+id/verification_button"
-            style="@style/ButtonRoundedGrey"
-            android:layout_width="200dp"
-            android:layout_height="0dp"
-            android:paddingVertical="4dp"
-            android:gravity="center"
-            android:onClick="@{() -> presenter.verifyBiometrics()}"
-            android:visibility="@{dashboardModel.isBiometricsEnabled &amp;&amp; dashboardModel.isTrackedBiometricEntityExistAndHasValue()?View.VISIBLE:View.GONE}"
-            app:layout_constraintTop_toBottomOf="@id/guideline"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <ImageView
-                android:id="@+id/verification_button_icon"
-                android:layout_width="27dp"
-                android:layout_height="27dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_bio_fingerprint"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/verification_button_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:fontFamily="@font/rubik_medium"
-                android:text="@string/biometrics_verification_not_done"
-                android:textAllCaps="true"
-                android:textColor="@color/white"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </LinearLayout>
-
         <ImageView
             android:id="@+id/follow_up"
             android:layout_width="24dp"

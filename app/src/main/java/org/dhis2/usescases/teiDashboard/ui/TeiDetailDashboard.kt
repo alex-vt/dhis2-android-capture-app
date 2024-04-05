@@ -8,11 +8,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import org.dhis2.commons.biometrics.isNotBiometricText
+import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.teiDashboard.ui.model.InfoBarUiModel
 import org.dhis2.usescases.teiDashboard.ui.model.TeiCardUiModel
 import org.hisp.dhis.mobile.ui.designsystem.component.CardDetail
 import org.hisp.dhis.mobile.ui.designsystem.component.InfoBar
 import org.hisp.dhis.mobile.ui.designsystem.component.InfoBarData
+
 
 @Composable
 fun TeiDetailDashboard(
@@ -80,9 +83,14 @@ fun TeiDetailDashboard(
             )
         }
 
+        val additionalInfoList =
+            if (BIOMETRICS_ENABLED) card.additionalInfo.filter {
+                it.key?.replace(":","")?.isNotBiometricText() ?: true
+            } else card.additionalInfo
+
         CardDetail(
             title = card.title,
-            additionalInfoList = card.additionalInfo,
+            additionalInfoList = additionalInfoList,
             avatar = card.avatar,
             actionButton = card.actionButton,
             expandLabelText = card.expandLabelText,
