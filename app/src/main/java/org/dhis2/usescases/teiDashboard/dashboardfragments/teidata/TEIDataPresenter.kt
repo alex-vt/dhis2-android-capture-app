@@ -86,7 +86,7 @@ class TEIDataPresenter(
     private var stagesToHide: List<String> = emptyList()
 
     private var uidForEvent: String? = null
-    private val orgUnitUid: String? = null
+    private var orgUnitUid: String? = null
 
     private var lastVerificationResult: VerifyResult? = null
 
@@ -424,6 +424,7 @@ class TEIDataPresenter(
     fun setDashboardProgram(dashboardModel: DashboardProgramModel) {
         this.dashboardModel = dashboardModel
         programUid = dashboardModel.currentProgram.uid()
+        orgUnitUid = dashboardModel.currentOrgUnit.uid()
     }
 
     fun setProgram(program: Program, enrollmentUid: String?) {
