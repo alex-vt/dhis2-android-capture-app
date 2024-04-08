@@ -609,6 +609,10 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         bundle.putSerializable(Constants.EVENT_PERIOD_TYPE, programStage.periodType())
         bundle.putString(Constants.PROGRAM_STAGE_UID, programStage.uid())
         bundle.putInt(Constants.EVENT_SCHEDULE_INTERVAL, programStage.standardInterval() ?: 0)
+        bundle.putString(BIOMETRICS_GUID, dashboardModel.biometricValue)
+        bundle.putInt(BIOMETRICS_VERIFICATION_STATUS, -1)
+        bundle.putString(BIOMETRICS_TEI_ORGANISATION_UNIT, dashboardModel.currentOrgUnit.uid())
+
         intent.putExtras(bundle)
         eventInitialLauncher.launch(intent)
     }
