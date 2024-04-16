@@ -14,8 +14,10 @@ import org.dhis2.commons.matomo.MatomoAnalyticsController
 import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.schedulers.defaultSubscribe
+import org.dhis2.data.biometrics.utils.getBiometricsTrackedEntityAttribute
 import org.dhis2.data.biometrics.utils.getParentBiometricsAttributeValueIfRequired
 import org.dhis2.data.biometrics.utils.getTeiByUid
+import org.dhis2.data.biometrics.utils.getTrackedEntityAttributeValueByAttribute
 import org.dhis2.form.data.EnrollmentRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
@@ -388,5 +390,27 @@ class EnrollmentPresenterImpl(
                 it
             }
         } as MutableList<FieldUiModel>
+    }
+
+    fun getBiometricsGuid(): String? {
+        val teiUid = teiRepository.blockingGet()?.uid()?: return null
+
+        val teiValues = getTeiByUid(d2,teiUid)?.trackedEntityAttributeValues()?: return null
+
+        val biometricsAttribute = getBiometricsTrackedEntityAttribute(d2) ?: return null
+
+        val attValue = getTrackedEntityAttributeValueByAttribute(
+            biometricsAttribute,
+            teiValues
+        )
+
+        return attValue?.value() ?: getParentBiometricsAttributeValueIfRequired(
+            d2,
+            teiAttributesProvider,
+            basicPreferenceProvider,
+            teiValues,
+            programRepository.blockingGet()?.uid() ?:"",
+            teiRepository.blockingGet()?.uid()?:""
+        )?.value()
     }
 }

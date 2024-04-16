@@ -10,6 +10,9 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.databinding.DataBindingUtil
 import org.dhis2.App
 import org.dhis2.R
+import org.dhis2.commons.biometrics.BIOMETRICS_GUID
+import org.dhis2.commons.biometrics.BIOMETRICS_TEI_ORGANISATION_UNIT
+import org.dhis2.commons.biometrics.BIOMETRICS_VERIFICATION_STATUS
 import org.dhis2.commons.data.EventCreationType
 import org.dhis2.commons.dialogs.calendarpicker.CalendarPicker
 import org.dhis2.commons.dialogs.calendarpicker.OnDatePickerListener
@@ -37,9 +40,12 @@ const val EXTRA_EVENT_UID = "EVENT_UID"
 class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.View {
 
     companion object {
-        fun getIntent(context: Context, eventUid: String): Intent {
+        fun getIntent(context: Context, eventUid: String, biometricsGuid:String?, verificationStatus: Int, orgUnit:String): Intent {
             val intent = Intent(context, ScheduledEventActivity::class.java)
             intent.putExtra(EXTRA_EVENT_UID, eventUid)
+            intent.putExtra(BIOMETRICS_GUID, biometricsGuid)
+            intent.putExtra(BIOMETRICS_VERIFICATION_STATUS, verificationStatus)
+            intent.putExtra(BIOMETRICS_TEI_ORGANISATION_UNIT, orgUnit)
             return intent
         }
     }
@@ -47,6 +53,9 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
     private lateinit var stage: ProgramStage
     private lateinit var program: Program
     private lateinit var event: Event
+    private lateinit var biometricsGuid: String
+    private var verificationStatus: Int = -1
+    private lateinit var orgUnit: String
     private lateinit var binding: ActivityEventScheduledBinding
 
     @Inject
@@ -64,6 +73,11 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
             )
             ).inject(this)
         super.onCreate(savedInstanceState)
+
+        biometricsGuid = intent.extras!!.getString(BIOMETRICS_GUID)!!
+        verificationStatus = intent.extras!!.getInt(BIOMETRICS_VERIFICATION_STATUS)
+        orgUnit = intent.extras!!.getString(BIOMETRICS_TEI_ORGANISATION_UNIT)!!
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_event_scheduled)
         binding.presenter = presenter
     }
@@ -249,7 +263,7 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
     }
 
     override fun openInitialActivity() {
-        val bundle = EventInitialActivity.getBundle(
+        val bundle = EventInitialActivity.getBundleWithBiometrics(
             program.uid(),
             event.uid(),
             EventCreationType.DEFAULT.name,
@@ -260,16 +274,24 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
             event.enrollment(),
             stage.standardInterval() ?: 0,
             presenter.getEnrollment()?.status(),
+            biometricsGuid,
+            verificationStatus,
+            orgUnit,
+
         )
         startActivity(Intent(this, EventInitialActivity::class.java).apply { putExtras(bundle) })
         finish()
     }
 
     override fun openFormActivity() {
-        val bundle = EventCaptureActivity.getActivityBundle(
+        val bundle = EventCaptureActivity.getActivityBundleWithBiometrics(
             event.uid(),
             program.uid(),
             EventMode.CHECK,
+            biometricsGuid,
+            verificationStatus,
+            orgUnit,
+            presenter.getEventTei(),
         )
         Intent(activity, EventCaptureActivity::class.java).apply {
             putExtras(bundle)

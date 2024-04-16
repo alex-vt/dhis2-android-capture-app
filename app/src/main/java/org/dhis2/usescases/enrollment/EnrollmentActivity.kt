@@ -208,9 +208,11 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                             is RegisterResult.Completed -> {
                                 presenter.onBiometricsCompleted(result.guid)
                             }
+
                             is RegisterResult.Failure -> {
                                 presenter.onBiometricsFailure()
                             }
+
                             is RegisterResult.PossibleDuplicates -> {
                                 presenter.onBiometricsPossibleDuplicates(
                                     result.guids,
@@ -220,6 +222,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                         }
                     }
                 }
+
                 BIOMETRICS_ENROLL_LAST_REQUEST -> {
                     if (resultCode == RESULT_OK) {
                         if (data != null) {
@@ -228,6 +231,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                                 is RegisterResult.Completed -> {
                                     presenter.onBiometricsCompleted(result.guid)
                                 }
+
                                 else -> {
                                     presenter.onBiometricsFailure()
                                 }
@@ -235,17 +239,26 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                         }
                     }
                 }
+
                 RQ_EVENT -> openDashboard(presenter.getEnrollment()!!.uid()!!)
             }
         }
     }
 
     override fun openEvent(eventUid: String) {
+        val biometricsGuid = presenter.getBiometricsGuid()
+
         if (presenter.isEventScheduleOrSkipped(eventUid)) {
-            val scheduleEventIntent = ScheduledEventActivity.getIntent(this, eventUid)
+            val scheduleEventIntent = ScheduledEventActivity.getIntent(
+                this,
+                eventUid,
+                biometricsGuid,
+                -1,
+                presenter.getEnrollment()!!.organisationUnit()!!
+            )
             openEventForResult.launch(scheduleEventIntent)
         } else if (presenter.openInitial(eventUid)) {
-            val bundle = EventInitialActivity.getBundle(
+            val bundle = EventInitialActivity.getBundleWithBiometrics(
                 presenter.getProgram()?.uid(),
                 eventUid,
                 null,
@@ -256,6 +269,9 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                 presenter.getEnrollment()!!.uid(),
                 0,
                 presenter.getEnrollment()!!.status(),
+                biometricsGuid,
+                -1,
+                presenter.getEnrollment()!!.organisationUnit()
             )
             val eventInitialIntent = Intent(abstracContext, EventInitialActivity::class.java)
             eventInitialIntent.putExtras(bundle)
