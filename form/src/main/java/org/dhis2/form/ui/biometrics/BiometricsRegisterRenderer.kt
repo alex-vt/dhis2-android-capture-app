@@ -26,8 +26,8 @@ class BiometricsRegisterRenderer(private val binding: ViewDataBinding,private va
     fun onInitial() {
         Timber.tag("BiometricsView").d("onInitial");
 
-        retakeButton.visibility = View.GONE;
-        biometricsButton.isEnabled = true;
+        retakeButton.visibility = View.GONE
+        biometricsButton.isEnabled = true
         biometricsButtonIcon.setImageDrawable(
             AppCompatResources.getDrawable(
                 binding.root.context,
@@ -39,9 +39,11 @@ class BiometricsRegisterRenderer(private val binding: ViewDataBinding,private va
     }
 
     fun onSuccess() {
-        Timber.tag("BiometricsView").d("onSuccess");
+        Timber.tag("BiometricsView").d("onSuccess")
 
-        retakeButton.visibility = View.VISIBLE;
+        retakeButton.setOnClickListener { uiModel.onBiometricsClick() }
+
+        retakeButton.visibility = View.VISIBLE
         biometricsButton.background = ContextCompat.getDrawable(
             binding.root.context,
             R.drawable.button_round_success

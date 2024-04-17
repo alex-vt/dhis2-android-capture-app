@@ -12,7 +12,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.drawable.Icon.OnDrawableLoadedListener
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -690,15 +689,17 @@ class FormView : Fragment() {
             offset = it.top
         }
 
-        val finalItems = onFieldsLoadingListener?.invoke(items) ?: items
+        val finalItems = if (onFieldsLoadingListener != null)
+            onFieldsLoadingListener!!.invoke(items)
+        else items
 
         adapter.swap(
             finalItems,
         ) {
             dataEntryHeaderHelper.onItemsUpdatedCallback()
             viewModel.onItemsRendered()
-            onFieldItemsRendered?.invoke(items.isEmpty())
-            onFieldsLoadedListener?.invoke(items)
+            onFieldItemsRendered?.invoke(finalItems.isEmpty())
+            onFieldsLoadedListener?.invoke(finalItems)
         }
         layoutManager.scrollToPositionWithOffset(myFirstPositionIndex, offset)
         FormCountingIdlingResource.decrement()
