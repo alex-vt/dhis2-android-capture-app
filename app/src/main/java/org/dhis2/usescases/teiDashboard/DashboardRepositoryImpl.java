@@ -1,12 +1,14 @@
 package org.dhis2.usescases.teiDashboard;
 
 import static org.dhis2.data.biometrics.utils.AddParentBiometricsAttributeValueIfRequiredKt.addParentBiometricsAttributeValueIfRequired;
+import static org.dhis2.data.biometrics.utils.GetParentBiometricsAttributeValueIfRequiredKt.getParentBiometricsAttributeValueIfRequired;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.PairKt;
 
 import org.dhis2.R;
+import org.dhis2.commons.biometrics.ExtensionsKt;
 import org.dhis2.commons.data.tuples.Pair;
 import org.dhis2.commons.data.tuples.Trio;
 import org.dhis2.commons.prefs.BasicPreferenceProvider;
@@ -204,7 +206,9 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                                 .build();
                     }
                     return Pair.create(attribute, formattedAttributeValue);
-                }).toList().toObservable();
+                }).toList().flatMap(list -> {
+                    return addParentBiometricsAttributeValueToPairIfRequired(programUid, teiUid, list);
+                }).toObservable();
     }
 
     @Override
@@ -234,7 +238,7 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                         return formattedValues;
                     }).blockingGet();
 
-
+            // EyeSeeTea Customization - Parent Biometrics
             addParentBiometricsAttributeValueIfRequired(d2, teiAttributesProvider, basicPreferenceProvider,attributeValues,programUid,teiUid);
 
             return Observable.just(attributeValues);
@@ -504,5 +508,40 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                         .get()
                         .toObservable()
         ).blockingFirst().displayName();
+    }
+
+    private Single<List<Pair<TrackedEntityAttribute, TrackedEntityAttributeValue>>> addParentBiometricsAttributeValueToPairIfRequired(String programUid, String teiUid, List<Pair<TrackedEntityAttribute, TrackedEntityAttributeValue>> list) {
+        // EyeSeeTea Customization - Parent Biometrics
+        List<TrackedEntityAttributeValue> attributeValues = new ArrayList<>();
+
+        for (Pair<TrackedEntityAttribute, TrackedEntityAttributeValue> pair : list) {
+            if (!ExtensionsKt.isBiometricText(pair.val0().formName()) ||
+                    (ExtensionsKt.isBiometricText(pair.val0().formName()) && pair.val1().value() != "")){
+                attributeValues.add(pair.val1());
+            }
+        }
+
+        TrackedEntityAttributeValue parentBiometricTEIValue = getParentBiometricsAttributeValueIfRequired(
+                d2,
+                teiAttributesProvider,
+                basicPreferenceProvider,
+                attributeValues,
+                programUid,
+                teiUid
+        );
+
+        List<Pair<TrackedEntityAttribute, TrackedEntityAttributeValue>> attributes = new ArrayList<>();
+        for (Pair<TrackedEntityAttribute, TrackedEntityAttributeValue> pair : list) {
+            Pair<TrackedEntityAttribute, TrackedEntityAttributeValue> newPair ;
+            if (parentBiometricTEIValue != null && pair.val0().uid().equals(parentBiometricTEIValue.trackedEntityAttribute())) {
+                newPair = Pair.create(pair.val0(), parentBiometricTEIValue);
+            }else{
+                newPair = Pair.create(pair.val0(), pair.val1());
+            }
+
+            attributes.add(newPair);
+        }
+
+        return Single.just(attributes);
     }
 }

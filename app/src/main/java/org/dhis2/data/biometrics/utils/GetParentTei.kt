@@ -64,9 +64,9 @@ private fun isUnderAgeThreshold(
         val birthdateAttValue =
             getTrackedEntityAttributeValueByAttribute(birthdayAttribute.attribute, attributeValues)
 
-        if (birthdateAttValue != null) {
+        if (birthdateAttValue?.value() != null && birthdateAttValue.value() != ""){
             val formatter = DateTimeFormat.forPattern(DateUtils.DATE_FORMAT_EXPRESSION)
-            val dateValue = formatter.parseDateTime(birthdateAttValue.value())
+            val dateValue = formatter.parseDateTime(birthdateAttValue?.value())
             val moths = Months.monthsBetween(dateValue, DateTime.now()).months
             moths <= biometricsParentChildConfig.ageThresholdMonths
         } else {

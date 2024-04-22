@@ -4,17 +4,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import org.dhis2.commons.biometrics.isNotBiometricText
+import org.dhis2.R
+import org.dhis2.form.extensions.isBiometricText
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.teiDashboard.ui.model.InfoBarUiModel
 import org.dhis2.usescases.teiDashboard.ui.model.TeiCardUiModel
+import org.hisp.dhis.mobile.ui.designsystem.component.AdditionalInfoItem
 import org.hisp.dhis.mobile.ui.designsystem.component.CardDetail
 import org.hisp.dhis.mobile.ui.designsystem.component.InfoBar
 import org.hisp.dhis.mobile.ui.designsystem.component.InfoBarData
+import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 
 
 @Composable
@@ -83,10 +88,8 @@ fun TeiDetailDashboard(
             )
         }
 
-        val additionalInfoList =
-            if (BIOMETRICS_ENABLED) card.additionalInfo.filter {
-                it.key?.replace(":","")?.isNotBiometricText() ?: true
-            } else card.additionalInfo
+        // Eyeseetea customization
+        val additionalInfoList = mapBiometricAttrInAdditionalInfo(card.additionalInfo)
 
         CardDetail(
             title = card.title,
@@ -103,3 +106,26 @@ fun TeiDetailDashboard(
 const val SYNC_INFO_BAR_TEST_TAG = "sync"
 const val FOLLOWUP_INFO_BAR_TEST_TAG = "followUp"
 const val STATE_INFO_BAR_TEST_TAG = "state"
+
+private fun mapBiometricAttrInAdditionalInfo(additionalInfo: List<AdditionalInfoItem>): List<AdditionalInfoItem> {
+    return if (BIOMETRICS_ENABLED) additionalInfo.map {
+        val key = it.key ?: ""
+
+        if (key.isBiometricText()) {
+            it.copy(value = "", icon = {
+                Icon(
+                    painter = if (it.value.isNotBlank()) painterResource(R.drawable.ic_bio_available_yes)
+                    else painterResource(R.drawable.ic_bio_available_no),
+                    tint = if (it.value.isNotBlank()) SurfaceColor.CustomGreen
+                    else SurfaceColor.Error,
+                    contentDescription = null,
+                )
+            })
+        } else {
+            it
+        }
+
+    } else additionalInfo
+}
+
+

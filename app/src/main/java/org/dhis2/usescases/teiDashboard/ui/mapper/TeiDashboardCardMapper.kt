@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import org.dhis2.R
+import org.dhis2.commons.biometrics.isBiometricText
 import org.dhis2.commons.data.tuples.Pair
 import org.dhis2.commons.date.toUi
 import org.dhis2.commons.resources.ResourceManager
@@ -228,5 +229,9 @@ class TeiDashboardCardMapper(
         this.filter { it.val0().valueType() != ValueType.IMAGE }
             .filter { it.val0().valueType() != ValueType.COORDINATE }
             .filter { it.val0().valueType() != ValueType.FILE_RESOURCE }
-            .filter { it.val1().value()?.isNotEmpty() == true }
+            //EyeSeeTea customization
+            .filter {
+                (it.val0().displayFormName()?.isBiometricText() == false && it.val1().value()
+                    ?.isNotEmpty() == true) || (it.val0().displayFormName() ?:"").isBiometricText()
+            }
 }
