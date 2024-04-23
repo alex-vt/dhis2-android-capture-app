@@ -25,20 +25,20 @@ import timber.log.Timber
 sealed class RegisterResult {
     data class Completed(val guid: String) : RegisterResult()
     data class PossibleDuplicates(val guids: List<String>, val sessionId: String) : RegisterResult()
-    object Failure : RegisterResult()
+    data object Failure : RegisterResult()
 }
 
 sealed class IdentifyResult {
     data class Completed(val guids: List<String>, val sessionId: String) : IdentifyResult()
-    object BiometricsDeclined : IdentifyResult()
+    data object BiometricsDeclined : IdentifyResult()
     data class UserNotFound(val sessionId: String) : IdentifyResult()
-    object Failure : IdentifyResult()
+    data object Failure : IdentifyResult()
 }
 
 sealed class VerifyResult {
-    object Match : VerifyResult()
-    object NoMatch : VerifyResult()
-    object Failure : VerifyResult()
+    data object Match : VerifyResult()
+    data object NoMatch : VerifyResult()
+    data object Failure : VerifyResult()
 }
 
 

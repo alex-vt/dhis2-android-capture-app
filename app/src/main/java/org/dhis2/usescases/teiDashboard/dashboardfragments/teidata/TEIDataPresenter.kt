@@ -43,6 +43,8 @@ import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.TeiDataIdling
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.TeiDataIdlingResourceSingleton.increment
 import org.dhis2.usescases.teiDashboard.domain.GetNewEventCreationTypeOptions
 import org.dhis2.usescases.teiDashboard.ui.EventCreationOptions
+import org.dhis2.usescases.teiDashboard.ui.mapper.TeiBiometricsVerificationMapper
+import org.dhis2.usescases.teiDashboard.ui.model.TeiBiometricsVerificationModel
 import org.dhis2.utils.EventMode
 import org.dhis2.utils.Result
 import org.dhis2.utils.analytics.ACTIVE_FOLLOW_UP
@@ -594,6 +596,8 @@ class TEIDataPresenter(
         } else {
             view.verificationStatusFailed()
         }
+
+        view.refreshBiometricsVerification()
     }
 
 
@@ -612,10 +616,20 @@ class TEIDataPresenter(
                     false
                 )
             ) {
+                lastVerificationResult = null
                 view.resetVerificationStatus()
             } else {
+                lastVerificationResult = VerifyResult.Match
                 view.verificationStatusMatch()
             }
+
+            view.refreshBiometricsVerification()
         }
+    }
+
+    fun getBiometricsVerificationModel(): TeiBiometricsVerificationModel {
+        return TeiBiometricsVerificationMapper(resources).map(
+            lastVerificationResult
+        ) { verifyBiometrics() }
     }
 }

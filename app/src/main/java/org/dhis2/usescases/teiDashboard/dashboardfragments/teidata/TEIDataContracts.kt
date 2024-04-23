@@ -68,5 +68,7 @@ class TEIDataContracts {
         fun verificationStatusNoMatch()
 
         fun verificationStatusFailed()
+
+        fun refreshBiometricsVerification()
     }
 }

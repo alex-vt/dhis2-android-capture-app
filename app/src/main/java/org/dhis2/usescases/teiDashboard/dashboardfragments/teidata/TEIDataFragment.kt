@@ -175,7 +175,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
 
             binding.filterLayout.adapter = filtersAdapter
 
-            binding.verificationButtonIcon?.setImageDrawable(
+            binding.cardFront.verificationButtonIcon?.setImageDrawable(
                 AppCompatResources.getDrawable(requireContext(), requireContext().getBioIconBasic())
             )
         }.root
@@ -310,6 +310,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                     followUpData = followUpInfoBar,
                     enrollmentData = enrollmentInfoBar,
                     card = card,
+                    verification = presenter.getBiometricsVerificationModel(),
                 )
             }
         } else {
@@ -629,47 +630,56 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     }
 
     override fun resetVerificationStatus() {
-        binding.verificationButton?.background = ContextCompat.getDrawable(
+        //Eyeseetea customization- old biometrics verification xml
+        binding.cardFront.verificationButton?.background = ContextCompat.getDrawable(
             requireContext(),
             R.drawable.button_round_2
         )
-        binding.verificationButtonText?.setText(R.string.biometrics_verification_not_done)
-        binding.verificationButtonIcon?.setImageDrawable(
+        binding.cardFront.verificationButtonText?.setText(R.string.biometrics_verification_not_done)
+        binding.cardFront.verificationButtonIcon?.setImageDrawable(
             AppCompatResources.getDrawable(requireContext(), requireContext().getBioIconSuccess())
         )
     }
 
     override fun verificationStatusMatch() {
-        binding.verificationButton?.background = ContextCompat.getDrawable(
+        //Eyeseetea customization- old biometrics verification xml
+        binding.cardFront.verificationButton?.background = ContextCompat.getDrawable(
             requireContext(),
             R.drawable.button_round_success
         )
-        binding.verificationButtonText?.setText(R.string.biometrics_verification_match)
-        binding.verificationButtonIcon?.setImageDrawable(
+        binding.cardFront.verificationButtonText?.setText(R.string.biometrics_verification_match)
+        binding.cardFront.verificationButtonIcon?.setImageDrawable(
             AppCompatResources.getDrawable(requireContext(), requireContext().getBioIconSuccess())
         )
     }
 
     override fun verificationStatusNoMatch() {
-        binding.verificationButton?.background = ContextCompat.getDrawable(
+        //Eyeseetea customization- old biometrics verification xml
+        binding.cardFront.verificationButton?.background = ContextCompat.getDrawable(
             requireContext(),
             R.drawable.button_round_fail
         )
-        binding.verificationButtonText?.setText(R.string.biometrics_verification_no_match)
-        binding.verificationButtonIcon?.setImageDrawable(
+        binding.cardFront.verificationButtonText?.setText(R.string.biometrics_verification_no_match)
+        binding.cardFront.verificationButtonIcon?.setImageDrawable(
             AppCompatResources.getDrawable(requireContext(), requireContext().getBioIconFailed())
         )
     }
 
     override fun verificationStatusFailed() {
-        binding.verificationButton?.background = ContextCompat.getDrawable(
+        //Eyeseetea customization- old biometrics verification xml
+        binding.cardFront.verificationButton?.background = ContextCompat.getDrawable(
             requireContext(),
             R.drawable.button_round_warning
         )
-        binding.verificationButtonText?.setText(R.string.biometrics_verification_failed)
-        binding.verificationButtonIcon?.setImageDrawable(
+        binding.cardFront.verificationButtonText?.setText(R.string.biometrics_verification_failed)
+        binding.cardFront.verificationButtonIcon?.setImageDrawable(
             AppCompatResources.getDrawable(requireContext(), requireContext().getBioIconWarning())
         )
+    }
+
+    override fun refreshBiometricsVerification() {
+        //Eyeseetea customization- new biometrics verification compose
+        setData(dashboardViewModel.dashboardModel().value!!)
     }
 
     private fun showHideFilters(showFilters: Boolean) {

@@ -14,6 +14,7 @@ import org.dhis2.R
 import org.dhis2.form.extensions.isBiometricText
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.teiDashboard.ui.model.InfoBarUiModel
+import org.dhis2.usescases.teiDashboard.ui.model.TeiBiometricsVerificationModel
 import org.dhis2.usescases.teiDashboard.ui.model.TeiCardUiModel
 import org.hisp.dhis.mobile.ui.designsystem.component.AdditionalInfoItem
 import org.hisp.dhis.mobile.ui.designsystem.component.CardDetail
@@ -28,6 +29,7 @@ fun TeiDetailDashboard(
     followUpData: InfoBarUiModel,
     enrollmentData: InfoBarUiModel,
     card: TeiCardUiModel,
+    verification: TeiBiometricsVerificationModel
 ) {
     Column(
         modifier = Modifier
@@ -100,6 +102,8 @@ fun TeiDetailDashboard(
             shrinkLabelText = card.shrinkLabelText,
             showLoading = card.showLoading,
         )
+
+        TeiVerificationButton(verification)
     }
 }
 
