@@ -23,8 +23,10 @@ class FormSectionMapper {
                                 false -> SectionState.CLOSE
                                 null -> SectionState.FIXED
                             },
-                            fields = items.filterIsInstance<FieldUiModelImpl>()
-                                .filter { it.programStageSection == item.uid },
+                            //EyeSeeTea customization
+                       /*     fields = items.filterIsInstance<FieldUiModelImpl>()
+                                .filter { it.programStageSection == item.uid },*/
+                            fields = items.filter { it !is SectionUiModelImpl && it.programStageSection == item.uid },
                         ),
                     )
                 }

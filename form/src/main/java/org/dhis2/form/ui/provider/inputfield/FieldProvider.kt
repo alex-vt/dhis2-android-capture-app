@@ -32,6 +32,7 @@ import org.dhis2.form.extensions.legend
 import org.dhis2.form.extensions.supportingText
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.UiRenderType
+import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 import org.dhis2.form.ui.keyboard.keyboardAsState
@@ -98,7 +99,11 @@ internal fun FieldProvider(
         }
     }
 
-    if (fieldUiModel.optionSet == null) {
+    if (fieldUiModel is BiometricsAttributeUiModelImpl){
+        ProvideBiometricsAttribute(
+            fieldUiModel = fieldUiModel,
+            resources)
+    } else if (fieldUiModel.optionSet == null) {
         when (fieldUiModel.valueType) {
             ValueType.TEXT -> {
                 ProvideInputsForValueTypeText(

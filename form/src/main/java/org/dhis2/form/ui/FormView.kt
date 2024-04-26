@@ -362,7 +362,11 @@ class FormView : Fragment() {
                 )
                 setContent {
                     val items by viewModel.items.observeAsState()
-                    val sections = items?.let {
+
+                    val finalItems = onFieldsLoadingListener?.invoke(items ?: listOf()) ?:items
+                    onFieldsLoadedListener?.invoke(finalItems ?: listOf())
+
+                    val sections = finalItems?.let {
                         formSectionMapper.mapFromFieldUiModelList(it)
                     } ?: emptyList()
                     Form(
