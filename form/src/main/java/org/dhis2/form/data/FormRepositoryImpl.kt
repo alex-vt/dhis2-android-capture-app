@@ -111,7 +111,8 @@ class FormRepositoryImpl(
 
     private fun calculateCompletionPercentage(list: List<FieldUiModel>) {
         val unsupportedValueTypes = listOf(
-            ValueType.TRACKER_ASSOCIATE,
+            //EyeSeeTea customization: biometrics is defined as a tracker associate
+            //ValueType.TRACKER_ASSOCIATE,
             ValueType.USERNAME,
         )
         val fields = list.filter {

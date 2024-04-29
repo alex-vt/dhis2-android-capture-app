@@ -33,6 +33,7 @@ import org.dhis2.form.extensions.supportingText
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.UiRenderType
 import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
+import org.dhis2.form.model.biometrics.BiometricsDataElementUiModelImpl
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
 import org.dhis2.form.ui.intent.FormIntent
 import org.dhis2.form.ui.keyboard.keyboardAsState
@@ -99,10 +100,16 @@ internal fun FieldProvider(
         }
     }
 
-    if (fieldUiModel is BiometricsAttributeUiModelImpl){
+    if (fieldUiModel is BiometricsAttributeUiModelImpl) {
         ProvideBiometricsAttribute(
             fieldUiModel = fieldUiModel,
-            resources)
+            resources
+        )
+    } else if (fieldUiModel is BiometricsDataElementUiModelImpl) {
+        ProvideBiometricsDataElement(
+            fieldUiModel = fieldUiModel,
+            resources
+        )
     } else if (fieldUiModel.optionSet == null) {
         when (fieldUiModel.valueType) {
             ValueType.TEXT -> {
@@ -134,7 +141,7 @@ internal fun FieldProvider(
                     focusManager = focusManager,
                     onNextClicked = onNextClicked,
 
-                )
+                    )
             }
 
             ValueType.PERCENTAGE -> {
@@ -145,7 +152,7 @@ internal fun FieldProvider(
                     focusManager = focusManager,
                     onNextClicked = onNextClicked,
 
-                )
+                    )
             }
 
             ValueType.NUMBER -> {
@@ -156,7 +163,7 @@ internal fun FieldProvider(
                     focusManager = focusManager,
                     onNextClicked = onNextClicked,
 
-                )
+                    )
             }
 
             ValueType.INTEGER_NEGATIVE -> {
@@ -167,7 +174,7 @@ internal fun FieldProvider(
                     focusManager = focusManager,
                     onNextClicked = onNextClicked,
 
-                )
+                    )
             }
 
             ValueType.LONG_TEXT -> {
@@ -178,7 +185,7 @@ internal fun FieldProvider(
                     focusManager = focusManager,
                     onNextClicked = onNextClicked,
 
-                )
+                    )
             }
 
             ValueType.LETTER -> {
@@ -189,7 +196,7 @@ internal fun FieldProvider(
                     focusManager = focusManager,
                     onNextClicked = onNextClicked,
 
-                )
+                    )
             }
 
             ValueType.INTEGER -> {
@@ -200,7 +207,7 @@ internal fun FieldProvider(
                     focusManager = focusManager,
                     onNextClicked = onNextClicked,
 
-                )
+                    )
             }
 
             ValueType.ORGANISATION_UNIT -> {
@@ -231,7 +238,7 @@ internal fun FieldProvider(
                     focusManager = focusManager,
                     onNextClicked = onNextClicked,
 
-                )
+                    )
             }
 
             ValueType.FILE_RESOURCE -> {
@@ -252,7 +259,7 @@ internal fun FieldProvider(
                     focusManager = focusManager,
                     onNextClicked = onNextClicked,
 
-                )
+                    )
             }
 
             ValueType.BOOLEAN -> {
@@ -311,7 +318,7 @@ internal fun FieldProvider(
                     focusManager = focusManager,
                     onNextClicked = onNextClicked,
 
-                )
+                    )
             }
 
             ValueType.DATE,
@@ -358,6 +365,7 @@ internal fun FieldProvider(
                             fieldUiModel = fieldUiModel,
                         )
                     }
+
                     else -> {
                         ProvideInputCoordinate(
                             modifier = modifierWithFocus,
@@ -380,6 +388,7 @@ internal fun FieldProvider(
                     resources = resources,
                 )
             }
+
             ValueType.REFERENCE,
             ValueType.GEOJSON,
             ValueType.USERNAME,
@@ -490,7 +499,7 @@ private fun ProvideIntegerPositiveOrZero(
     focusManager: FocusManager,
     onNextClicked: () -> Unit,
 
-) {
+    ) {
     var value by remember(fieldUiModel.value) {
         mutableStateOf(fieldUiModel.value)
     }
@@ -529,7 +538,7 @@ private fun ProvidePercentage(
     focusManager: FocusManager,
     onNextClicked: () -> Unit,
 
-) {
+    ) {
     var value by remember(fieldUiModel.value) {
         mutableStateOf(fieldUiModel.value)
     }
@@ -568,7 +577,7 @@ private fun ProvideNumber(
     focusManager: FocusManager,
     onNextClicked: () -> Unit,
 
-) {
+    ) {
     var value by remember(fieldUiModel.value) {
         mutableStateOf(fieldUiModel.value)
     }
@@ -608,7 +617,7 @@ private fun ProvideIntegerNegative(
     focusManager: FocusManager,
     onNextClicked: () -> Unit,
 
-) {
+    ) {
     var value by remember(fieldUiModel.value) {
         mutableStateOf(fieldUiModel.value?.replace("-", ""))
     }
@@ -647,7 +656,7 @@ private fun ProvideLongText(
     focusManager: FocusManager,
     onNextClicked: () -> Unit,
 
-) {
+    ) {
     var value by remember(fieldUiModel.value) {
         mutableStateOf(fieldUiModel.value)
     }
@@ -687,7 +696,7 @@ private fun ProvideLetter(
     focusManager: FocusManager,
     onNextClicked: () -> Unit,
 
-) {
+    ) {
     var value by remember(fieldUiModel.value) {
         mutableStateOf(fieldUiModel.value)
     }
@@ -726,7 +735,7 @@ private fun ProvideInteger(
     focusManager: FocusManager,
     onNextClicked: () -> Unit,
 
-) {
+    ) {
     var value by remember(fieldUiModel.value) {
         mutableStateOf(fieldUiModel.value)
     }
@@ -814,7 +823,7 @@ private fun ProvideInputPhoneNumber(
     modifier: Modifier = Modifier,
     onNextClicked: () -> Unit,
 
-) {
+    ) {
     var value by remember(fieldUiModel.value) {
         mutableStateOf(fieldUiModel.value)
     }
@@ -863,7 +872,7 @@ private fun ProvideInputLink(
     focusManager: FocusManager,
     onNextClicked: () -> Unit,
 
-) {
+    ) {
     var value by remember(fieldUiModel.value) {
         mutableStateOf(fieldUiModel.value)
     }
@@ -948,8 +957,8 @@ private fun ProvideOrgUnitInput(
             )
         },
 
-    )
+        )
 }
 
 private fun FieldUiModel.needKeyboard() = optionSet == null &&
-    valueType?.let { it.isText || it.isNumeric || it.isDate } ?: false
+        valueType?.let { it.isText || it.isNumeric || it.isDate } ?: false

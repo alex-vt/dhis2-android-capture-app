@@ -62,7 +62,6 @@ data class BiometricsDataElementUiModelImpl(
     override val style: FormUiModelStyle? = null
     override val hint: String? = null
     override val description: String = ""
-    override val valueType: ValueType? = null
     override val legend: LegendValue? = null
     override val optionSet: String? = null
     override val allowFutureDates: Boolean? = null
@@ -135,6 +134,9 @@ data class BiometricsDataElementUiModelImpl(
     override fun onSaveBoolean(boolean: Boolean) {}
 
     override fun onSaveOption(option: Option) {}
+
+    override val valueType: ValueType
+        get() = ValueType.TEXT
 
     override fun setValue(value: String?) = this.copy(value = value)
 

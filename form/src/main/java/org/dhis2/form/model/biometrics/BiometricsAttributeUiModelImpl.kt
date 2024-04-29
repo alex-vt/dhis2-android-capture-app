@@ -52,7 +52,6 @@ data class BiometricsAttributeUiModelImpl(
     override val style: FormUiModelStyle? = null
     override val hint: String? = null
     override val description: String = ""
-    override val valueType: ValueType? = null
     override val legend: LegendValue? = null
     override val optionSet: String? = null
     override val allowFutureDates: Boolean? = null
@@ -104,6 +103,9 @@ data class BiometricsAttributeUiModelImpl(
 
     override val isNegativeChecked: Boolean
         get() = false
+
+    override val valueType: ValueType
+        get() = ValueType.TEXT
 
     override fun onNext() {}
 
