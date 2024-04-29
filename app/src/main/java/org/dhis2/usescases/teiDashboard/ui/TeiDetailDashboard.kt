@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -20,7 +21,6 @@ import org.hisp.dhis.mobile.ui.designsystem.component.AdditionalInfoItem
 import org.hisp.dhis.mobile.ui.designsystem.component.CardDetail
 import org.hisp.dhis.mobile.ui.designsystem.component.InfoBar
 import org.hisp.dhis.mobile.ui.designsystem.component.InfoBarData
-import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 
 
 @Composable
@@ -120,8 +120,7 @@ private fun mapBiometricAttrInAdditionalInfo(additionalInfo: List<AdditionalInfo
                 Icon(
                     painter = if (it.value.isNotBlank()) painterResource(R.drawable.ic_bio_available_yes)
                     else painterResource(R.drawable.ic_bio_available_no),
-                    tint = if (it.value.isNotBlank()) SurfaceColor.CustomGreen
-                    else SurfaceColor.Error,
+                    tint = Color.Unspecified,
                     contentDescription = null,
                 )
             })
