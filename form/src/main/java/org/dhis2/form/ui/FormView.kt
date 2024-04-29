@@ -693,7 +693,7 @@ class FormView : Fragment() {
             offset = it.top
         }
 
-        val finalItems = if (onFieldsLoadingListener != null)
+        val finalItems = if (!useCompose && onFieldsLoadingListener != null)
             onFieldsLoadingListener!!.invoke(items)
         else items
 
