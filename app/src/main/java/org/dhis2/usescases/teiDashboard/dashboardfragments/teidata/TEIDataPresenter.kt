@@ -397,7 +397,7 @@ class TEIDataPresenter(
         if (eventStatus == EventStatus.ACTIVE || eventStatus == EventStatus.COMPLETED) {
             uidForEvent = uid
 
-            launchEventCapture(uid, dashboardModel!!.biometricValue, -1)
+            launchEventCapture(uid, dashboardModel?.biometricValue?:"", -1)
         } else {
             val event = d2.event(uid)
             val intent = Intent(view.context, EventInitialActivity::class.java)
@@ -413,7 +413,7 @@ class TEIDataPresenter(
                     dashboardModel?.currentEnrollment?.uid(),
                     0,
                     dashboardModel?.currentEnrollment?.status(),
-                    dashboardModel!!.biometricValue,
+                    dashboardModel?.biometricValue?:"",
                     -1,
                     orgUnitUid
                 )
