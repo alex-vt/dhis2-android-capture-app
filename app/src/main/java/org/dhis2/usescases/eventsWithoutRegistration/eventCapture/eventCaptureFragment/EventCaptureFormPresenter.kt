@@ -125,6 +125,7 @@ class EventCaptureFormPresenter(
         }?.let { it as BiometricsDataElementUiModelImpl }
 
         if (biometricsVerificationUiModel != null && this.biometricsGuid != null &&
+            this.biometricsGuid!!.isNotBlank() &&
             biometricsVerificationUiModel!!.status == BiometricsDataElementStatus.NOT_DONE
         ) {
             val lastUpdated = activityPresenter.getBiometricsAttributeValueInTeiLastUpdated(
@@ -178,7 +179,7 @@ class EventCaptureFormPresenter(
         updateBiometricsGuidInAttribute: Boolean = true,
         newBiometricsGuid: String? = null
     ) {
-        if (newBiometricsGuid != null){
+        if (newBiometricsGuid != null) {
             biometricsGuid = newBiometricsGuid
         }
 
