@@ -29,7 +29,7 @@ fun TeiDetailDashboard(
     followUpData: InfoBarUiModel,
     enrollmentData: InfoBarUiModel,
     card: TeiCardUiModel,
-    verification: TeiBiometricsVerificationModel
+    verification: TeiBiometricsVerificationModel?
 ) {
     Column(
         modifier = Modifier
@@ -103,7 +103,9 @@ fun TeiDetailDashboard(
             showLoading = card.showLoading,
         )
 
-        TeiVerificationButton(verification)
+        if (verification != null){
+            TeiVerificationButton(verification)
+        }
     }
 }
 

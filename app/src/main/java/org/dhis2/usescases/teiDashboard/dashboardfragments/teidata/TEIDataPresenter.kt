@@ -627,9 +627,14 @@ class TEIDataPresenter(
         }
     }
 
-    fun getBiometricsVerificationModel(): TeiBiometricsVerificationModel {
-        return TeiBiometricsVerificationMapper(resources).map(
-            lastVerificationResult
-        ) { verifyBiometrics() }
+    fun getBiometricsVerificationModel(): TeiBiometricsVerificationModel? {
+        return if (dashboardModel?.isTrackedBiometricEntityExistAndHasValue == true){
+            TeiBiometricsVerificationMapper(resources).map(
+                lastVerificationResult
+            ) { verifyBiometrics() }
+        } else {
+            null
+        }
+
     }
 }
