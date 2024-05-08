@@ -39,6 +39,14 @@ internal fun BiometricsVerification(
         }
     }
 
+    val iconContentDescription:Int = remember(status) {
+        when (status) {
+            BiometricsDataElementStatus.SUCCESS -> R.string.biometrics_verification_match
+            BiometricsDataElementStatus.FAILURE -> R.string.biometrics_verification_no_match
+            BiometricsDataElementStatus.NOT_DONE -> R.string.biometrics_verification_no_match
+        }
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -59,7 +67,7 @@ internal fun BiometricsVerification(
 
                 Icon(
                     painter = painterResource(icon),
-                    contentDescription = "Biometrics Verification",
+                    contentDescription = stringResource(iconContentDescription),
                     modifier = Modifier.size(24.dp),
                     tint = Color.Unspecified,
                 )
