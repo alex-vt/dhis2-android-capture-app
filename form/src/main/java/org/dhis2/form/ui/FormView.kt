@@ -106,6 +106,9 @@ class FormView : Fragment() {
     private var onItemChangeListener: ((action: RowAction) -> Unit)? = null
     private var locationProvider: LocationProvider? = null
     private var onLoadingListener: ((loading: Boolean) -> Unit)? = null
+    private var onFieldsLoadedListener: ((fields: List<FieldUiModel>) -> Unit)? = null
+    private var onFieldsLoadingListener: ((fields: List<FieldUiModel>) -> List<FieldUiModel>)? =
+        null
     private var onFocused: (() -> Unit)? = null
     private var onFinishDataEntry: (() -> Unit)? = null
     private var onActivityForResult: (() -> Unit)? = null
@@ -686,12 +689,17 @@ class FormView : Fragment() {
             offset = it.top
         }
 
+        val finalItems = if (!useCompose && onFieldsLoadingListener != null)
+            onFieldsLoadingListener!!.invoke(items)
+        else items
+
         adapter.swap(
-            items,
+            finalItems,
         ) {
             dataEntryHeaderHelper.onItemsUpdatedCallback()
             viewModel.onItemsRendered()
             onFieldItemsRendered?.invoke(items.isEmpty())
+            onFieldsLoadedListener?.invoke(finalItems)
         }
         layoutManager.scrollToPositionWithOffset(myFirstPositionIndex, offset)
         FormCountingIdlingResource.decrement()
@@ -1139,6 +1147,8 @@ class FormView : Fragment() {
     internal fun setCallbackConfiguration(
         onItemChangeListener: ((action: RowAction) -> Unit)?,
         onLoadingListener: ((loading: Boolean) -> Unit)?,
+        onFieldsLoadedListener: ((List<FieldUiModel>) -> Unit)?,
+        onFieldsLoadingListener: ((List<FieldUiModel>) -> List<FieldUiModel>)?,
         onFocused: (() -> Unit)?,
         onFinishDataEntry: (() -> Unit)?,
         onActivityForResult: (() -> Unit)?,
@@ -1147,6 +1157,8 @@ class FormView : Fragment() {
     ) {
         this.onItemChangeListener = onItemChangeListener
         this.onLoadingListener = onLoadingListener
+        this.onFieldsLoadedListener = onFieldsLoadedListener
+        this.onFieldsLoadingListener = onFieldsLoadingListener
         this.onFocused = onFocused
         this.onFinishDataEntry = onFinishDataEntry
         this.onActivityForResult = onActivityForResult
@@ -1161,6 +1173,9 @@ class FormView : Fragment() {
         private var locationProvider: LocationProvider? = null
         private var needToForceUpdate: Boolean = false
         private var onLoadingListener: ((loading: Boolean) -> Unit)? = null
+        private var onFieldsLoadedListener: ((fields: List<FieldUiModel>) -> Unit)? = null
+        private var onFieldsLoadingListener: ((fields: List<FieldUiModel>) -> List<FieldUiModel>)? =
+            null
         private var onFocused: (() -> Unit)? = null
         private var onActivityForResult: (() -> Unit)? = null
         private var onFinishDataEntry: (() -> Unit)? = null
@@ -1200,6 +1215,18 @@ class FormView : Fragment() {
          * */
         fun onLoadingListener(callback: (loading: Boolean) -> Unit) =
             apply { this.onLoadingListener = callback }
+
+        /**
+         * Sets if loading started or finished to handle loadingfeedback
+         * */
+        fun onFieldsLoadedListener(callback: (fields: List<FieldUiModel>) -> Unit) =
+            apply { this.onFieldsLoadedListener = callback }
+
+        /**
+         * Sets if loading started or finished to handle loadingfeedback
+         * */
+        fun onFieldsLoadingListener(callback: (fields: List<FieldUiModel>) -> List<FieldUiModel>) =
+            apply { this.onFieldsLoadingListener = callback }
 
         /**
          * It's triggered when form gets focus
@@ -1255,6 +1282,8 @@ class FormView : Fragment() {
                     onItemChangeListener,
                     needToForceUpdate,
                     onLoadingListener,
+                    onFieldsLoadedListener,
+                    onFieldsLoadingListener,
                     onFocused,
                     onFinishDataEntry,
                     onActivityForResult,
