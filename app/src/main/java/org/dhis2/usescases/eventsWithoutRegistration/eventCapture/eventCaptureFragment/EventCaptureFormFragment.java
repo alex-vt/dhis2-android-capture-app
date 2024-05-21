@@ -98,6 +98,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                 .useComposeForm(
                         featureConfig.isFeatureEnable(Feature.COMPOSE_FORMS)
                 )
+                .onFieldsLoadingListener(presenter::onFieldsLoading)
                 .build();
         activity.setFormEditionListener(this);
         super.onCreate(savedInstanceState);

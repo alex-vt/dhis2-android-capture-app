@@ -6,9 +6,13 @@ import org.dhis2.form.data.FieldsWithWarningResult
 import org.dhis2.form.data.MissingMandatoryResult
 import org.dhis2.form.data.NotSavedResult
 import org.dhis2.form.data.SuccessfulResult
+import org.dhis2.form.model.FieldUiModel
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.event.EventEditableStatus
+
+private const val UPG_Name = "cFKggVHL4pu"
+private const val UPG_UId = "LDh4Dt7xGD0"
 
 class EventCaptureFormPresenter(
     private val view: EventCaptureFormView,
@@ -26,6 +30,7 @@ class EventCaptureFormPresenter(
                 result.mandatoryFields,
                 result.warningFields,
             )
+
             is FieldsWithWarningResult -> activityPresenter.attemptFinish(
                 result.canComplete,
                 result.onCompleteMessage,
@@ -33,6 +38,7 @@ class EventCaptureFormPresenter(
                 emptyMap(),
                 result.fieldUidWarningList,
             )
+
             is MissingMandatoryResult -> activityPresenter.attemptFinish(
                 result.canComplete,
                 result.onCompleteMessage,
@@ -40,6 +46,7 @@ class EventCaptureFormPresenter(
                 result.mandatoryFields,
                 result.warningFields,
             )
+
             is SuccessfulResult -> activityPresenter.attemptFinish(
                 result.canComplete,
                 result.onCompleteMessage,
@@ -47,6 +54,7 @@ class EventCaptureFormPresenter(
                 emptyMap(),
                 emptyList(),
             )
+
             NotSavedResult -> {
                 // Nothing to do in this case
             }
@@ -60,6 +68,13 @@ class EventCaptureFormPresenter(
             view.showSaveButton()
         } else {
             view.hideSaveButton()
+        }
+    }
+
+    fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
+        //Eyeseetea customization - Remove UPG field from the form
+        return fields.filter {
+            it.uid != UPG_UId
         }
     }
 }
