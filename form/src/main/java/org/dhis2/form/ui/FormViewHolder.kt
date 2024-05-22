@@ -47,6 +47,12 @@ class FormViewHolder(private val binding: ViewDataBinding) : RecyclerView.ViewHo
         binding.setVariable(BR.coordinateWatcher, coordinateTextWatcher)
         binding.setVariable(BR.item, uiModel)
         binding.executePendingBindings()
+
+        this.itemView.visibility = if (uiModel.visible) {
+            RecyclerView.VISIBLE
+        } else {
+            RecyclerView.GONE
+        }
     }
 
     interface FieldItemCallback {
