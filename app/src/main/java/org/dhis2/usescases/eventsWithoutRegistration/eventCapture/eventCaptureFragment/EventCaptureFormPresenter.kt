@@ -7,7 +7,9 @@ import org.dhis2.form.data.MissingMandatoryResult
 import org.dhis2.form.data.NotSavedResult
 import org.dhis2.form.data.SuccessfulResult
 import org.dhis2.form.model.FieldUiModel
+import org.dhis2.form.model.FieldUiModelImpl
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment.upg.domain.UPGItem
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.event.EventEditableStatus
 
@@ -71,10 +73,45 @@ class EventCaptureFormPresenter(
         }
     }
 
+    private var upgUidUIModel: FieldUiModel? = null
+    private var upgNameUIModel: FieldUiModel? = null
+    private var savingSelectedUPG = false
+
     fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
+
         //Eyeseetea customization - Remove UPG field from the form
-        return fields.filter {
-            it.uid != UPG_UId
+        val finalFields = fields
+            .map { field ->
+                if (field.uid == UPG_Name) {
+                    field.setEditable(false)
+                } else if (field.uid == UPG_UId){
+                    field.setVisible(false)
+                }
+                else {
+                    field
+                }
+            }
+
+        upgUidUIModel = finalFields.find { it.uid == UPG_UId }
+        upgNameUIModel = finalFields.find { it.uid == UPG_Name }
+
+        val event = d2.eventModule().events().byUid().eq(eventUid).one().blockingGet()
+
+        (upgNameUIModel as FieldUiModelImpl).setFocusCallback {
+            if (event?.organisationUnit() != null && !savingSelectedUPG) {
+                view.selectUPG(event.organisationUnit()!!)
+            }
         }
+
+        return finalFields
+    }
+
+    fun onUPGSelected(upg: UPGItem) {
+        savingSelectedUPG = true
+
+        upgUidUIModel?.onSave(upg.guid)
+        upgNameUIModel?.onSave(upg.name)
+
+        savingSelectedUPG = false
     }
 }
