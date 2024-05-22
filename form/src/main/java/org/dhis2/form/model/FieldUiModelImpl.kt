@@ -37,9 +37,11 @@ data class FieldUiModelImpl(
     override var autocompleteList: List<String>?,
     override val orgUnitSelectorScope: OrgUnitSelectorScope? = null,
     override val url: String? = null,
+    override val visible: Boolean = true,
 ) : FieldUiModel {
 
     private var callback: FieldUiModel.Callback? = null
+    private var onFocusCallback: (() -> Unit)? = null
 
     override val formattedLabel: String
         get() = if (mandatory) "$label *" else label
@@ -48,8 +50,13 @@ data class FieldUiModelImpl(
         this.callback = callback
     }
 
+    fun setFocusCallback(callback: () -> Unit){
+        this.onFocusCallback = callback
+    }
+
     override fun onItemClick() {
         callback?.intent(FormIntent.OnFocus(uid, value))
+        onFocusCallback?.invoke()
     }
 
     override fun onNext() {
@@ -147,6 +154,7 @@ data class FieldUiModelImpl(
     override fun setError(error: String?) = this.copy(error = error)
 
     override fun setEditable(editable: Boolean) = this.copy(editable = editable)
+    override fun setVisible(visible: Boolean)= this.copy(visible = visible)
 
     override fun setLegend(legendValue: LegendValue?) = this.copy(legend = legendValue)
 
