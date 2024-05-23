@@ -95,11 +95,13 @@ class EventCaptureFormPresenter(
         upgUidUIModel = finalFields.find { it.uid == UPG_UId }
         upgNameUIModel = finalFields.find { it.uid == UPG_Name }
 
-        val event = d2.eventModule().events().byUid().eq(eventUid).one().blockingGet()
+        if(upgUidUIModel != null && upgNameUIModel != null){
+            val event = d2.eventModule().events().byUid().eq(eventUid).one().blockingGet()
 
-        (upgNameUIModel as FieldUiModelImpl).setFocusCallback {
-            if (event?.organisationUnit() != null && !savingSelectedUPG) {
-                view.selectUPG(event.organisationUnit()!!)
+            (upgNameUIModel as FieldUiModelImpl).setFocusCallback {
+                if (event?.organisationUnit() != null && !savingSelectedUPG) {
+                    view.selectUPG(event.organisationUnit()!!)
+                }
             }
         }
 
