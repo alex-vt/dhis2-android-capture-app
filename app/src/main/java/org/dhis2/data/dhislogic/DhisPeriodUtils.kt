@@ -72,9 +72,16 @@ class DhisPeriodUtils(
                 SimpleDateFormat(MONTHLY_FORMAT_EXPRESSION, locale).format(period.startDate()!!),
                 SimpleDateFormat(MONTHLY_FORMAT_EXPRESSION, locale).format(period.endDate()!!),
             )
-            PeriodType.Yearly ->
-                formattedDate =
+            PeriodType.Yearly -> {
+                // Eyeseetea customization - Show year-nextYear for yearly period
+    /*            formattedDate =
+                    SimpleDateFormat(YEARLY_FORMAT_EXPRESSION, locale).format(period.startDate()!!)*/
+                val formattedStartDate =
                     SimpleDateFormat(YEARLY_FORMAT_EXPRESSION, locale).format(period.startDate()!!)
+                val formattedEndDate = (formattedStartDate.toInt() + 1).toString()
+
+                formattedDate = "$formattedStartDate-$formattedEndDate"
+            }
             else ->
                 formattedDate =
                     SimpleDateFormat(SIMPLE_DATE_FORMAT, locale).format(period.startDate()!!)
