@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.dhis2.commons.data.EventCreationType
 import org.dhis2.commons.data.EventCreationType.REFERAL
+import org.dhis2.commons.team.dateToYearlyPeriod
 import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.data.EventDetailsRepository
 import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.models.EventDetails
 import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.providers.EventDetailResourcesProvider
@@ -38,6 +39,12 @@ class ConfigureEventDetails(
         )
         val storedEvent = repository.getEvent()
         val programStage = repository.getProgramStage()
+
+        val isOrgUnitActive = if (selectedDate == null || selectedOrgUnit == null) true
+        else repository.isOrgUnitActive(
+            selectedOrgUnit, dateToYearlyPeriod(selectedDate)
+        )
+
         return flowOf(
             EventDetails(
                 name = programStage?.displayName(),
@@ -52,9 +59,11 @@ class ConfigureEventDetails(
                 catOptionComboUid = catOptionComboUid,
                 coordinates = coordinates,
                 isCompleted = isEventCompleted,
-                isActionButtonVisible = isActionButtonVisible(isEventCompleted, storedEvent),
+                isActionButtonVisible = isActionButtonVisible(isEventCompleted, storedEvent, isOrgUnitActive),
                 actionButtonText = getActionButtonText(),
                 canReopen = repository.getCanReopen(),
+                //Eyeseetea customization
+                isOrgUnitActive = isOrgUnitActive
             ),
         )
     }
@@ -68,13 +77,19 @@ class ConfigureEventDetails(
         } ?: resourcesProvider.provideButtonNext()
     }
 
-    private fun isActionButtonVisible(isEventCompleted: Boolean, storedEvent: Event?): Boolean {
+    private fun isActionButtonVisible(
+        isEventCompleted: Boolean,
+        storedEvent: Event?,
+        isOrgUnitActive: Boolean
+    ): Boolean {
         return if (!isEventCompleted) {
+            false
+        } else if (!isOrgUnitActive) {
             false
         } else {
             storedEvent?.let {
                 !(it.status() == OVERDUE && enrollmentStatus == CANCELLED) &&
-                    repository.getEditableStatus() !is NonEditable
+                        repository.getEditableStatus() !is NonEditable
             } ?: true
         }
     }
@@ -87,9 +102,9 @@ class ConfigureEventDetails(
         isCatComboCompleted: Boolean,
         tempCreate: String?,
     ) = selectedDate != null &&
-        !selectedOrgUnit.isNullOrEmpty() &&
-        isCatComboCompleted &&
-        (creationType != REFERAL || tempCreate != null)
+            !selectedOrgUnit.isNullOrEmpty() &&
+            isCatComboCompleted &&
+            (creationType != REFERAL || tempCreate != null)
 
     private fun isEditable(): Boolean {
         return getEditableReason() == null

@@ -37,6 +37,7 @@ class OUTreeModule(
     private val preselectedOrgUnits: List<String>,
     private val singleSelection: Boolean,
     private val orgUnitSelectorScope: OrgUnitSelectorScope,
+    private val period:String? = null,
 ) {
 
     @Provides
@@ -54,6 +55,6 @@ class OUTreeModule(
 
     @Provides
     internal fun providesOUTreeRepository(d2: D2): OUTreeRepository {
-        return OUTreeRepository(OURepositoryConfiguration(d2, orgUnitSelectorScope))
+        return OUTreeRepository(OURepositoryConfiguration(d2, orgUnitSelectorScope,period))
     }
 }

@@ -1,6 +1,7 @@
 package org.dhis2.usescases.eventsWithoutRegistration.eventDetails.data
 
 import io.reactivex.Observable
+import org.dhis2.commons.team.isActiveOrgUnit
 import org.dhis2.data.dhislogic.AUTH_ALL
 import org.dhis2.data.dhislogic.AUTH_UNCOMPLETE_EVENT
 import org.dhis2.form.model.FieldUiModel
@@ -325,5 +326,9 @@ class EventDetailsRepository(
                 d2Error,
             ),
         )
+    }
+
+    fun isOrgUnitActive(selectedOrgUnit: String, dateToYearlyPeriod: String): Boolean {
+        return isActiveOrgUnit(d2, selectedOrgUnit, dateToYearlyPeriod)
     }
 }

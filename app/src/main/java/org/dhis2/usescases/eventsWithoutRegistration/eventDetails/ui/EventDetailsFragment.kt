@@ -32,6 +32,7 @@ import org.dhis2.commons.locationprovider.LocationSettingLauncher
 import org.dhis2.commons.orgunitselector.OUTreeFragment
 import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
 import org.dhis2.commons.resources.ResourceManager
+import org.dhis2.commons.team.dateToYearlyPeriod
 import org.dhis2.databinding.EventDetailsFragmentBinding
 import org.dhis2.maps.views.MapSelectorActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.injection.EventDetailsComponentProvider
@@ -228,6 +229,10 @@ class EventDetailsFragment : FragmentGlobalAbstract() {
             displayMessage(message)
             onEventReopened?.invoke()
         }
+
+        viewModel.showDeactivatedTeamError = {
+            displayMessage(getString(R.string.deactivated_team_error))
+        }
     }
 
     @Composable
@@ -344,6 +349,11 @@ class EventDetailsFragment : FragmentGlobalAbstract() {
     }
 
     private fun showOrgUnitDialog() {
+        //Eyeseetea customization- filter by active team
+        val period = viewModel.eventDate.value.currentDate?.let {
+            dateToYearlyPeriod(it)
+        }
+
         OUTreeFragment.Builder()
             .showAsDialog()
             .withPreselectedOrgUnits(
@@ -358,6 +368,8 @@ class EventDetailsFragment : FragmentGlobalAbstract() {
             .onSelection { selectedOrgUnits ->
                 viewModel.setUpOrgUnit(selectedOrgUnit = selectedOrgUnits.firstOrNull()?.uid())
             }
+            //eyeseetea customization- filter by active team
+            .period(period)
             .build()
             .show(childFragmentManager, "ORG_UNIT_DIALOG")
     }

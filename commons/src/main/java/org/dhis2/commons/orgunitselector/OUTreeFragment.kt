@@ -26,6 +26,7 @@ const val ARG_SHOW_AS_DIALOG = "OUTreeFragment.ARG_SHOW_AS_DIALOG"
 const val ARG_SINGLE_SELECTION = "OUTreeFragment.ARG_SINGLE_SELECTION"
 const val ARG_SCOPE = "OUTreeFragment.ARG_SCOPE"
 const val ARG_PRE_SELECTED_OU = "OUTreeFragment.ARG_PRE_SELECTED_OU"
+const val PERIOD = "OUTreeFragment.PERIOD"
 
 class OUTreeFragment private constructor() : DialogFragment() {
 
@@ -35,6 +36,7 @@ class OUTreeFragment private constructor() : DialogFragment() {
         private var singleSelection = false
         private var selectionListener: ((selectedOrgUnits: List<OrganisationUnit>) -> Unit) = {}
         private var orgUnitScope: OrgUnitSelectorScope = OrgUnitSelectorScope.UserSearchScope()
+        private var period: String? = null
         fun showAsDialog() = apply {
             showAsDialog = true
         }
@@ -66,6 +68,10 @@ class OUTreeFragment private constructor() : DialogFragment() {
                 this.selectionListener = selectionListener
             }
 
+        fun period(period: String?) = apply {
+            this.period = period
+        }
+
         fun build(): OUTreeFragment {
             return OUTreeFragment().apply {
                 selectionCallback = selectionListener
@@ -74,6 +80,7 @@ class OUTreeFragment private constructor() : DialogFragment() {
                     putBoolean(ARG_SINGLE_SELECTION, singleSelection)
                     putParcelable(ARG_SCOPE, orgUnitScope)
                     putStringArrayList(ARG_PRE_SELECTED_OU, ArrayList(preselectedOrgUnits))
+                    putString(PERIOD, period)
                 }
             }
         }
@@ -104,6 +111,7 @@ class OUTreeFragment private constructor() : DialogFragment() {
                         ARG_SCOPE,
                     )!!
                 },
+                period = requireArguments().getString(PERIOD),
             ),
         )?.inject(this)
     }
