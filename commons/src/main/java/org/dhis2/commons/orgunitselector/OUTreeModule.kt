@@ -29,6 +29,7 @@ package org.dhis2.commons.orgunitselector
 
 import dagger.Module
 import dagger.Provides
+import org.dhis2.commons.team.ValidationData
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.hisp.dhis.android.core.D2
 
@@ -37,7 +38,7 @@ class OUTreeModule(
     private val preselectedOrgUnits: List<String>,
     private val singleSelection: Boolean,
     private val orgUnitSelectorScope: OrgUnitSelectorScope,
-    private val period:String? = null,
+    private val validationData: ValidationData?,
 ) {
 
     @Provides
@@ -55,6 +56,6 @@ class OUTreeModule(
 
     @Provides
     internal fun providesOUTreeRepository(d2: D2): OUTreeRepository {
-        return OUTreeRepository(OURepositoryConfiguration(d2, orgUnitSelectorScope,period))
+        return OUTreeRepository(OURepositoryConfiguration(d2, orgUnitSelectorScope, validationData))
     }
 }

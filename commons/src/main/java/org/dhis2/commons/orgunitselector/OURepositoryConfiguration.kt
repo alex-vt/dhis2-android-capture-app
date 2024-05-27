@@ -1,5 +1,6 @@
 package org.dhis2.commons.orgunitselector
 
+import org.dhis2.commons.team.ValidationData
 import org.dhis2.commons.team.nonActiveOrgUnits
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.repositories.scope.RepositoryScope
@@ -9,7 +10,7 @@ import org.hisp.dhis.android.core.organisationunit.OrganisationUnitCollectionRep
 class OURepositoryConfiguration(
     private val d2: D2,
     private val orgUnitSelectorScope: OrgUnitSelectorScope,
-    private val period: String? = null,
+    private val validationData: ValidationData?,
 ) {
     fun orgUnitRepository(name: String?): List<OrganisationUnit> {
         var orgUnitRepository = d2.organisationUnitModule().organisationUnits()
@@ -54,7 +55,7 @@ class OURepositoryConfiguration(
         //Eyeseetea customization - filter by active team
         //return orgUnitRepository.blockingGet()
 
-        val nonActiveOrgUnits = if (period == null) listOf() else nonActiveOrgUnits(d2, period)
+        val nonActiveOrgUnits = if (validationData == null) listOf() else nonActiveOrgUnits(d2, validationData)
 
         return orgUnitRepository.blockingGet().filter {
             nonActiveOrgUnits.contains(it.uid()).not()

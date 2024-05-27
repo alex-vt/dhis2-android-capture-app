@@ -158,7 +158,9 @@ class DataSetInitialPresenter(
         val period = dateToYearlyPeriod(selectedPeriod)
 
         if (period != null && selectedOrgUnit != null) {
-            val isActivatedOrgUnit: Boolean = isActiveOrgUnit(d2, selectedOrgUnit.uid(), period)
+            val dataSetUid = dataSetInitialRepository.dataSet().blockingFirst().uid()
+
+            val isActivatedOrgUnit: Boolean = isActiveOrgUnit(d2, dataSetUid, selectedOrgUnit.uid(), period)
             if (!isActivatedOrgUnit) {
                 return false
             }

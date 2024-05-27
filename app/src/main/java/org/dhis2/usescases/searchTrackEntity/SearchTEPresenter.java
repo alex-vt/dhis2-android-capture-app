@@ -10,7 +10,6 @@ import static org.dhis2.commons.matomo.Labels.CLICK;
 import static org.dhis2.commons.team.DateToYearlyPeriodKt.dateToYearlyPeriod;
 import static org.dhis2.commons.team.IsActiveOrgUnitKt.isActiveOrgUnit;
 import static org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipFragment.TEI_A_UID;
-import static org.dhis2.utils.DateUtils.YEARLY_FORMAT_EXPRESSION;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ADD_RELATIONSHIP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CREATE_ENROLL;
 import static org.dhis2.utils.analytics.AnalyticsConstants.DELETE_RELATIONSHIP;
@@ -366,7 +365,8 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                 // Eyeseetea customization
                 //enrollInOrgUnit(selectedOrgUnit.uid(), programUid, uid, selectedEnrollmentDate, queryData);
                 String period = dateToYearlyPeriod(selectedEnrollmentDate);
-                boolean isActivatedOrgUnit = isActiveOrgUnit(d2, selectedOrgUnit.uid(), period);
+
+                boolean isActivatedOrgUnit = isActiveOrgUnit(d2, currentProgram.getValue(), selectedOrgUnit.uid(), period);
 
                 if (isActivatedOrgUnit) {
                     enrollInOrgUnit(selectedOrgUnit.uid(), programUid, uid, selectedEnrollmentDate, queryData);

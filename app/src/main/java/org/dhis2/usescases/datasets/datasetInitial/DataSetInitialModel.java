@@ -13,6 +13,8 @@ import java.util.List;
 
 @AutoValue
 public abstract class DataSetInitialModel {
+    @NonNull
+    public abstract String uid();
 
     @NonNull
     public abstract String displayName();
@@ -36,14 +38,15 @@ public abstract class DataSetInitialModel {
     public abstract Integer openFuturePeriods();
 
     @NonNull
-    public static DataSetInitialModel create(@NonNull String displayName,
+    public static DataSetInitialModel create(@NonNull String uid,
+                                             @NonNull String displayName,
                                              @Nullable String description,
                                              @NonNull String categoryCombo,
                                              @NonNull String categoryComboName,
                                              @NonNull PeriodType periodType,
                                              @NonNull List<Category> categories,
                                              @Nullable Integer openFuturePeriods) {
-        return new AutoValue_DataSetInitialModel(displayName, description, categoryCombo, categoryComboName, periodType, categories, openFuturePeriods);
+        return new AutoValue_DataSetInitialModel(uid, displayName, description, categoryCombo, categoryComboName, periodType, categories, openFuturePeriods);
     }
 
     public final List<Category> getCategories() {

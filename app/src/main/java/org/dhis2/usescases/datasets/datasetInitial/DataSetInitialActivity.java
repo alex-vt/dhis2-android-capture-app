@@ -127,7 +127,7 @@ public class DataSetInitialActivity extends ActivityGlobalAbstract implements Da
                     checkActionVisivbility();
                     return Unit.INSTANCE;
                 })
-                .period( dateToYearlyPeriod(selectedPeriod))
+                .withTeamValidationData(dataSetUid, dateToYearlyPeriod(selectedPeriod))
                 .build()
                 .show(getSupportFragmentManager(), OUTreeFragment.class.getSimpleName());
     }

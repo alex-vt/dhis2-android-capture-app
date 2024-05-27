@@ -66,6 +66,7 @@ class ConfigureEventDetails(
                 canReopen = repository.getCanReopen(),
                 //Eyeseetea customization
                 isOrgUnitActive = isOrgUnitActive ,
+                program = repository.getProgram()?.uid() ?: "",
             ),
         )
     }

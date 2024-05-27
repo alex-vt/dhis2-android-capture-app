@@ -329,6 +329,6 @@ class EventDetailsRepository(
     }
 
     fun isOrgUnitActive(selectedOrgUnit: String, dateToYearlyPeriod: String): Boolean {
-        return isActiveOrgUnit(d2, selectedOrgUnit, dateToYearlyPeriod)
+        return isActiveOrgUnit(d2, programUid, selectedOrgUnit, dateToYearlyPeriod)
     }
 }
