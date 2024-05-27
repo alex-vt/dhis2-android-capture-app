@@ -28,8 +28,8 @@ public class DataSetInitialModule {
 
     @Provides
     @PerActivity
-    DataSetInitialContract.Presenter providesPresenter(DataSetInitialRepository dataSetInitialRepository, SchedulerProvider schedulerProvider) {
-        return new DataSetInitialPresenter(view, dataSetInitialRepository, schedulerProvider);
+    DataSetInitialContract.Presenter providesPresenter(D2 d2, DataSetInitialRepository dataSetInitialRepository, SchedulerProvider schedulerProvider) {
+        return new DataSetInitialPresenter(view, d2, dataSetInitialRepository, schedulerProvider);
     }
 
     @Provides

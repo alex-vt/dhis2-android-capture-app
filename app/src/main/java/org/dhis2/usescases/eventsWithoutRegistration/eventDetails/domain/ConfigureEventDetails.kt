@@ -41,9 +41,11 @@ class ConfigureEventDetails(
         val programStage = repository.getProgramStage()
 
         val isOrgUnitActive = if (selectedDate == null || selectedOrgUnit == null) true
-        else repository.isOrgUnitActive(
-            selectedOrgUnit, dateToYearlyPeriod(selectedDate)
-        )
+        else dateToYearlyPeriod(selectedDate)?.let {
+            repository.isOrgUnitActive(
+                selectedOrgUnit, it
+            )
+        }?: true
 
         return flowOf(
             EventDetails(
@@ -63,7 +65,7 @@ class ConfigureEventDetails(
                 actionButtonText = getActionButtonText(),
                 canReopen = repository.getCanReopen(),
                 //Eyeseetea customization
-                isOrgUnitActive = isOrgUnitActive
+                isOrgUnitActive = isOrgUnitActive ,
             ),
         )
     }

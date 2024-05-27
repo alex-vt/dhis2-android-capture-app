@@ -41,6 +41,8 @@ public class DataSetInitialContract {
         void setOrgUnit(OrganisationUnit organisationUnit);
 
         void navigateToDataSetTable(String catOptionCombo, String periodId);
+
+        void showDeactivatedTeamError();
     }
 
     public interface Presenter extends AbstractActivityContracts.Presenter {
@@ -57,6 +59,10 @@ public class DataSetInitialContract {
         void onActionButtonClick(PeriodType periodType);
 
         CategoryOption getCatOption(String selectedOption);
+
+        void checkOrgUnitByPeriodIsActive(OrganisationUnit selectedOrgUnit, Date selectedPeriod);
+
+        boolean isOrgUnitByPeriodIsActive(OrganisationUnit selectedOrgUnit, Date selectedPeriod);
     }
 
 

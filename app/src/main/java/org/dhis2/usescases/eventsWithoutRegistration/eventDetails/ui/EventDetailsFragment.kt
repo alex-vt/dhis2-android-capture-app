@@ -349,11 +349,6 @@ class EventDetailsFragment : FragmentGlobalAbstract() {
     }
 
     private fun showOrgUnitDialog() {
-        //Eyeseetea customization- filter by active team
-        val period = viewModel.eventDate.value.currentDate?.let {
-            dateToYearlyPeriod(it)
-        }
-
         OUTreeFragment.Builder()
             .showAsDialog()
             .withPreselectedOrgUnits(
@@ -369,7 +364,7 @@ class EventDetailsFragment : FragmentGlobalAbstract() {
                 viewModel.setUpOrgUnit(selectedOrgUnit = selectedOrgUnits.firstOrNull()?.uid())
             }
             //eyeseetea customization- filter by active team
-            .period(period)
+            .period(dateToYearlyPeriod(viewModel.eventDate.value.currentDate))
             .build()
             .show(childFragmentManager, "ORG_UNIT_DIALOG")
     }

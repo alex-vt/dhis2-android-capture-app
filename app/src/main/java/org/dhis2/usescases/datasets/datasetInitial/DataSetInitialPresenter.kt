@@ -5,16 +5,21 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.functions.BiFunction
 import org.dhis2.commons.data.tuples.Pair
 import org.dhis2.commons.schedulers.SchedulerProvider
+import org.dhis2.commons.team.dateToYearlyPeriod
+import org.dhis2.commons.team.isActiveOrgUnit
 import org.dhis2.data.dhislogic.inDateRange
 import org.dhis2.data.dhislogic.inOrgUnit
+import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.category.CategoryOption
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
 import org.hisp.dhis.android.core.period.PeriodType
 import timber.log.Timber
-import java.util.ArrayList
+import java.util.Date
+
 
 class DataSetInitialPresenter(
     private val view: DataSetInitialContract.View,
+    private val d2: D2,
     private val dataSetInitialRepository: DataSetInitialRepository,
     private val schedulerProvider: SchedulerProvider,
 ) : DataSetInitialContract.Presenter {
@@ -131,6 +136,35 @@ class DataSetInitialPresenter(
 
     override fun getCatOption(selectedOption: String): CategoryOption {
         return dataSetInitialRepository.getCategoryOption(selectedOption)
+    }
+
+    override fun checkOrgUnitByPeriodIsActive(
+        selectedOrgUnit: OrganisationUnit?,
+        selectedPeriod: Date
+    ) {
+        // Eyeseetea customization
+
+        if (!isOrgUnitByPeriodIsActive(selectedOrgUnit, selectedPeriod)) {
+            view.showDeactivatedTeamError()
+        }
+    }
+
+    override fun isOrgUnitByPeriodIsActive(
+        selectedOrgUnit: OrganisationUnit?,
+        selectedPeriod: Date?
+    ):Boolean {
+        // Eyeseetea customization
+        //enrollInOrgUnit(selectedOrgUnit.uid(), programUid, uid, selectedEnrollmentDate, queryData);
+        val period = dateToYearlyPeriod(selectedPeriod)
+
+        if (period != null && selectedOrgUnit != null) {
+            val isActivatedOrgUnit: Boolean = isActiveOrgUnit(d2, selectedOrgUnit.uid(), period)
+            if (!isActivatedOrgUnit) {
+                return false
+            }
+        }
+
+        return true
     }
 
     override fun onDettach() {
