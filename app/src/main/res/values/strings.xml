@@ -981,4 +981,5 @@
     <string name="change_server_url_warning">Please confirm that metadata in the new server is equal to this one. Sync errors could occur in case server is not totally synced with current one. Are you sure?</string>
     <string name="select_upg">Select UPG</string>
     <string name="empty_upg_items">There are no UPG items</string>
+    <string name="deactivated_team_error">This team is not active for the selected period</string>
 </resources>
