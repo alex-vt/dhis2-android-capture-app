@@ -128,7 +128,7 @@ android {
         getByName("debug") {
             // custom application suffix which allows to
             // install debug and release builds at the same time
-            applicationIdSuffix = ".debug"
+            applicationIdSuffix = ".uat"
 
             // Using dataentry.jks to sign debug build type.
             signingConfig = signingConfigs.getByName("debug")
@@ -184,6 +184,13 @@ android {
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
             versionName = "2.8.2-psi-fork-1"
+        }
+
+        create("ocba") {
+            applicationId = "ocba.com.dhis2"
+            dimension = "default"
+            versionCode = libs.versions.vCode.get().toInt()
+            versionName = "2.8.2-ocba-fork-1"
         }
     }
 
