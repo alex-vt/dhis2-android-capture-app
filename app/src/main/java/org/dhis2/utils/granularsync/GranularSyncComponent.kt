@@ -26,6 +26,7 @@
 package org.dhis2.utils.granularsync
 
 import dagger.Subcomponent
+import org.dhis2.utils.granularsync.GranularSyncModule
 
 @Subcomponent(modules = [GranularSyncModule::class])
 interface GranularSyncComponent {

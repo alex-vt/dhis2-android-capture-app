@@ -1,6 +1,6 @@
 @file:Suppress("PackageName")
 
-package org.dhis2.Bindings
+package org.dhis2.bindings
 
 import android.Manifest
 import android.content.Context

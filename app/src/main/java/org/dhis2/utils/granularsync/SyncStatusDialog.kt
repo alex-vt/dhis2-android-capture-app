@@ -36,6 +36,7 @@ import org.dhis2.commons.sync.OnDismissListener
 import org.dhis2.commons.sync.OnSyncNavigationListener
 import org.dhis2.commons.sync.SyncContext
 import org.dhis2.commons.ui.icons.SyncStateIcon
+import org.dhis2.utils.granularsync.GranularSyncModule
 import org.dhis2.ui.dialogs.bottomsheet.BottomSheetDialogUi
 import org.dhis2.ui.dialogs.bottomsheet.BottomSheetDialogUiModel
 import org.dhis2.ui.dialogs.bottomsheet.DialogButtonStyle
