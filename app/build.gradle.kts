@@ -75,7 +75,7 @@ android {
         val mapboxAccessToken = System.getenv("MAPBOX_ACCESS_TOKEN") ?: defMapboxToken
         val bitriseSentryDSN = System.getenv("SENTRY_DSN") ?: ""
 
-        buildConfigField("String", "SDK_VERSION", "\"" + "1.8.2-eyeseetea-fork-1" + "\"")
+        buildConfigField("String", "SDK_VERSION", "\"" + "1.9.1-eyeseetea-fork-1" + "\"")
         buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"" + mapboxAccessToken + "\"")
         buildConfigField("String", "MATOMO_URL", "\"https://usage.analytics.dhis2.org/matomo.php\"")
         buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
@@ -91,7 +91,7 @@ android {
             .annotationProcessorOptions.arguments["dagger.hilt.disableModulesHaveInstallInCheck"] =
             "true"
     }
-    packagingOptions {
+    packaging {
         jniLibs {
             excludes.addAll(listOf("META-INF/licenses/**"))
         }
@@ -128,7 +128,7 @@ android {
         getByName("debug") {
             // custom application suffix which allows to
             // install debug and release builds at the same time
-            applicationIdSuffix = ".debug"
+            applicationIdSuffix = ".uat"
 
             // Using dataentry.jks to sign debug build type.
             signingConfig = signingConfigs.getByName("debug")
@@ -148,8 +148,7 @@ android {
             buildConfigField("String", "GIT_SHA", "\"" + getCommitHash() + "\"")
         }
     }
-
-    flavorDimensions("default")
+    flavorDimensions += listOf("default")
 
     productFlavors {
         create("dhis") {
@@ -176,14 +175,21 @@ android {
             applicationId = "com.eyeseetea.widp"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = "2.8.2-widp-fork-1"
+            versionName = "2.9.1-widp-fork-1"
         }
 
         create("psi") {
             applicationId = "org.dhis2.psi"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = "2.8.2-psi-fork-1"
+            versionName = "2.9.1-psi-fork-2"
+        }
+
+        create("ocba") {
+            applicationId = "ocba.com.dhis2"
+            dimension = "default"
+            versionCode = libs.versions.vCode.get().toInt()
+            versionName = libs.versions.vName.get()
         }
     }
 
@@ -197,13 +203,24 @@ android {
         compose = true
         dataBinding = true
         viewBinding = true
+        buildConfig = true
     }
 
     configurations.all {
         resolutionStrategy {
             preferProjectModules()
-            force("junit:junit:4.12", "com.squareup.okhttp3:okhttp:3.12.0")
-            setForcedModules("com.squareup.okhttp3:okhttp:3.12.0")
+            force(
+                "junit:junit:4.12",
+                "com.squareup.okhttp3:okhttp:4.9.3",
+                "com.squareup.okhttp3:mockwebserver:4.9.3",
+                "com.squareup.okhttp3:logging-interceptor:4.9.3"
+            )
+            setForcedModules(
+                "com.squareup.okhttp3:okhttp:4.9.3",
+                "com.squareup.okhttp3:mockwebserver:4.9.3",
+                "com.squareup.okhttp3:logging-interceptor:4.9.3"
+            )
+            cacheDynamicVersionsFor(0, TimeUnit.SECONDS)
         }
     }
 
@@ -258,6 +275,7 @@ dependencies {
     implementation(libs.analytics.customactivityoncrash)
     implementation(platform(libs.dispatcher.dispatchBOM))
     implementation(libs.dispatcher.dispatchCore)
+    implementation(libs.dhis2.mobile.designsystem)
 
     coreLibraryDesugaring(libs.desugar)
 
@@ -300,8 +318,9 @@ dependencies {
     androidTestImplementation(libs.test.rules)
     androidTestImplementation(libs.test.coreKtx)
     androidTestImplementation(libs.test.junitKtx)
-    androidTestImplementation(libs.test.mockito.android)
     androidTestImplementation(libs.test.mockitoCore)
+    androidTestImplementation(libs.test.dexmaker.mockitoInline)
+    androidTestImplementation(libs.test.mockitoKotlin)
     androidTestImplementation(libs.test.support.annotations)
     androidTestImplementation(libs.test.espresso.idlingresource)
     androidTestImplementation(libs.test.rx2.idler)
