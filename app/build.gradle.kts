@@ -189,7 +189,7 @@ android {
             applicationId = "ocba.com.dhis2"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = "2.8.2-ocba-fork-1"
+            versionName = libs.versions.vName.get()
         }
     }
 
