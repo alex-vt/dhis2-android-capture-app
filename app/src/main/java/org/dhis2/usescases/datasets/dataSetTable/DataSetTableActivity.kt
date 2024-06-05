@@ -292,6 +292,19 @@ class DataSetTableActivity : ActivityGlobalAbstract(), DataSetTableContract.View
             .show(supportFragmentManager, AlertBottomDialog::class.java.simpleName)
     }
 
+    override fun showTeamChangeRequestDialog() {
+        instance
+            //.setTitle(getString(R.string.validation_success_title))
+            .setMessage(getString(R.string.team_change_request))
+            .setPositiveButton(getString(R.string.yes)) {
+                presenter.createTeamChangeRequest()
+            }
+            .setNegativeButton(getString(R.string.no)) {
+                presenter.cancelChangeRequest()
+            }
+            .show(supportFragmentManager, AlertBottomDialog::class.java.simpleName)
+    }
+
     override fun savedAndCompleteMessage() {
         Toast.makeText(this, R.string.dataset_saved_completed, Toast.LENGTH_SHORT).show()
         finish()

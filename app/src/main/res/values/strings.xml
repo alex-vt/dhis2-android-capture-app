@@ -982,4 +982,6 @@
     <string name="select_upg">Select UPG</string>
     <string name="empty_upg_items">There are no UPG items</string>
     <string name="deactivated_team_error">This team is not active for the selected period</string>
+    <string name="team_change_request">Do you want to create a change request for this team profile?</string>
+
 </resources>

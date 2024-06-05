@@ -6,8 +6,6 @@ import org.dhis2.utils.validationrules.Violation;
 
 import java.util.List;
 
-import io.reactivex.Observable;
-
 public class DataSetTableContract {
 
     public interface View extends AbstractActivityContracts.View {
@@ -47,6 +45,8 @@ public class DataSetTableContract {
         void showInternalValidationError();
 
         void saveAndFinish();
+
+        void showTeamChangeRequestDialog();
 
         boolean isErrorBottomSheetShowing();
 

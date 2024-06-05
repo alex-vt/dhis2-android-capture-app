@@ -177,6 +177,7 @@ class DataValuePresenter(
                 ValueType.BOOLEAN,
                 ValueType.TRUE_ONLY,
                 -> view.showBooleanDialog(dataElement, cell, updateCellValue)
+
                 ValueType.DATE -> view.showCalendar(dataElement, cell, false, updateCellValue)
                 ValueType.DATETIME -> view.showCalendar(dataElement, cell, true, updateCellValue)
                 ValueType.TIME -> view.showTimePicker(dataElement, cell, updateCellValue)
@@ -185,12 +186,14 @@ class DataValuePresenter(
                     cell,
                     updateCellValue,
                 )
+
                 ValueType.ORGANISATION_UNIT -> view.showOtgUnitDialog(
                     dataElement,
                     cell,
                     repository.orgUnits(),
                     updateCellValue,
                 )
+
                 ValueType.AGE -> view.showAgeDialog(dataElement, cell, updateCellValue)
                 else -> {}
             }
@@ -269,5 +272,30 @@ class DataValuePresenter(
 
     fun saveTableWidth(tableId: String, widthDpValue: Float) {
         tableDimensionStore.saveTableWidth(tableId, widthDpValue)
+    }
+
+    fun createTeamChangeRequest() {
+        val teamStatusUId = "I1CBbsdTg3A"
+        val teamParentUId = "S5Hb8en5OJU"
+
+        val teamStatusCell = findCell(teamStatusUId)
+
+        if (teamStatusCell != null){
+            onSaveValueChange(teamStatusCell.copy(value = "Active"))
+        }
+
+        val teamParentCell = findCell(teamParentUId)
+
+        if (teamParentCell != null){
+            val parentOrgUnit = repository.getParentOrgUnit()
+
+            onSaveValueChange(teamParentCell.copy(value = parentOrgUnit))
+        }
+    }
+
+    private fun findCell(dataElementUid:String):TableCell? {
+        return screenState.value.tables[0].tableRows.find {
+            it.values[0]?.id?.contains(dataElementUid) ?: false
+        }?.values?.get(0)
     }
 }

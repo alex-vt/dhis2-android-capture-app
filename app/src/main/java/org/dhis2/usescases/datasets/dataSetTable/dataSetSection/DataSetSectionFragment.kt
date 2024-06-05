@@ -85,6 +85,10 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
         activity = context as DataSetTableActivity
         presenter = activity.presenter
 
+        presenter.setCreateTeamChangeRequestListener {
+            presenterFragment.createTeamChangeRequest()
+        }
+
         activity.dataSetTableComponent?.plus(
             DataValueModule(
                 arguments?.getString(DATA_SET_UID)!!,
