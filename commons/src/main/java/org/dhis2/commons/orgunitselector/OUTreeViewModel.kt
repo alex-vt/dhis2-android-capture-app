@@ -36,7 +36,7 @@ class OUTreeViewModel(
                         label = org.displayName()!!,
                         isOpen = true,
                         hasChildren = repository.orgUnitHasChildren(org.uid()),
-                        selected = selectedOrgUnits.contains(org.uid()),
+                        selected = selectedOrgUnits.contains(org.uid()) ||  selectedOrgUnits.contains(org.displayName()),
                         level = org.level()!!,
                         selectedChildrenCount = repository.countSelectedChildren(
                             org.uid(),

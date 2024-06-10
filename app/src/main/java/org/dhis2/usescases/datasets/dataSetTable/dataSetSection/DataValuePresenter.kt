@@ -31,6 +31,11 @@ import org.hisp.dhis.android.core.dataelement.DataElement
 import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
+//EyeSeeTea customizations
+private const val teamStatusUId = "I1CBbsdTg3A"
+private const val teamParentUId = "S5Hb8en5OJU"
+private const val teamSDSUid = "aml0insfFuA"
+
 class DataValuePresenter(
     private val view: DataValueContract.View,
     private val repository: DataValueRepository,
@@ -71,7 +76,25 @@ class DataValuePresenter(
                     indicators?.let { list.add(indicators) }
                 }
             }.map {
-                TableScreenState(tables = it)
+                //EyeSeeTea customizations - multiple SDS org unit selection
+                //TableScreenState(tables = it)
+                val finalTables = it.map { tableModel ->
+                    tableModel.copy(tableRows = tableModel.tableRows.map { tableRow ->
+                        tableRow.copy(values = tableRow.values.mapValues { (_, cell) ->
+                            if (cell.id?.contains(teamSDSUid) == true) {
+                                cell.copy(
+                                    value = replaceOrgUnitUIdsByDisplayName(cell.value)
+                                )
+                            } else {
+                                cell.copy(
+                                    value = cell.value
+                                )
+                            }
+                        })
+                    })
+                }
+
+                TableScreenState(tables = finalTables)
             }
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.io())
@@ -84,6 +107,11 @@ class DataValuePresenter(
                     { Timber.e(it) },
                 ),
         )
+    }
+
+    private fun replaceOrgUnitUIdsByDisplayName(value: String?): String? {
+       val orgUitUIds = value?.split(",") ?: emptyList()
+        return orgUitUIds.joinToString(",") { repository.getOrgUnitById(it).toString() }
     }
 
     private fun tables() = repository.getCatCombo().map {
@@ -148,15 +176,28 @@ class DataValuePresenter(
         val dataElement = getDataElement(dataElementUid)
         dataElement?.let { handleElementInteraction(dataElement, cell, updateCellValue) }
         return dataElement.takeIf { it?.optionSetUid() == null }
-            ?.valueType()?.toKeyBoardInputType()?.let { inputType ->
-                TextInputModel(
-                    id = cell.id ?: "",
-                    mainLabel = dataElement?.displayFormName() ?: "-",
-                    secondaryLabels = repository.getCatOptComboOptions(ids[1]),
-                    currentValue = cell.value,
-                    keyboardInputType = inputType,
-                    error = errors[cell.id],
-                )
+                ?.valueType()?.toKeyBoardInputType()?.let { inputType ->
+                    //EyeSeeTea customizations - multiple SDS org unit selection
+                 /*   TextInputModel(
+                        id = cell.id ?: "",
+                        mainLabel = dataElement?.displayFormName() ?: "-",
+                        secondaryLabels = repository.getCatOptComboOptions(ids[1]),
+                        currentValue = cell.value,
+                        keyboardInputType = inputType,
+                        error = errors[cell.id],
+                    )*/
+                    if (cell.id!!.contains(teamSDSUid)) {
+                        null
+                    } else {
+                        TextInputModel(
+                            id = cell.id ?: "",
+                            mainLabel = dataElement?.displayFormName() ?: "-",
+                            secondaryLabels = repository.getCatOptComboOptions(ids[1]),
+                            currentValue = cell.value,
+                            keyboardInputType = inputType,
+                            error = errors[cell.id],
+                        )
+                    }
             }
     }
 
@@ -193,6 +234,19 @@ class DataValuePresenter(
                     repository.orgUnits(),
                     updateCellValue,
                 )
+
+                ValueType.TEXT -> {
+                    //EyeSeeTea customizations - multiple SDS org unit selection
+                    if (dataElement.uid() == teamSDSUid) {
+                        view.showOtgUnitDialog(
+                            dataElement,
+                            cell,
+                            repository.orgUnits(),
+                            updateCellValue,
+                            singleSelection = false
+                        )
+                    }
+                }
 
                 ValueType.AGE -> view.showAgeDialog(dataElement, cell, updateCellValue)
                 else -> {}
@@ -275,27 +329,26 @@ class DataValuePresenter(
     }
 
     fun createTeamChangeRequest() {
-        val teamStatusUId = "I1CBbsdTg3A"
-        val teamParentUId = "S5Hb8en5OJU"
+        val teamStatusCell = screenState.value.tables[0].findCell(teamStatusUId)
 
-        val teamStatusCell = findCell(teamStatusUId)
-
-        if (teamStatusCell != null){
+        if (teamStatusCell != null) {
             onSaveValueChange(teamStatusCell.copy(value = "Active"))
         }
 
-        val teamParentCell = findCell(teamParentUId)
+        val teamParentCell = screenState.value.tables[0].findCell(teamParentUId)
 
-        if (teamParentCell != null){
+        if (teamParentCell != null) {
             val parentOrgUnit = repository.getParentOrgUnit()
 
             onSaveValueChange(teamParentCell.copy(value = parentOrgUnit))
         }
     }
 
-    private fun findCell(dataElementUid:String):TableCell? {
-        return screenState.value.tables[0].tableRows.find {
-            it.values[0]?.id?.contains(dataElementUid) ?: false
-        }?.values?.get(0)
-    }
+
+}
+
+private fun TableModel.findCell(dataElementUid: String): TableCell? {
+    return this.tableRows.find {
+        it.values[0]?.id?.contains(dataElementUid) ?: false
+    }?.values?.get(0)
 }

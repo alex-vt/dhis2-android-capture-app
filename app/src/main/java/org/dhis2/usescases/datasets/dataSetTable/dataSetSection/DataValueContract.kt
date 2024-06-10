@@ -45,6 +45,8 @@ class DataValueContract {
             cell: TableCell,
             orgUnits: List<OrganisationUnit>,
             updateCellValue: (TableCell) -> Unit,
+            //EyeSeeTea customizations - multiple SDS org unit selection
+            singleSelection:Boolean? = true
         )
 
         fun showOptionSetDialog(
