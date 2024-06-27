@@ -189,7 +189,7 @@ android {
             applicationId = "org.samaritan.cpr"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = "2.9.1-spOCC-fork-2"
+            versionName = libs.versions.vName.get()
         }
     }
 
