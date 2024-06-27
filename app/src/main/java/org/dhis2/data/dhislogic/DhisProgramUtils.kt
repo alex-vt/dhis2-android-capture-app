@@ -43,6 +43,8 @@ class DhisProgramUtils @Inject constructor(val d2: D2) {
 
     fun getProgramsInCaptureOrgUnits(): Flowable<List<Program>> {
         return d2.programModule().programs()
+            // Eyeseetea customization - Only programs with write access
+            .byAccessDataWrite().isTrue
             .withTrackedEntityType()
             .byOrganisationUnitScope(OrganisationUnit.Scope.SCOPE_DATA_CAPTURE)
             .get().toFlowable()

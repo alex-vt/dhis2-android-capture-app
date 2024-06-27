@@ -62,6 +62,8 @@ internal class ProgramRepositoryImpl(
             .map { dataSetSummaries ->
                 dataSetSummaries.mapNotNull {
                     d2.dataSetModule().dataSets()
+                        // Eyeseetea customization - Only datasets with write access
+                        .byAccessDataWrite().isTrue
                         .uid(it.dataSetUid())
                         .blockingGet()?.let { dataSet ->
                             programViewModelMapper.map(
