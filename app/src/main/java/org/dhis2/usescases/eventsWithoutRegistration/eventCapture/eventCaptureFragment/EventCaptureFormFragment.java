@@ -25,7 +25,9 @@ import org.dhis2.form.ui.FormView;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureAction;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract;
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment.upg.ui.SelectUPGDialog;
 import org.dhis2.usescases.general.FragmentGlobalAbstract;
+import org.dhis2.utils.session.PinDialog;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
@@ -85,7 +87,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                 .onPercentageUpdate(percentage -> {
                     activity.updatePercentage(percentage);
                     return Unit.INSTANCE;
-                }).onItemChangeListener(rowAction ->{
+                }).onItemChangeListener(rowAction -> {
                     activity.refreshProgramStageName();
                     return Unit.INSTANCE;
                 }).onDataIntegrityResult(result -> {
@@ -98,7 +100,9 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                 .useComposeForm(
                         featureConfig.isFeatureEnable(Feature.COMPOSE_FORMS)
                 )
+                .onFieldsLoadingListener(fields -> presenter.onFieldsLoading(fields))
                 .build();
+
         activity.setFormEditionListener(this);
         super.onCreate(savedInstanceState);
     }
@@ -178,5 +182,17 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     @Override
     public void onReopen() {
         formView.reload();
+    }
+
+    @Override
+    public void selectUPG(String orgUnitUid) {
+        SelectUPGDialog dialog = SelectUPGDialog.newInstance(orgUnitUid);
+
+        dialog.setUPGSelectedListener(upg -> {
+            presenter.onUPGSelected(upg);
+            return Unit.INSTANCE;
+        });
+
+        dialog.show(getActivity().getSupportFragmentManager(), "SELECT_UPG_TAG");
     }
 }

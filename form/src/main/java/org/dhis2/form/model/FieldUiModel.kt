@@ -22,6 +22,8 @@ interface FieldUiModel {
 
     val editable: Boolean
 
+    val visible: Boolean
+
     val warning: String?
 
     val mandatory: Boolean
@@ -109,6 +111,8 @@ interface FieldUiModel {
     fun setError(error: String?): FieldUiModel
 
     fun setEditable(editable: Boolean): FieldUiModel
+
+    fun setVisible(visible: Boolean): FieldUiModel
 
     fun setLegend(legendValue: LegendValue?): FieldUiModel
 

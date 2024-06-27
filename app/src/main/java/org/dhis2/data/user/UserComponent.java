@@ -32,6 +32,8 @@ import org.dhis2.usescases.events.ScheduledEventComponent;
 import org.dhis2.usescases.events.ScheduledEventModule;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureComponent;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureModule;
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment.upg.SelectUPGDialogComponent;
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment.upg.SelectUPGDialogModule;
 import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.injection.EventDetailsComponent;
 import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.injection.EventDetailsModule;
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialComponent;
@@ -204,4 +206,7 @@ public interface UserComponent extends UserComponentFlavor{
 
     @NonNull
     SessionComponent plus(PinModule pinModule);
+
+    @NonNull
+    SelectUPGDialogComponent plus(@NonNull SelectUPGDialogModule selectUPGDialogModule);
 }

@@ -46,6 +46,7 @@ data class SectionUiModelImpl(
     override var optionSetConfiguration: OptionSetConfiguration? = null,
     override val autocompleteList: List<String>? = null,
     override val orgUnitSelectorScope: OrgUnitSelectorScope? = null,
+    override val visible: Boolean = true,
 ) : FieldUiModel {
 
     private var sectionNumber: Int = 0
@@ -193,6 +194,8 @@ data class SectionUiModelImpl(
     override fun setFieldMandatory() = this.copy(mandatory = true)
 
     override fun isSectionWithFields() = totalFields > 0
+
+    override fun setVisible(editable: Boolean) = this.copy(visible = true)
 
     override fun equals(item: FieldUiModel): Boolean {
         item as SectionUiModelImpl

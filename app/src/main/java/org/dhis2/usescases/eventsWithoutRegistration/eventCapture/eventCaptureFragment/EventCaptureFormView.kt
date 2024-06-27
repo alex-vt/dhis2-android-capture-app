@@ -5,4 +5,5 @@ interface EventCaptureFormView {
     fun hideSaveButton()
     fun showSaveButton()
     fun onReopen()
+    fun selectUPG(orgUnitUid:String)
 }

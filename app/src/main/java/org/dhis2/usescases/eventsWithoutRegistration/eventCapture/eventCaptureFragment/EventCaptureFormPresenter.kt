@@ -6,9 +6,15 @@ import org.dhis2.form.data.FieldsWithWarningResult
 import org.dhis2.form.data.MissingMandatoryResult
 import org.dhis2.form.data.NotSavedResult
 import org.dhis2.form.data.SuccessfulResult
+import org.dhis2.form.model.FieldUiModel
+import org.dhis2.form.model.FieldUiModelImpl
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract
+import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFragment.upg.domain.UPGItem
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.event.EventEditableStatus
+
+private const val UPG_Name = "cFKggVHL4pu"
+private const val UPG_UId = "LDh4Dt7xGD0"
 
 class EventCaptureFormPresenter(
     private val view: EventCaptureFormView,
@@ -26,6 +32,7 @@ class EventCaptureFormPresenter(
                 result.mandatoryFields,
                 result.warningFields,
             )
+
             is FieldsWithWarningResult -> activityPresenter.attemptFinish(
                 result.canComplete,
                 result.onCompleteMessage,
@@ -33,6 +40,7 @@ class EventCaptureFormPresenter(
                 emptyMap(),
                 result.fieldUidWarningList,
             )
+
             is MissingMandatoryResult -> activityPresenter.attemptFinish(
                 result.canComplete,
                 result.onCompleteMessage,
@@ -40,6 +48,7 @@ class EventCaptureFormPresenter(
                 result.mandatoryFields,
                 result.warningFields,
             )
+
             is SuccessfulResult -> activityPresenter.attemptFinish(
                 result.canComplete,
                 result.onCompleteMessage,
@@ -47,6 +56,7 @@ class EventCaptureFormPresenter(
                 emptyMap(),
                 emptyList(),
             )
+
             NotSavedResult -> {
                 // Nothing to do in this case
             }
@@ -61,5 +71,49 @@ class EventCaptureFormPresenter(
         } else {
             view.hideSaveButton()
         }
+    }
+
+    private var upgUidUIModel: FieldUiModel? = null
+    private var upgNameUIModel: FieldUiModel? = null
+    private var savingSelectedUPG = false
+
+    fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
+
+        //Eyeseetea customization - Remove UPG field from the form
+        val finalFields = fields
+            .map { field ->
+                if (field.uid == UPG_Name) {
+                    field.setEditable(false)
+                } else if (field.uid == UPG_UId){
+                    field.setVisible(false)
+                }
+                else {
+                    field
+                }
+            }
+
+        upgUidUIModel = finalFields.find { it.uid == UPG_UId }
+        upgNameUIModel = finalFields.find { it.uid == UPG_Name }
+
+        if(upgUidUIModel != null && upgNameUIModel != null){
+            val event = d2.eventModule().events().byUid().eq(eventUid).one().blockingGet()
+
+            (upgNameUIModel as FieldUiModelImpl).setFocusCallback {
+                if (event?.organisationUnit() != null && !savingSelectedUPG) {
+                    view.selectUPG(event.organisationUnit()!!)
+                }
+            }
+        }
+
+        return finalFields
+    }
+
+    fun onUPGSelected(upg: UPGItem) {
+        savingSelectedUPG = true
+
+        upgUidUIModel?.onSave(upg.guid)
+        upgNameUIModel?.onSave(upg.name)
+
+        savingSelectedUPG = false
     }
 }
