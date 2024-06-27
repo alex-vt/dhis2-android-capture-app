@@ -1,5 +1,7 @@
 package org.dhis2.usescases.datasets.datasetInitial;
 
+import static org.dhis2.commons.team.DateToYearlyPeriodKt.dateToYearlyPeriod;
+
 import android.os.Bundle;
 import android.view.View;
 
@@ -110,6 +112,7 @@ public class DataSetInitialActivity extends ActivityGlobalAbstract implements Da
         if (selectedOrgUnit != null) {
             preselectedOrgUnits.add(selectedOrgUnit.uid());
         }
+
         new OUTreeFragment.Builder()
                 .showAsDialog()
                 .singleSelection()
@@ -124,6 +127,7 @@ public class DataSetInitialActivity extends ActivityGlobalAbstract implements Da
                     checkActionVisivbility();
                     return Unit.INSTANCE;
                 })
+                .withTeamValidationData(dataSetUid, dateToYearlyPeriod(selectedPeriod))
                 .build()
                 .show(getSupportFragmentManager(), OUTreeFragment.class.getSimpleName());
     }
@@ -149,6 +153,7 @@ public class DataSetInitialActivity extends ActivityGlobalAbstract implements Da
                     this.selectedPeriod = calendar.getTime();
                     binding.dataSetPeriodEditText.setText(periodUtils.getPeriodUIString(periodType, selectedDate, Locale.getDefault()));
                     checkCatOptionsAreValidForOrgUnit(selectedPeriod);
+                    presenter.checkOrgUnitByPeriodIsActive(selectedOrgUnit, selectedPeriod);
                     checkActionVisivbility();
                     periodDialog.dismiss();
                 })
@@ -259,12 +264,21 @@ public class DataSetInitialActivity extends ActivityGlobalAbstract implements Da
         startActivity(DataSetTableActivity.class, bundle, true, false, null);
     }
 
+    @Override
+    public void showDeactivatedTeamError() {
+        displayMessage(getString(R.string.deactivated_team_error));
+    }
+
     private void checkActionVisivbility() {
         boolean visible = true;
         if (selectedOrgUnit == null)
             visible = false;
         if (selectedPeriod == null)
             visible = false;
+
+        if (!presenter.isOrgUnitByPeriodIsActive(selectedOrgUnit, selectedPeriod))
+            visible = false;
+
         for (String key : selectedCatOptions.keySet()) {
             if (selectedCatOptions.get(key) == null)
                 visible = false;

@@ -32,6 +32,7 @@ import org.dhis2.commons.locationprovider.LocationSettingLauncher
 import org.dhis2.commons.orgunitselector.OUTreeFragment
 import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
 import org.dhis2.commons.resources.ResourceManager
+import org.dhis2.commons.team.dateToYearlyPeriod
 import org.dhis2.databinding.EventDetailsFragmentBinding
 import org.dhis2.maps.views.MapSelectorActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.injection.EventDetailsComponentProvider
@@ -228,6 +229,10 @@ class EventDetailsFragment : FragmentGlobalAbstract() {
             displayMessage(message)
             onEventReopened?.invoke()
         }
+
+        viewModel.showDeactivatedTeamError = {
+            displayMessage(getString(R.string.deactivated_team_error))
+        }
     }
 
     @Composable
@@ -291,7 +296,10 @@ class EventDetailsFragment : FragmentGlobalAbstract() {
                     )
                 }
             } else if (!catCombo.isDefault) {
-                ProvideEmptyCategorySelector(name = catCombo.displayName ?: getString(R.string.cat_combo), option = getString(R.string.no_options))
+                ProvideEmptyCategorySelector(
+                    name = catCombo.displayName ?: getString(R.string.cat_combo),
+                    option = getString(R.string.no_options)
+                )
             }
             ProvideCoordinates(
                 coordinates = coordinates,
@@ -358,6 +366,11 @@ class EventDetailsFragment : FragmentGlobalAbstract() {
             .onSelection { selectedOrgUnits ->
                 viewModel.setUpOrgUnit(selectedOrgUnit = selectedOrgUnits.firstOrNull()?.uid())
             }
+            //Eyeseetea customization- filter by active team
+            .withTeamValidationData(
+                viewModel.eventDetails.value.program!!,
+                dateToYearlyPeriod(viewModel.eventDate.value.currentDate)
+            )
             .build()
             .show(childFragmentManager, "ORG_UNIT_DIALOG")
     }

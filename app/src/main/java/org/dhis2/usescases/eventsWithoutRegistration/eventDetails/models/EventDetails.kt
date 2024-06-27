@@ -19,4 +19,6 @@ data class EventDetails(
     val isActionButtonVisible: Boolean = false,
     val actionButtonText: String? = null,
     val canReopen: Boolean = false,
+    val isOrgUnitActive: Boolean = true ,
+    val program: String? = null,
 )

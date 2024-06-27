@@ -592,6 +592,11 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 }).show("TEI_SYNC");
     }
 
+    @Override
+    public void showDeactivatedTeamError() {
+        displayMessage(getString(R.string.deactivated_team_error));
+    }
+
     private void setInitialProgram(List<ProgramSpinnerModel> programs) {
         for (int i = 0; i < programs.size(); i++) {
             if (programs.get(i).getUid().equals(initialProgram)) {

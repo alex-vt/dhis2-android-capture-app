@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import com.google.accompanist.themeadapter.material3.Mdc3Theme
+import org.dhis2.commons.team.ValidationData
 import org.dhis2.ui.dialogs.orgunit.OrgUnitSelectorActions
 import org.dhis2.ui.dialogs.orgunit.OrgUnitSelectorDialog
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
@@ -26,6 +27,8 @@ const val ARG_SHOW_AS_DIALOG = "OUTreeFragment.ARG_SHOW_AS_DIALOG"
 const val ARG_SINGLE_SELECTION = "OUTreeFragment.ARG_SINGLE_SELECTION"
 const val ARG_SCOPE = "OUTreeFragment.ARG_SCOPE"
 const val ARG_PRE_SELECTED_OU = "OUTreeFragment.ARG_PRE_SELECTED_OU"
+const val PERIOD = "OUTreeFragment.PERIOD"
+const val PROGRAM_OR_DATASET_TO_VALIDATE = "OUTreeFragment.PROGRAM_OR_DATASET_TO_VALIDATE"
 
 class OUTreeFragment private constructor() : DialogFragment() {
 
@@ -35,6 +38,8 @@ class OUTreeFragment private constructor() : DialogFragment() {
         private var singleSelection = false
         private var selectionListener: ((selectedOrgUnits: List<OrganisationUnit>) -> Unit) = {}
         private var orgUnitScope: OrgUnitSelectorScope = OrgUnitSelectorScope.UserSearchScope()
+        private var period: String? = null
+        private var programOrDataSetToValidate: String? = null
         fun showAsDialog() = apply {
             showAsDialog = true
         }
@@ -66,6 +71,11 @@ class OUTreeFragment private constructor() : DialogFragment() {
                 this.selectionListener = selectionListener
             }
 
+        fun withTeamValidationData(programOrDataSetToValidate:String, period: String?) = apply {
+            this.period = period
+            this.programOrDataSetToValidate = programOrDataSetToValidate
+        }
+
         fun build(): OUTreeFragment {
             return OUTreeFragment().apply {
                 selectionCallback = selectionListener
@@ -74,6 +84,8 @@ class OUTreeFragment private constructor() : DialogFragment() {
                     putBoolean(ARG_SINGLE_SELECTION, singleSelection)
                     putParcelable(ARG_SCOPE, orgUnitScope)
                     putStringArrayList(ARG_PRE_SELECTED_OU, ArrayList(preselectedOrgUnits))
+                    putString(PERIOD, period)
+                    putString(PROGRAM_OR_DATASET_TO_VALIDATE, programOrDataSetToValidate)
                 }
             }
         }
@@ -88,6 +100,8 @@ class OUTreeFragment private constructor() : DialogFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
+        val programOrDataSetToValidate = requireArguments().getString(PROGRAM_OR_DATASET_TO_VALIDATE)
 
         (context.applicationContext as OUTreeComponentProvider).provideOUTreeComponent(
             OUTreeModule(
@@ -104,6 +118,9 @@ class OUTreeFragment private constructor() : DialogFragment() {
                         ARG_SCOPE,
                     )!!
                 },
+                validationData = if (programOrDataSetToValidate == null) null else ValidationData(
+                    programOrDataSetUid = programOrDataSetToValidate,
+                    period = requireArguments().getString(PERIOD))
             ),
         )?.inject(this)
     }

@@ -66,6 +66,8 @@ public class SearchTEContractsModule {
         void hideFilter();
 
         void showSyncDialog(String teiUid);
+
+        void showDeactivatedTeamError();
     }
 
     public interface Presenter {

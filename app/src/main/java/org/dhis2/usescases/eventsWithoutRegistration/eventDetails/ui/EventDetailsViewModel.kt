@@ -58,6 +58,7 @@ class EventDetailsViewModel(
     var showEventUpdateStatus: ((result: String) -> Unit)? = null
     var onReopenError: ((message: String) -> Unit)? = null
     var onReopenSuccess: ((message: String) -> Unit)? = null
+    var showDeactivatedTeamError: (() -> Unit)? = null
 
     private val _eventDetails: MutableStateFlow<EventDetails> = MutableStateFlow(EventDetails())
     val eventDetails: StateFlow<EventDetails> get() = _eventDetails
@@ -148,6 +149,12 @@ class EventDetailsViewModel(
                 .flowOn(Dispatchers.IO)
                 .collect {
                     _eventDetails.value = it
+
+                    //Eyeseetea customization
+                    if (!it.isOrgUnitActive){
+                        showDeactivatedTeamError?.invoke()
+                    }
+
                     EventDetailIdlingResourceSingleton.decrement()
                 }
         }

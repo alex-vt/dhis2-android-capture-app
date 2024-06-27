@@ -31,11 +31,13 @@ internal class ProgramRepositoryImpl(
     private var baseProgramCache: List<ProgramViewModel> = emptyList()
 
     override fun homeItems(syncStatusData: SyncStatusData): Flowable<List<ProgramViewModel>> {
-        return programModels(syncStatusData).onErrorReturn { arrayListOf() }
+        val items = programModels(syncStatusData).onErrorReturn { arrayListOf() }
             .mergeWith(aggregatesModels(syncStatusData).onErrorReturn { arrayListOf() })
             .flatMapIterable { data -> data }
             .sorted { p1, p2 -> p1.title.compareTo(p2.title, ignoreCase = true) }
-            .toList().toFlowable()
+            .toList()
+
+        return items.toFlowable()
             .subscribeOn(schedulerProvider.io())
             .onErrorReturn { arrayListOf() }
             .doOnNext {
@@ -162,6 +164,7 @@ internal class ProgramRepositoryImpl(
                             D2ProgressSyncStatus.ERROR,
                             D2ProgressSyncStatus.PARTIAL_ERROR,
                             -> ProgramDownloadState.ERROR
+
                             null -> ProgramDownloadState.DOWNLOADED
                         }
 
