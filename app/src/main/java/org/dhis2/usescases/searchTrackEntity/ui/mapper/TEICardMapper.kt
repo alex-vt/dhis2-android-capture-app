@@ -23,6 +23,7 @@ import org.dhis2.commons.date.toDateSpan
 import org.dhis2.commons.date.toOverdueUiText
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.ui.model.ListCardUiModel
+import org.dhis2.form.extensions.isNotBiometricText
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.enrollment.Enrollment
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
@@ -115,7 +116,10 @@ class TEICardMapper(
         if (searchTEIModel.header == null) {
             attributeList.removeFirstOrNull()
         }
-        attributeList.removeIf { it.value.isEmpty() || it.value == "-" }
+
+        // EyeSeeTea customization - only remove non biometric empty attributes
+        //attributeList.removeIf { it.value.isEmpty() || it.value == "-" }
+        attributeList.removeIf {it.key!!.isNotBiometricText() && (it.value.isEmpty() || it.value == "-") }
 
         return attributeList.also { list ->
             checkEnrolledIn(
