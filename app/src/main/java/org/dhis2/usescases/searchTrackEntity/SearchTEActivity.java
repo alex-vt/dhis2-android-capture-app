@@ -46,6 +46,7 @@ import org.dhis2.databinding.SnackbarMinAttrBinding;
 import org.dhis2.form.model.SearchRecords;
 import org.dhis2.form.ui.FormView;
 import org.dhis2.ui.ThemeManager;
+import org.dhis2.usescases.biometrics.ui.SearchHelperFragment;
 import org.dhis2.usescases.general.ActivityGlobalAbstract;
 import org.dhis2.usescases.searchTrackEntity.listView.SearchTEList;
 import org.dhis2.usescases.searchTrackEntity.mapView.SearchTEMap;
@@ -124,6 +125,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     private boolean initSearchNeeded = true;
     private FormView formView;
+
+    private SearchHelperFragment searchHelperFragment;
     public SearchTEComponent searchComponent;
     private int initialPage = 0;
 
@@ -182,6 +185,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         viewModel = new ViewModelProvider(this, viewModelFactory).get(SearchTEIViewModel.class);
 
         initSearchForm();
+
+        initSearchHelperFragment();
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_search);
 
@@ -917,5 +922,11 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 getString(R.string.downloading),
                 BaseTransientBottomBar.LENGTH_SHORT
         ).show();
+    }
+
+    private void initSearchHelperFragment() {
+        searchHelperFragment = new SearchHelperFragment();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.searchHelperViewContainer, searchHelperFragment).commit();
     }
 }

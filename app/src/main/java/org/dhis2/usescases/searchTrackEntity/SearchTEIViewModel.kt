@@ -128,6 +128,9 @@ class SearchTEIViewModel(
                 hasActiveFilters = hasActiveFilters(),
                 isOpened = filterIsOpen(),
             ),
+            searchHelper = SearchHelper(
+                isOpened = false,
+            )
         )
     }
 
@@ -157,6 +160,9 @@ class SearchTEIViewModel(
                 hasActiveFilters = hasActiveFilters(),
                 isOpened = filterIsOpen(),
             ),
+            searchHelper = SearchHelper(
+                isOpened = false,
+            ),
         )
     }
 
@@ -181,12 +187,15 @@ class SearchTEIViewModel(
                     ?.minAttributesRequiredToSearch()
                     ?: 1,
                 isForced = false,
-                isOpened = true,
+                isOpened = false,
             ),
             searchFilters = SearchFilters(
                 hasActiveFilters = hasActiveFilters(),
                 isOpened = false,
             ),
+            searchHelper = SearchHelper(
+                isOpened = true,
+            )
         )
     }
 
