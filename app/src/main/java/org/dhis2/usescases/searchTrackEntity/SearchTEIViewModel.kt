@@ -17,6 +17,7 @@ import org.dhis2.form.model.ActionType
 import org.dhis2.form.model.RowAction
 import org.dhis2.maps.layer.basemaps.BaseMapStyle
 import org.dhis2.maps.usecases.MapStyleConfiguration
+import org.dhis2.usescases.biometrics.ui.SearchHelperSelectedAction
 import org.dhis2.usescases.biometrics.usecases.GetRelatedTEIUIdsByUid
 import org.dhis2.usescases.searchTrackEntity.listView.SearchResult
 import org.dhis2.usescases.searchTrackEntity.ui.UnableToSearchOutsideData
@@ -585,7 +586,18 @@ class SearchTEIViewModel(
             }
         } ?: false
 
-        if (isPortrait && searchOrFilterIsOpen && !searchScreenIsForced) {
+        val searchHelperIsOpen = _screenState.value?.let {
+            if (it is SearchList) {
+                it.searchHelper.isOpened
+            } else {
+                false
+            }
+        } ?: false
+
+        if (searchHelperIsOpen){
+            //EyeSeeTea Customization
+            closeSearchHelper()
+        }else if (isPortrait && searchOrFilterIsOpen && !searchScreenIsForced) {
             if (keyBoardIsOpen) closeKeyboardCallback()
             closeSearchOrFilterCallback()
         } else if (keyBoardIsOpen) {
@@ -681,5 +693,47 @@ class SearchTEIViewModel(
 
     fun getBiometricsSearchStatus(): Boolean {
         return presenter.biometricsSearchStatus
+    }
+
+    //EyeSeeTea Customizations
+    fun openSearchForm() {
+        _screenState.value.takeIf { it is SearchList }?.let {
+            val currentScreen = (it as SearchList)
+            currentScreen.copy(
+                searchForm = currentScreen.searchForm.copy(
+                    isOpened = true,
+                ),
+            )
+        }?.let {
+            _screenState.value = it
+        }
+    }
+
+    fun onSearchHelperActionSelected(action: SearchHelperSelectedAction) {
+        closeSearchHelper()
+
+        onSearchHelperAction(action)
+    }
+
+    private var filterIsOpenCallback: ((helperAction: SearchHelperSelectedAction) -> Unit)? = null
+
+    private fun closeSearchHelper(){
+        _screenState.value.takeIf { it is SearchList }?.let {
+            val currentScreen = (it as SearchList)
+            currentScreen.copy(
+                searchHelper = SearchHelper(
+                    isOpened = false,
+                ),
+            )
+        }?.let {
+            _screenState.value = it
+        }
+    }
+    fun setOnSearchHelperActionListener (filterIsOpenCallback: (helperAction: SearchHelperSelectedAction) -> Unit){
+        this.filterIsOpenCallback = filterIsOpenCallback
+    }
+
+    private fun onSearchHelperAction (action:SearchHelperSelectedAction) {
+        filterIsOpenCallback?.let { it(action) }
     }
 }

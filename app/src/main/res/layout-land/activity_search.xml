@@ -225,6 +225,18 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/minAttributeMessage" />
 
+            <!--EyeSeeTea Customizations-->
+            <FrameLayout
+                android:id="@+id/searchHelperViewContainer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:focusableInTouchMode="true"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/minAttributeMessage"
+                tools:visibility="visible" />
+
             <FrameLayout
                 android:id="@+id/mainComponent"
                 android:layout_width="0dp"

@@ -1,6 +1,7 @@
 package org.dhis2.usescases.biometrics.ui
 
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -38,9 +39,27 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import org.dhis2.form.R
+import org.dhis2.usescases.searchTrackEntity.SearchTEActivity
+import org.dhis2.usescases.searchTrackEntity.SearchTEIViewModel
+import org.dhis2.usescases.searchTrackEntity.SearchTeiViewModelFactory
+import org.dhis2.usescases.searchTrackEntity.listView.SearchHelperModule
+import javax.inject.Inject
 
 class SearchHelperFragment : Fragment() {
+    @Inject
+    lateinit var viewModelFactory: SearchTeiViewModelFactory
+
+    private val viewModel by activityViewModels<SearchTEIViewModel> { viewModelFactory }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        (context as SearchTEActivity).searchComponent.plus(
+            SearchHelperModule(),
+        ).inject(this)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -48,24 +67,33 @@ class SearchHelperFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                SearchHelperContent()
+                SearchHelperContent(onAction = { action ->
+                    viewModel.onSearchHelperActionSelected(action)
+                })
             }
         }
     }
 }
 
 @Composable
-fun SearchHelperContent() {
+fun SearchHelperContent(onAction: (action: SearchHelperSelectedAction) -> Unit = { }) {
     Surface(color = Color.White) {
         Box(contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                SearchWithBiometricsButton(onClick = { })
+                SearchWithBiometricsButton(
+                    onClick = { onAction(SearchHelperSelectedAction.SearchWithBiometrics) })
+
                 Spacer(modifier = Modifier.height(16.dp))
-                SearchWithAttributesButton(onClick = { })
+
+                SearchWithAttributesButton(
+                    onClick = { onAction(SearchHelperSelectedAction.SearchWithAttributes) })
+
                 Spacer(modifier = Modifier.height(64.dp))
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("New patient?")
-                    TextButton(onClick = { /* Handle new patient click */ }) {
+                    TextButton(
+                        onClick = { onAction(SearchHelperSelectedAction.RegisterNew) }) {
                         Text(
                             "Register",
                             color = Color(0xFF0281cb),
@@ -132,7 +160,7 @@ fun SearchWithAttributesButton(
             width = 1.dp,
             color = Color(0xFF0281cb)
         ),
-        onClick = { /* Handle second button click */ }) {
+        onClick = onClick) {
         Text("Search with attributes", color = Color(0xFF0281cb))
     }
 }

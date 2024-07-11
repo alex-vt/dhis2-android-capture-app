@@ -47,6 +47,7 @@ import org.dhis2.form.model.SearchRecords;
 import org.dhis2.form.ui.FormView;
 import org.dhis2.ui.ThemeManager;
 import org.dhis2.usescases.biometrics.ui.SearchHelperFragment;
+import org.dhis2.usescases.biometrics.ui.SearchHelperSelectedAction;
 import org.dhis2.usescases.general.ActivityGlobalAbstract;
 import org.dhis2.usescases.searchTrackEntity.listView.SearchTEList;
 import org.dhis2.usescases.searchTrackEntity.mapView.SearchTEMap;
@@ -71,8 +72,10 @@ import javax.inject.Inject;
 
 import dhis2.org.analytics.charts.ui.GroupAnalyticsFragment;
 import io.reactivex.functions.Consumer;
+import kotlin.Function;
 import kotlin.Pair;
 import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 import timber.log.Timber;
 import static android.view.View.VISIBLE;
 
@@ -217,6 +220,23 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 return Unit.INSTANCE;
             });
         });
+
+        viewModel.setOnSearchHelperActionListener(action -> {
+            if (action != null){
+                if (action instanceof SearchHelperSelectedAction.SearchWithBiometrics) {
+                   searchByBiometrics();
+                } else if (action instanceof SearchHelperSelectedAction.SearchWithAttributes) {
+                    viewModel.openSearchForm();
+                } else {
+                    // register new
+                    presenter.onEnrollClick(new HashMap<>());
+                }
+            }
+
+            return Unit.INSTANCE;
+        });
+
+
 
         binding.filterRecyclerLayout.setAdapter(filtersAdapter);
 
