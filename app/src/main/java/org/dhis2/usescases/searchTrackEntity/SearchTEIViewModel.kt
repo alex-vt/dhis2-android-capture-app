@@ -594,7 +594,7 @@ class SearchTEIViewModel(
             }
         } ?: false
 
-        if (searchHelperIsOpen){
+        if (isPortrait && searchHelperIsOpen){
             //EyeSeeTea Customization
             closeSearchHelper()
         }else if (isPortrait && searchOrFilterIsOpen && !searchScreenIsForced) {

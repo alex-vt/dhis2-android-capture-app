@@ -19,7 +19,7 @@ fun ComposeView?.setLandscapeOpenSearchButton(
         MdcTheme {
             val screenState by searchTEIViewModel.screenState.observeAsState()
             val visible = screenState?.let {
-                (it is SearchList) && it.searchFilters.isOpened
+                (it is SearchList) && (it.searchFilters.isOpened || it.searchForm.isOpened)
             } ?: false
             val isLandscape =
                 LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE

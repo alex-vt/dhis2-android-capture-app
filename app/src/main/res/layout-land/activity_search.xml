@@ -220,6 +220,7 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:focusableInTouchMode="true"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/backdropGuideDiv"
                 app:layout_constraintStart_toStartOf="parent"
@@ -228,11 +229,11 @@
             <!--EyeSeeTea Customizations-->
             <FrameLayout
                 android:id="@+id/searchHelperViewContainer"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:focusableInTouchMode="true"
-                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/backdropGuideDiv"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/minAttributeMessage"
                 tools:visibility="visible" />
