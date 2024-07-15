@@ -55,34 +55,23 @@ fun List<Enrollment>.hasFollowUp(): Boolean {
 }
 
 fun List<Program>.getEnrollmentIconsData(
-    context: Context,
     currentProgram: String?,
-    colorUtils: ColorUtils,
+    provideMetadataIconData: (String) -> MetadataIconData,
 ): List<EnrollmentIconData> {
     val enrollmentIconDataList: MutableList<EnrollmentIconData> = mutableListOf()
 
     val filteredList = filter { it.uid() != currentProgram }
     this.filter { it.uid() != currentProgram }
         .forEachIndexed { index, program ->
-            val color = colorUtils.getColorFrom(
-                program.style().color(),
-                colorUtils.getPrimaryColor(
-                    context,
-                    ColorType.PRIMARY,
-                ),
-            )
-            val imageResource =
-                ResourceManager(context, colorUtils)
-                    .getObjectStyleDrawableResource(
-                        program.style().icon(),
-                        R.drawable.ic_default_icon,
-                    )
-
             if (filteredList.size <= 4) {
-                enrollmentIconDataList.add(EnrollmentIconData(color, imageResource, true, 0))
+                enrollmentIconDataList.add(
+                    EnrollmentIconData(0, 0, true, 0, provideMetadataIconData(program.uid())),
+                )
             } else {
                 if (index in 0..2) {
-                    enrollmentIconDataList.add(EnrollmentIconData(color, imageResource, true, 0))
+                    enrollmentIconDataList.add(
+                        EnrollmentIconData(0, 0, true, 0, provideMetadataIconData(program.uid())),
+                    )
                 }
                 if (index == 3) {
                     enrollmentIconDataList.add(
@@ -91,6 +80,7 @@ fun List<Program>.getEnrollmentIconsData(
                             0,
                             false,
                             getRemainingEnrollmentsForTei(filteredList.size),
+                            provideMetadataIconData(program.uid()),
                         ),
                     )
                 }
@@ -110,11 +100,7 @@ fun List<EnrollmentIconData>.paintAllEnrollmentIcons(parent: ComposeView) {
                     forEach { enrollmentIcon ->
                         if (enrollmentIcon.isIcon) {
                             MetadataIcon(
-                                metadataIconData = MetadataIconData(
-                                    programColor = enrollmentIcon.color,
-                                    iconResource = enrollmentIcon.imageResource,
-                                    sizeInDp = 24,
-                                ),
+                                metadataIconData = enrollmentIcon.metadataIconData,
                             )
                         } else {
                             SquareWithNumber(enrollmentIcon.remainingEnrollments)
@@ -185,10 +171,12 @@ fun Enrollment.setStatusText(
             textToShow = dueDate.toUiText(context)
             color = Color.parseColor("#E91E63")
         }
+
         status() == EnrollmentStatus.CANCELLED -> {
             textToShow = context.getString(R.string.cancelled)
             color = Color.parseColor("#E91E63")
         }
+
         status() == EnrollmentStatus.COMPLETED -> {
             textToShow = context.getString(R.string.enrollment_status_completed)
             color = Color.parseColor("#8A333333")

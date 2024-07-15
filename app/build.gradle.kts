@@ -9,6 +9,8 @@ plugins {
     id("kotlinx-serialization")
     id("dagger.hilt.android.plugin")
 }
+
+
 apply(from = "${project.rootDir}/jacoco/jacoco.gradle.kts")
 
 repositories {
@@ -32,6 +34,17 @@ android {
                 standardOutput = stdout
             }
             return stdout.toString().trim()
+        }
+    }
+
+    signingConfigs {
+        create("release"){
+            keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+            keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+            System.getenv("SIGNING_KEYSTORE_PATH")?.let {path->
+                storeFile = file(path)
+            }
+            storePassword = System.getenv("SIGNING_STORE_PASSWORD")
         }
     }
 
@@ -75,7 +88,7 @@ android {
         val mapboxAccessToken = System.getenv("MAPBOX_ACCESS_TOKEN") ?: defMapboxToken
         val bitriseSentryDSN = System.getenv("SENTRY_DSN") ?: ""
 
-        buildConfigField("String", "SDK_VERSION", "\"" + "1.9.1-eyeseetea-fork-1" + "\"")
+        buildConfigField("String", "SDK_VERSION", "\"" + "1.10.0-eyeseetea-fork-1" + "\"")
         buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"" + mapboxAccessToken + "\"")
         buildConfigField("String", "MATOMO_URL", "\"https://usage.analytics.dhis2.org/matomo.php\"")
         buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
@@ -143,6 +156,7 @@ android {
                 getDefaultProguardFile("proguard-android.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
             buildConfigField("int", "MATOMO_ID", "1")
             buildConfigField("String", "BUILD_DATE", "\"" + getBuildDate() + "\"")
             buildConfigField("String", "GIT_SHA", "\"" + getCommitHash() + "\"")
@@ -246,6 +260,7 @@ dependencies {
     implementation(project(":dhis2_android_maps"))
     implementation(project(":compose-table"))
     implementation(project(":stock-usecase"))
+    implementation(project(":dhis2-mobile-program-rules"))
 
     implementation(libs.security.conscrypt)
     implementation(libs.security.rootbeer)
@@ -275,7 +290,6 @@ dependencies {
     implementation(libs.analytics.customactivityoncrash)
     implementation(platform(libs.dispatcher.dispatchBOM))
     implementation(libs.dispatcher.dispatchCore)
-    implementation(libs.dhis2.mobile.designsystem)
 
     coreLibraryDesugaring(libs.desugar)
 
