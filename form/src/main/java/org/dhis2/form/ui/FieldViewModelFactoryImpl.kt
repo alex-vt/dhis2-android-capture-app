@@ -3,9 +3,11 @@ package org.dhis2.form.ui
 import androidx.databinding.ObservableField
 import org.dhis2.commons.extensions.Preconditions.Companion.isNull
 import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
+import org.dhis2.form.model.EventCategory
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.FieldUiModelImpl
 import org.dhis2.form.model.OptionSetConfiguration
+import org.dhis2.form.model.PeriodSelector
 import org.dhis2.form.model.SectionUiModelImpl
 import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
 import org.dhis2.form.model.biometrics.BiometricsDataElementStatus
@@ -23,12 +25,10 @@ import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.common.ObjectStyle
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.common.ValueTypeDeviceRendering
-import org.hisp.dhis.android.core.program.ProgramTrackedEntityAttribute
 import org.hisp.dhis.android.core.program.SectionRenderingType
-import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute
+import org.hisp.dhis.mobile.ui.designsystem.component.SelectableDates
 
 class FieldViewModelFactoryImpl(
-    private val noMandatoryFields: Boolean,
     private val uiStyleProvider: UiStyleProvider,
     private val layoutProvider: LayoutProvider,
     private val hintProvider: HintProvider,
@@ -59,11 +59,12 @@ class FieldViewModelFactoryImpl(
         featureType: FeatureType?,
         autoCompleteList: List<String>?,
         orgUnitSelectorScope: OrgUnitSelectorScope?,
+        selectableDates: SelectableDates?,
+        eventCategories: List<EventCategory>?,
+        periodSelector: PeriodSelector?,
         url: String?
     ): FieldUiModel {
-        var isMandatory = mandatory
         isNull(valueType, "type must be supplied")
-        if (noMandatoryFields) isMandatory = false
         return FieldUiModelImpl(
             uid = id,
             layoutId = layoutProvider.getLayoutByType(
@@ -77,15 +78,15 @@ class FieldViewModelFactoryImpl(
             error = null,
             editable = editable,
             warning = null,
-            mandatory = isMandatory,
+            mandatory = mandatory,
             label = label,
             programStageSection = programStageSection,
             style = uiStyleProvider.provideStyle(valueType),
             hint = hintProvider.provideDateHint(valueType),
             description = description,
-            valueType = valueType,
+            valueType = if (optionSet != null && valueType == ValueType.TEXT) ValueType.MULTI_TEXT else valueType,
             legend = legendValueProvider.provideLegendValue(id, value),
-            optionSet = optionSet,
+            optionSet = if (valueType == ValueType.MULTI_TEXT) null else optionSet,
             allowFutureDates = allowFutureDates,
             uiEventFactory = UiEventFactoryImpl(
                 id,
@@ -95,7 +96,12 @@ class FieldViewModelFactoryImpl(
                 allowFutureDates,
                 optionSet,
             ),
-            displayName = displayNameProvider.provideDisplayName(valueType, value, optionSet),
+            displayName = displayNameProvider.provideDisplayName(
+                valueType,
+                value,
+                optionSet,
+                periodSelector?.type,
+            ),
             renderingType = uiEventTypesProvider.provideUiRenderType(
                 featureType,
                 fieldRendering?.type(),
@@ -106,41 +112,10 @@ class FieldViewModelFactoryImpl(
             fieldMask = fieldMask,
             autocompleteList = autoCompleteProvider.provideAutoCompleteValues(id),
             orgUnitSelectorScope = orgUnitSelectorScope,
+            selectableDates = selectableDates,
+            eventCategories = eventCategories,
+            periodSelector = periodSelector,
             url = url,
-        )
-    }
-
-    override fun createForAttribute(
-        trackedEntityAttribute: TrackedEntityAttribute,
-        programTrackedEntityAttribute: ProgramTrackedEntityAttribute?,
-        value: String?,
-        editable: Boolean,
-        optionSetConfiguration: OptionSetConfiguration?,
-    ): FieldUiModel {
-        isNull(trackedEntityAttribute.valueType(), "type must be supplied")
-        return create(
-            id = trackedEntityAttribute.uid(),
-            label = trackedEntityAttribute.displayFormName() ?: "",
-            valueType = trackedEntityAttribute.valueType()!!,
-            mandatory = programTrackedEntityAttribute?.mandatory() == true,
-            optionSet = trackedEntityAttribute.optionSet()?.uid(),
-            value = value,
-            programStageSection = null,
-            allowFutureDates = programTrackedEntityAttribute?.allowFutureDate() ?: true,
-            editable = editable,
-            renderingType = SectionRenderingType.LISTING,
-            description = programTrackedEntityAttribute?.displayDescription()
-                ?: trackedEntityAttribute.displayDescription(),
-            fieldRendering = programTrackedEntityAttribute?.renderType()?.mobile(),
-            objectStyle = trackedEntityAttribute.style() ?: ObjectStyle.builder().build(),
-            fieldMask = trackedEntityAttribute.fieldMask(),
-            optionSetConfiguration = optionSetConfiguration,
-            featureType = if (trackedEntityAttribute.valueType() === ValueType.COORDINATE) {
-                FeatureType.POINT
-            } else {
-                null
-            },
-            url = null
         )
     }
 
@@ -269,6 +244,9 @@ class FieldViewModelFactoryImpl(
             programStageSection,
             null,
             null,
+            null,
+            null,
+            null,
             null
         )
     }
@@ -286,7 +264,10 @@ class FieldViewModelFactoryImpl(
             BiometricsDataElementStatus.NOT_DONE,
             null,
             null,
-            null
+            null,
+            null,
+            null,
+            null,
         )
     }
 }

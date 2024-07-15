@@ -16,6 +16,7 @@ import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.arch.call.BaseD2Progress
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.event.Event
+import org.hisp.dhis.android.core.fileresource.FileResourceDomainType
 import org.hisp.dhis.android.core.settings.GeneralSettings
 import org.hisp.dhis.android.core.settings.LimitScope
 import org.hisp.dhis.android.core.settings.ProgramSetting
@@ -139,6 +140,13 @@ class SyncPresenterTest {
         whenever(
             d2.mapsModule().mapLayersDownloader().downloadMetadata(),
         ) doReturn Completable.complete()
+
+        whenever(
+            d2.fileResourceModule().fileResourceDownloader()
+                .byDomainType().eq(FileResourceDomainType.ICON)
+                .download(),
+        )doReturn Observable.just(BaseD2Progress.empty(1))
+
         presenter.syncMetadata { }
 
         verify(analyticsHelper, times(1)).updateMatomoSecondaryTracker(any(), any(), any())
@@ -159,6 +167,11 @@ class SyncPresenterTest {
         whenever(
             d2.mapsModule().mapLayersDownloader().downloadMetadata(),
         )doReturn Completable.complete()
+        whenever(
+            d2.fileResourceModule().fileResourceDownloader()
+                .byDomainType().eq(FileResourceDomainType.ICON)
+                .download(),
+        )doReturn Observable.just(BaseD2Progress.empty(1))
         presenter.syncMetadata { }
 
         verifyNoMoreInteractions(analyticsHelper)
@@ -180,6 +193,11 @@ class SyncPresenterTest {
         whenever(
             d2.mapsModule().mapLayersDownloader().downloadMetadata(),
         )doReturn Completable.complete()
+        whenever(
+            d2.fileResourceModule().fileResourceDownloader()
+                .byDomainType().eq(FileResourceDomainType.ICON)
+                .download(),
+        )doReturn Observable.just(BaseD2Progress.empty(1))
         presenter.syncMetadata { }
 
         verify(analyticsHelper, times(0)).updateMatomoSecondaryTracker(any(), any(), any())
@@ -198,6 +216,11 @@ class SyncPresenterTest {
         whenever(
             d2.mapsModule().mapLayersDownloader().downloadMetadata(),
         )doReturn Completable.complete()
+        whenever(
+            d2.fileResourceModule().fileResourceDownloader()
+                .byDomainType().eq(FileResourceDomainType.ICON)
+                .download(),
+        )doReturn Observable.just(BaseD2Progress.empty(1))
         presenter.syncMetadata { }
 
         verify(analyticsHelper, times(0)).updateMatomoSecondaryTracker(any(), any(), any())

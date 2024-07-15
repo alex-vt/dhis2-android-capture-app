@@ -1,10 +1,12 @@
 package org.dhis2.form.model.biometrics
 
 import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
+import org.dhis2.form.model.EventCategory
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.KeyboardActionType
 import org.dhis2.form.model.LegendValue
 import org.dhis2.form.model.OptionSetConfiguration
+import org.dhis2.form.model.PeriodSelector
 import org.dhis2.form.model.UiEventType
 import org.dhis2.form.model.UiRenderType
 import org.dhis2.form.ui.event.RecyclerViewUiEvents
@@ -14,6 +16,7 @@ import org.dhis2.form.ui.intent.FormIntent.OnFocus
 import org.dhis2.form.ui.style.FormUiModelStyle
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.option.Option
+import org.hisp.dhis.mobile.ui.designsystem.component.SelectableDates
 
 enum class BiometricsDataElementStatus {
     NOT_DONE,
@@ -29,7 +32,10 @@ data class BiometricsDataElementUiModelImpl(
     val status: BiometricsDataElementStatus,
     override val autocompleteList: List<String>?,
     override val orgUnitSelectorScope: OrgUnitSelectorScope?,
-    override val url: String?
+    override val selectableDates: SelectableDates?,
+    override val eventCategories: List<EventCategory>?,
+    override val periodSelector: PeriodSelector?,
+    override val url: String?,
 ) : FieldUiModel,BiometricsRegistrationUIModel {
 
 
@@ -139,6 +145,9 @@ data class BiometricsDataElementUiModelImpl(
         get() = ValueType.TEXT
 
     override fun setValue(value: String?) = this.copy(value = value)
+    override fun setSelectableDates(selectableDates: SelectableDates?): FieldUiModel {
+        return this.copy(selectableDates = selectableDates)
+    }
 
     fun setStatus(status: BiometricsDataElementStatus) = this.copy(status = status)
 
