@@ -49,7 +49,7 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
     private lateinit var stage: ProgramStage
     private lateinit var program: Program
     private lateinit var event: Event
-    private lateinit var biometricsGuid: String
+    private var biometricsGuid: String? = null
     private var verificationStatus: Int = -1
     private lateinit var orgUnit: String
     private lateinit var binding: ActivityEventScheduledBinding
@@ -70,7 +70,7 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
             ).inject(this)
         super.onCreate(savedInstanceState)
 
-        biometricsGuid = intent.extras!!.getString(BIOMETRICS_GUID)!!
+        biometricsGuid = intent.extras!!.getString(BIOMETRICS_GUID)
         verificationStatus = intent.extras!!.getInt(BIOMETRICS_VERIFICATION_STATUS)
         orgUnit = intent.extras!!.getString(BIOMETRICS_TEI_ORGANISATION_UNIT)!!
 
