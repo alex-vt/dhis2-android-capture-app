@@ -13,7 +13,7 @@ jacoco = '0.8.10'
 designSystem = "0.2"
 dhis2sdk = "1.10.0"
 ruleEngine = "3.0.0"
-expressionParser = "1.0.36"
+expressionParser = "1.1.0"
 appcompat = "1.6.1"
 annotation = "1.6.0"
 cardview = "1.0.0"
@@ -119,7 +119,7 @@ sqlCipher = "4.5.5"
 sqlLite = "2.2.0"
 zip4j = "2.11.5"
 smsCompression = "0.2.0"
-#expressionParserSDK = "1.0.36"
+expressionParserSDK = "1.0.36"
 kotlinxDatetime = "0.4.1"
 coroutines = "1.6.4"
 koin = "3.5.0"
@@ -310,7 +310,7 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-coroutines-rx2 = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-rx2", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 dhis2-compression = { group = "com.github.dhis2", name = "sms-compression", version.ref = "smsCompression" }
-dhis2-antlr-parser = { group = "org.hisp.dhis.parser", name = "dhis-antlr-expression-parser", version.ref = "expressionParser" }
+dhis2-antlr-parser = { group = "org.hisp.dhis.parser", name = "dhis-antlr-expression-parser", version.ref = "expressionParserSDK" }
 sqlcipher = { group = "net.zetetic", name = "sqlcipher-android", version.ref = "sqlCipher" }
 sqlite = { group = "androidx.sqlite", name = "sqlite", version.ref = "sqlLite" }
 zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j"}

@@ -9,6 +9,7 @@ import io.reactivex.Observable
 import org.dhis2.R
 import org.dhis2.android.rtsm.utils.NetworkUtils
 import org.dhis2.commons.filters.FilterManager
+import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.commons.resources.MetadataIconProvider
 import org.dhis2.commons.resources.ResourceManager
@@ -49,6 +50,7 @@ class TeiDashboardMobileActivityTest {
     private val charts: Charts = mock()
     private val teiAttributesProvider: TeiAttributesProvider = mock()
     private val preferences: PreferenceProvider = mock()
+    private val basicPreferences: BasicPreferenceProvider = mock()
 
     private val metadataIconProvider: MetadataIconProvider = mock {
         on { invoke(any()) }doReturn MetadataIconData.defaultIcon()
@@ -116,7 +118,8 @@ class TeiDashboardMobileActivityTest {
             ENROLLMENT_UID,
             teiAttributesProvider,
             preferences,
-            metadataIconProvider
+            metadataIconProvider,
+            basicPreferences
         )
 
 
