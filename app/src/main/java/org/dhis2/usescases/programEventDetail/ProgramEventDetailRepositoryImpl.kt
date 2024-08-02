@@ -149,11 +149,17 @@ class ProgramEventDetailRepositoryImpl internal constructor(
     }
 
     override fun programHasAnalytics(): Boolean {
-        return charts != null && charts.getProgramVisualizations(null, programUid).isNotEmpty()
+        return charts?.getVisualizationGroups(programUid)?.isNotEmpty() == true
     }
 
     override fun isEventEditable(eventUid: String): Boolean {
         return d2.eventModule().eventService().blockingIsEditable(eventUid)
+    }
+
+    override fun displayOrganisationUnit(programUid: String): Boolean {
+        return d2.organisationUnitModule().organisationUnits()
+            .byProgramUids(listOf(programUid))
+            .blockingGet().size > 1
     }
 
     override fun textTypeDataElements(): Observable<List<DataElement>> {

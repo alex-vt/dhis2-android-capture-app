@@ -1,18 +1,21 @@
 package org.dhis2.usescases.searchTrackEntity;
 
 import static android.view.View.GONE;
+import static org.dhis2.commons.extensions.ViewExtensionsKt.closeKeyboard;
+import static org.dhis2.usescases.searchTrackEntity.searchparameters.SearchParametersScreenKt.initSearchScreen;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
+import androidx.compose.animation.ExperimentalAnimationApi;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentTransaction;
@@ -27,13 +30,13 @@ import org.dhis2.bindings.ExtensionsKt;
 import org.dhis2.bindings.ViewExtensionsKt;
 import org.dhis2.commons.Constants;
 import org.dhis2.commons.featureconfig.data.FeatureConfigRepository;
-import org.dhis2.commons.featureconfig.model.Feature;
 import org.dhis2.commons.filters.FilterItem;
 import org.dhis2.commons.filters.FilterManager;
 import org.dhis2.commons.filters.Filters;
 import org.dhis2.commons.filters.FiltersAdapter;
 import org.dhis2.commons.network.NetworkUtils;
 import org.dhis2.commons.orgunitselector.OUTreeFragment;
+import org.dhis2.commons.resources.ResourceManager;
 import org.dhis2.commons.sync.SyncContext;
 import org.dhis2.commons.dialogs.DialogClickListener;
 import org.dhis2.data.biometrics.BiometricsClient;
@@ -42,9 +45,7 @@ import org.dhis2.data.biometrics.IdentifyResult;
 import org.dhis2.data.biometrics.RegisterResult;
 import org.dhis2.data.forms.dataentry.ProgramAdapter;
 import org.dhis2.databinding.ActivitySearchBinding;
-import org.dhis2.databinding.SnackbarMinAttrBinding;
-import org.dhis2.form.model.SearchRecords;
-import org.dhis2.form.ui.FormView;
+import org.dhis2.form.ui.intent.FormIntent;
 import org.dhis2.ui.ThemeManager;
 import org.dhis2.usescases.biometrics.ui.SearchHelperFragment;
 import org.dhis2.usescases.biometrics.ui.SearchHelperSelectedAction;
@@ -60,6 +61,7 @@ import org.dhis2.utils.granularsync.SyncStatusDialog;
 import org.dhis2.utils.granularsync.SyncStatusDialogNavigatorKt;
 import org.dhis2.commons.dialogs.CustomDialog;
 import org.hisp.dhis.android.core.arch.call.D2Progress;
+import org.hisp.dhis.android.core.common.ValueType;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
 
 import java.io.Serializable;
@@ -114,6 +116,9 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Inject
     FeatureConfigRepository featureConfig;
 
+    @Inject
+    ResourceManager resourceManager;
+
     private static final String INITIAL_PAGE = "initialPage";
 
     private String initialProgram;
@@ -127,8 +132,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private SearchTEIViewModel viewModel;
 
     private boolean initSearchNeeded = true;
-    private FormView formView;
-
     private SearchHelperFragment searchHelperFragment;
     public SearchTEComponent searchComponent;
     private int initialPage = 0;
@@ -175,7 +178,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    @OptIn(markerClass = ExperimentalAnimationApi.class)
+    protected void  onCreate(@Nullable Bundle savedInstanceState) {
 
         initializeVariables(savedInstanceState);
         inject();
@@ -187,11 +191,11 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
         viewModel = new ViewModelProvider(this, viewModelFactory).get(SearchTEIViewModel.class);
 
-        initSearchForm();
-
-        initSearchHelperFragment();
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_search);
+
+        initSearchHelperFragment();
+        initSearchParameters();
 
         searchScreenConfigurator = new SearchScreenConfigurator(
                 binding,
@@ -205,26 +209,23 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         }
         binding.setPresenter(presenter);
         binding.setTotalFilters(FilterManager.getInstance().getTotalFilters());
-        ViewExtensionsKt.clipWithRoundedCorners(binding.mainComponent, ExtensionsKt.getDp(16));
-        binding.searchButton.setOnClickListener(v -> {
-            if (OrientationUtilsKt.isPortrait()) searchScreenConfigurator.closeBackdrop();
-            formView.onEditionFinish();
-            viewModel.onSearchClick(minNumberOfAttributes -> {
-                showSnackbar(
-                        v,
-                        String.format(getString(R.string.search_min_num_attr),
-                                minNumberOfAttributes),
-                        getString(R.string.button_ok)
 
-                );
-                return Unit.INSTANCE;
+        if (OrientationUtilsKt.isLandscape()) {
+            viewModel.getFiltersOpened().observe(this, isOpened -> {
+                if (Boolean.TRUE.equals(isOpened)) {
+                    ViewExtensionsKt.clipWithRoundedCorners(binding.mainComponent, ExtensionsKt.getDp(16));
+                } else {
+                    ViewExtensionsKt.clipWithTopRightRoundedCorner(binding.mainComponent, ExtensionsKt.getDp(16));
+                }
             });
-        });
+        } else {
+            ViewExtensionsKt.clipWithRoundedCorners(binding.mainComponent, ExtensionsKt.getDp(16));
+        }
 
         viewModel.setOnSearchHelperActionListener(action -> {
             if (action != null){
                 if (action instanceof SearchHelperSelectedAction.SearchWithBiometrics) {
-                   searchByBiometrics();
+                    searchByBiometrics();
                 } else if (action instanceof SearchHelperSelectedAction.SearchWithAttributes) {
                     viewModel.openSearchForm();
                 } else {
@@ -235,8 +236,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
             return Unit.INSTANCE;
         });
-
-
 
         binding.filterRecyclerLayout.setAdapter(filtersAdapter);
 
@@ -286,26 +285,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         initialQuery
                 ));
         searchComponent.inject(this);
-    }
-
-    private void showSnackbar(View view, String message, String actionText) {
-        Snackbar snackbar = Snackbar.make(
-                view,
-                actionText,
-                BaseTransientBottomBar.LENGTH_LONG
-        );
-        SnackbarMinAttrBinding snackbarBinding = SnackbarMinAttrBinding.inflate(getLayoutInflater());
-        snackbarBinding.message.setText(message);
-        snackbarBinding.actionButton.setOnClickListener(v -> {
-            if (snackbar.isShown()) snackbar.dismiss();
-        });
-        snackbar.getView().setBackgroundColor(Color.TRANSPARENT);
-        Snackbar.SnackbarLayout snackbarLayout = (Snackbar.SnackbarLayout) snackbar.getView();
-        snackbarLayout.setPadding(0, 0, 0, 0);
-
-        snackbarLayout.addView(snackbarBinding.getRoot(), 0);
-
-        snackbar.show();
     }
 
     @Override
@@ -384,6 +363,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     private void openSyncDialog() {
+        View contextView = findViewById(R.id.navigationBar);
         new SyncStatusDialog.Builder()
                 .withContext(this, null)
                 .withSyncContext(
@@ -391,7 +371,15 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 )
                 .onDismissListener(hasChanged -> {
                     if (hasChanged) viewModel.refreshData();
-                }).show("PROGRAM_SYNC");
+                })
+                .onNoConnectionListener(() ->
+                        Snackbar.make(
+                                contextView,
+                                R.string.sync_offline_check_connection,
+                                Snackbar.LENGTH_SHORT
+                        ).show()
+                )
+                .show("PROGRAM_SYNC");
     }
 
     @Override
@@ -402,29 +390,44 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         viewModel.refreshData();
     }
 
-    private void initSearchForm() {
-        formView = new FormView.Builder()
-                .locationProvider(locationProvider)
-                .onItemChangeListener(action -> {
-                    viewModel.updateQueryData(action);
+    private void initSearchParameters() {
+        initSearchScreen(
+                binding.searchContainer,
+                viewModel,
+                initialProgram,
+                tEType,
+                resourceManager,
+                (uid, preselectedOrgUnits, orgUnitScope, label) -> {
+                    new OUTreeFragment.Builder()
+                            .showAsDialog()
+                            .withPreselectedOrgUnits(preselectedOrgUnits)
+                            .singleSelection()
+                            .onSelection(selectedOrgUnits -> {
+                                String selectedOrgUnit = null;
+                                if (!selectedOrgUnits.isEmpty()) {
+                                    selectedOrgUnit = selectedOrgUnits.get(0).uid();
+                                }
+                                viewModel.onParameterIntent(
+                                        new FormIntent.OnSave(
+                                                uid,
+                                                selectedOrgUnit,
+                                                ValueType.ORGANISATION_UNIT,
+                                                null
+                                        )
+                                );
+                                return Unit.INSTANCE;
+                            })
+                            .orgUnitScope(orgUnitScope)
+                            .build()
+                            .show(getSupportFragmentManager(), label);
                     return Unit.INSTANCE;
-                })
-                .activityForResultListener(() -> {
-                    initSearchNeeded = false;
+                },
+                () -> {
+                    closeKeyboard(binding.root);
+                    presenter.onClearClick();
                     return Unit.INSTANCE;
-                })
-                .onFieldItemsRendered(isEmpty -> Unit.INSTANCE)
-                .needToForceUpdate(true)
-                .setActionIconsActivation(false)
-                .factory(getSupportFragmentManager())
-                .setRecords(new SearchRecords(
-                        initialProgram,
-                        tEType,
-                        initialQuery
-                ))
-                .build();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.formViewContainer, formView).commit();
+                }
+        );
     }
 
     private void searchByBiometrics() {
@@ -498,7 +501,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     public void onDataLoaded(int count) {
         if (presenter.getBiometricsSearchStatus()) {
             //presenter.clearQueryData();
-
             if (count > 0) {
                 showNoneOfTheAboveButton();
             } else {
@@ -611,36 +613,33 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             }
             binding.mainComponent.setVisibility(View.VISIBLE);
             switch (item.getItemId()) {
-                case R.id.navigation_list_view:
+                case R.id.navigation_list_view -> {
                     viewModel.setListScreen();
                     showList();
                     showSearchAndFilterButtons();
-                    break;
-                case R.id.navigation_map_view:
-                    networkUtils.performIfOnline(
-                            this,
-                            () -> {
-                                presenter.trackSearchMapVisualization();
-                                viewModel.setMapScreen();
-                                showMap();
-                                showSearchAndFilterButtons();
-                                return null;
-                            },
-                            () -> {
-                                binding.navigationBar.selectItemAt(0);
-                                return null;
-                            },
-                            getString(R.string.msg_network_connection_maps)
-                    );
-
-                    break;
-                case R.id.navigation_analytics:
+                }
+                case R.id.navigation_map_view -> networkUtils.performIfOnline(
+                        this,
+                        () -> {
+                            presenter.trackSearchMapVisualization();
+                            viewModel.setMapScreen();
+                            showMap();
+                            showSearchAndFilterButtons();
+                            return null;
+                        },
+                        () -> {
+                            binding.navigationBar.selectItemAt(0);
+                            return null;
+                        },
+                        getString(R.string.msg_network_connection_maps)
+                );
+                case R.id.navigation_analytics -> {
                     presenter.trackSearchAnalytics();
                     viewModel.setAnalyticsScreen();
                     fromAnalytics = true;
                     showAnalytics();
                     hideSearchAndFilterButtons();
-                    break;
+                }
             }
             return true;
         });
@@ -667,6 +666,9 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.mainComponent, SearchTEList.Companion.get(fromRelationship)).commit();
         }
+        viewModel.getRefreshData().observe(this, refresh -> {
+            closeKeyboard(binding.root);
+        });
     }
 
     private void showMap() {
@@ -689,9 +691,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private void hideSearchAndFilterButtons() {
         binding.searchFilterGeneral.setVisibility(GONE);
         binding.filterCounter.setVisibility(GONE);
-        if (OrientationUtilsKt.isLandscape()) {
-            binding.searchButton.setVisibility(GONE);
-        }
     }
 
     private void showSearchAndFilterButtons() {
@@ -699,7 +698,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             fromAnalytics = false;
             binding.searchFilterGeneral.setVisibility(View.VISIBLE);
             binding.filterCounter.setVisibility(binding.getTotalFilters() > 0 ? View.VISIBLE : View.GONE);
-            binding.searchButton.setVisibility(OrientationUtilsKt.isLandscape() ? View.VISIBLE : GONE);
         }
     }
 
@@ -811,6 +809,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     @Override
     public void showSyncDialog(String enrollmentUid) {
+        View contextView = findViewById(R.id.navigationBar);
         new SyncStatusDialog.Builder()
                 .withContext(this, null)
                 .withSyncContext(
@@ -818,7 +817,14 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 )
                 .onDismissListener(hasChanged -> {
                     if (hasChanged) viewModel.refreshData();
-                }).show("TEI_SYNC");
+                })
+                .onNoConnectionListener(() ->
+                        Snackbar.make(
+                                contextView,
+                                R.string.sync_offline_check_connection,
+                                Snackbar.LENGTH_SHORT
+                        ).show()
+                ).show("TEI_SYNC");
     }
 
     private void setInitialProgram(List<ProgramSpinnerModel> programs) {
@@ -862,10 +868,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         if (viewModel.filterIsOpen()) {
             filtersAdapter.notifyDataSetChanged();
             FilterManager.getInstance().clearAllFilters();
-        } else {
-            formView.onEditionFinish();
-            formView.clearValues();
-            presenter.onClearClick();
         }
     }
 
@@ -923,6 +925,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void showBreakTheGlass(String teiUid, String enrollmentUid) {
         new BreakTheGlassBottomDialog()
+                .setProgram(presenter.getProgram().uid())
                 .setPositiveButton(reason -> {
                     viewModel.onDownloadTei(teiUid, enrollmentUid, reason);
                     return Unit.INSTANCE;

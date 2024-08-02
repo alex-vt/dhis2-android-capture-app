@@ -48,13 +48,12 @@ import dispatch.core.DispatcherProvider;
         ValidatorModule.class,
         CrashReportModule.class,
         LocationModule.class,
-        FilterModule.class,
         DispatcherModule.class,
         FeatureConfigModule.class,
         NetworkUtilsModule.class,
         CustomDispatcherModule.class
 })
-public  interface AppComponent {
+public interface AppComponent {
 
     @Component.Builder
     interface Builder {
