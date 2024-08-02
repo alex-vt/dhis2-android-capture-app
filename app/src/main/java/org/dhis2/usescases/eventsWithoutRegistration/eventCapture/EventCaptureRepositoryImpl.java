@@ -10,7 +10,6 @@ import org.dhis2.commons.prefs.BasicPreferenceProvider;
 import org.dhis2.data.biometrics.utils.GetParentTeiKt;
 import org.dhis2.commons.bindings.SdkExtensionsKt;
 import org.dhis2.data.dhislogic.AuthoritiesKt;
-import org.dhis2.utils.DateUtils;
 import org.hisp.dhis.android.core.D2;
 import org.hisp.dhis.android.core.common.BaseIdentifiableObject;
 import org.hisp.dhis.android.core.common.ValidationStrategy;
@@ -81,29 +80,15 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
     }
 
     @Override
-    public Flowable<String> eventDate() {
-        Event currentEvent = getCurrentEvent();
-        return Flowable.just(
-                currentEvent.eventDate() != null ? DateUtils.uiDateFormat().format(currentEvent.eventDate()) : ""
-        );
-    }
-
-    @Override
     public Flowable<OrganisationUnit> orgUnit() {
-        return Flowable.just(d2.organisationUnitModule().organisationUnits().uid(getCurrentEvent().organisationUnit()).blockingGet());
-    }
-
-
-    @Override
-    public Flowable<String> catOption() {
-        return Flowable.just(d2.categoryModule().categoryOptionCombos().uid(getCurrentEvent().attributeOptionCombo()))
-                .map(categoryOptionComboRepo -> {
-                    if (categoryOptionComboRepo.blockingGet() == null)
-                        return "";
-                    else
-                        return categoryOptionComboRepo.blockingGet().displayName();
-                })
-                .map(displayName -> displayName.equals("default") ? "" : displayName);
+        return Flowable.just(
+                Objects.requireNonNull(
+                        d2.organisationUnitModule()
+                                .organisationUnits()
+                                .uid(getCurrentEvent().organisationUnit())
+                                .blockingGet()
+                )
+        );
     }
 
     @Override
@@ -171,8 +156,8 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
     @Override
     public Observable<Boolean> isCompletedEventExpired(String eventUid) {
         return d2.eventModule().eventService().getEditableStatus(eventUid).map(editionStatus -> {
-            if (editionStatus instanceof EventEditableStatus.NonEditable) {
-                return ((EventEditableStatus.NonEditable) editionStatus).getReason() == EventNonEditableReason.EXPIRED;
+            if (editionStatus instanceof EventEditableStatus.NonEditable nonEditableStatus) {
+                return nonEditableStatus.getReason() == EventNonEditableReason.EXPIRED;
             } else {
                 return false;
             }
@@ -185,7 +170,7 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
         return Flowable.just(currentEvent).map(event ->
                 (event.status() == EventStatus.COMPLETED ||
                         event.status() == EventStatus.ACTIVE) &&
-                        event.eventDate() != null && !event.eventDate().after(new Date())
+                        (event.eventDate() == null || !event.eventDate().after(new Date()))
         );
     }
 

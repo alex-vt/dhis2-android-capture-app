@@ -26,7 +26,8 @@ class EventListPresenter(
 
     fun init() {
         disposable.add(
-            filterFlowable.startWith(filterManager)
+            filterManager.asFlowable().startWith(filterManager)
+                .doOnEach { EventListIdlingResourceSingleton.increment() }
                 .map { eventRepository.filteredProgramEvents(textFilter) }
                 .defaultSubscribe(
                     schedulerProvider,

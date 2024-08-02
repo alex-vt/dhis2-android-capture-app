@@ -1,14 +1,14 @@
 package org.dhis2.usescases.biometrics.duplicates
 
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import io.reactivex.functions.Consumer
+import kotlinx.coroutines.flow.Flow
 import org.dhis2.commons.data.SearchTeiModel
 import org.hisp.dhis.android.core.arch.call.D2Progress
 
 interface BiometricsDuplicatesDialogView {
-    fun setLiveData(liveData: LiveData<PagedList<SearchTeiModel>>)
+    fun setLiveData(liveData: Flow<PagingData<SearchTeiModel>>)
     fun getContext(): Context?
     fun openDashboard(teiUid: String, programUid: String, enrollmentUid: String)
     fun downloadProgress(): Consumer<D2Progress>

@@ -12,11 +12,13 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
-import androidx.paging.PagedList
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagingData
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.functions.Consumer
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.dhis2.R
 import org.dhis2.bindings.app
 import org.dhis2.commons.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
@@ -108,15 +110,19 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
         super.onCancel(dialog)
     }
 
-    override fun setLiveData(liveData: LiveData<PagedList<SearchTeiModel>>) {
-        liveData.observe(this, Observer { searchTeiModels: PagedList<SearchTeiModel> ->
-            if (searchTeiModels.size == 0) {
-                binding.duplicatesEmptyContainer.visibility = View.VISIBLE
-            } else {
-                binding.duplicatesEmptyContainer.visibility = View.GONE
-                adapter.submitList(searchTeiModels)
+    override fun setLiveData(flow: Flow<PagingData<SearchTeiModel>>) {
+        lifecycleScope.launch {
+            flow.collectLatest {
+                adapter.submitData(it)
+
+                if (adapter.snapshot().items.isEmpty()) {
+                    binding.duplicatesEmptyContainer.visibility = View.VISIBLE
+                } else {
+                    binding.duplicatesEmptyContainer.visibility = View.GONE
+
+                }
             }
-        })
+        }
     }
 
     override fun openDashboard(teiUid: String, programUid: String, enrollmentUid: String) {

@@ -1,10 +1,14 @@
 package org.dhis2.usescases.biometrics.duplicates
 
+import androidx.paging.map
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.flow.map
+import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.search.SearchParametersModel
 import org.dhis2.usescases.searchTrackEntity.SearchRepository
+import org.dhis2.usescases.searchTrackEntity.SearchRepositoryKt
 import org.dhis2.utils.NetworkUtils
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance
@@ -13,6 +17,7 @@ import timber.log.Timber
 class BiometricsDuplicatesDialogPresenter(
     private val d2: D2,
     private val searchRepository: SearchRepository,
+    private val searchRepositoryKt: SearchRepositoryKt,
     private val schedulerProvider: SchedulerProvider
 ) {
     lateinit var view: BiometricsDuplicatesDialogView
@@ -49,13 +54,22 @@ class BiometricsDuplicatesDialogPresenter(
 
         disposable.add(
             Flowable.just(
-                searchRepository.searchTrackedEntities(
+                searchRepositoryKt.searchTrackedEntities(
                     SearchParametersModel(
                         program,
                         hashMapOf(biometricsAttributeUid to biometricsGuids.joinToString(separator = ";"))
                     ),
                     NetworkUtils.isOnline(view.getContext())
-                )
+                ).map { pagingData ->
+                    pagingData.map { item ->
+                        searchRepository.transform(
+                            item,
+                            program,
+                            NetworkUtils.isOnline(view.getContext()),
+                            FilterManager.getInstance().sortingItem,
+                        )
+                    }
+                }
             ).doOnError { Timber.e(it) }
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
