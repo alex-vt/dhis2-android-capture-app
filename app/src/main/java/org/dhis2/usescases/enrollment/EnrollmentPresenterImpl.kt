@@ -60,6 +60,7 @@ class EnrollmentPresenterImpl(
     private val teiAttributesProvider: TeiAttributesProvider,
     private val basicPreferenceProvider: BasicPreferenceProvider,
 ) {
+    private var saveAfterRegisterLast: Boolean = false
     private val disposable = CompositeDisposable()
     private val backButtonProcessor: FlowableProcessor<Boolean> = PublishProcessor.create()
     private var hasShownIncidentDateEditionWarning = false
@@ -266,12 +267,18 @@ class EnrollmentPresenterImpl(
     fun isEventScheduleOrSkipped(eventUid: String): Boolean {
         val event = eventCollectionRepository.uid(eventUid).blockingGet()
         return event?.status() == EventStatus.SCHEDULE ||
-            event?.status() == EventStatus.SKIPPED ||
-            event?.status() == EventStatus.OVERDUE
+                event?.status() == EventStatus.SKIPPED ||
+                event?.status() == EventStatus.OVERDUE
     }
 
     fun onBiometricsCompleted(guid: String) {
+        biometricsUiModel!!.onClear()
         saveBiometricValue(guid)
+
+        if (saveAfterRegisterLast) {
+            view.performSaveClick()
+            saveAfterRegisterLast = false
+        }
     }
 
     fun onBiometricsFailure() {
@@ -291,8 +298,8 @@ class EnrollmentPresenterImpl(
     }
 
     private fun saveBiometricValue(value: String?) {
-            biometricsUiModel!!.onTextChange(value)
-            biometricsUiModel!!.onSave(value)
+        biometricsUiModel!!.onTextChange(value)
+        biometricsUiModel!!.onSave(value)
     }
 
     fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
@@ -335,31 +342,35 @@ class EnrollmentPresenterImpl(
             biometricsUiModel?.setSaveWithoutBiometrics {
                 saveBiometricValue(null)
                 view.performSaveClick()
+            }
 
+            biometricsUiModel?.setRegisterLastAndSave { sessionId ->
+                view.registerLast(sessionId)
+                saveAfterRegisterLast = true
             }
         }
     }
 
-    fun onFieldsLoading(fields: List<FieldUiModel>) :List<FieldUiModel>{
+    fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
         return fields.map {
             if (it is BiometricsAttributeUiModelImpl) {
                 val biometricsUiModel = it
 
-                val teiUid = teiRepository.blockingGet()?.uid()?:return fields
+                val teiUid = teiRepository.blockingGet()?.uid() ?: return fields
 
-                val tei = getTeiByUid(d2,teiUid )
+                val tei = getTeiByUid(d2, teiUid)
 
                 val parentBiometricsValue = getParentBiometricsAttributeValueIfRequired(
                     d2,
                     teiAttributesProvider,
                     basicPreferenceProvider,
-                    tei?.trackedEntityAttributeValues()?: listOf(),
-                    programRepository.blockingGet()?.uid() ?:"",
-                    teiRepository.blockingGet()?.uid()?:""
+                    tei?.trackedEntityAttributeValues() ?: listOf(),
+                    programRepository.blockingGet()?.uid() ?: "",
+                    teiRepository.blockingGet()?.uid() ?: ""
                 )
 
                 biometricsUiModel
-                    .setValue(parentBiometricsValue?.value()?:biometricsUiModel.value)
+                    .setValue(parentBiometricsValue?.value() ?: biometricsUiModel.value)
             } else {
                 it
             }
@@ -367,9 +378,9 @@ class EnrollmentPresenterImpl(
     }
 
     fun getBiometricsGuid(): String? {
-        val teiUid = teiRepository.blockingGet()?.uid()?: return null
+        val teiUid = teiRepository.blockingGet()?.uid() ?: return null
 
-        val teiValues = getTeiByUid(d2,teiUid)?.trackedEntityAttributeValues()?: return null
+        val teiValues = getTeiByUid(d2, teiUid)?.trackedEntityAttributeValues() ?: return null
 
         val biometricsAttribute = getBiometricsTrackedEntityAttribute(d2) ?: return null
 
@@ -383,8 +394,8 @@ class EnrollmentPresenterImpl(
             teiAttributesProvider,
             basicPreferenceProvider,
             teiValues,
-            programRepository.blockingGet()?.uid() ?:"",
-            teiRepository.blockingGet()?.uid()?:""
+            programRepository.blockingGet()?.uid() ?: "",
+            teiRepository.blockingGet()?.uid() ?: ""
         )?.value()
     }
 }

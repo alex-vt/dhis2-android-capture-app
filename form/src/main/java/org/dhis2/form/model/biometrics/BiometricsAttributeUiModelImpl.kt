@@ -162,6 +162,7 @@ data class BiometricsAttributeUiModelImpl(
 
     private var biometricListener: (() -> Unit)? = null
     private var saveWithoutBiometricsListener: (() -> Unit)? = null
+    private var registerLastAndSave: ((String) -> Unit)? = null
 
     override fun onBiometricsClick() {
         biometricListener?.invoke()
@@ -171,11 +172,19 @@ data class BiometricsAttributeUiModelImpl(
         saveWithoutBiometricsListener?.invoke()
     }
 
+    override fun registerLastAndSave(sessionId: String) {
+        registerLastAndSave?.invoke(sessionId)
+    }
+
     fun setBiometricsRegisterListener(listener: () -> Unit) {
         this.biometricListener = listener
     }
 
     fun setSaveWithoutBiometrics(listener: () -> Unit) {
         this.saveWithoutBiometricsListener = listener
+    }
+
+    fun setRegisterLastAndSave(listener: (String) -> Unit) {
+        this.registerLastAndSave = listener
     }
 }

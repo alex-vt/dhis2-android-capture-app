@@ -6,4 +6,6 @@ interface BiometricsRegistrationUIModel {
 
 interface BiometricsTEIRegistrationUIModel: BiometricsRegistrationUIModel {
     fun onSaveWithoutBiometrics()
+
+    fun registerLastAndSave(sessionId: String)
 }
