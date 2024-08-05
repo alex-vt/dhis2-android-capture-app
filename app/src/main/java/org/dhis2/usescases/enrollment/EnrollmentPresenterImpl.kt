@@ -6,6 +6,7 @@ import io.reactivex.processors.PublishProcessor
 import org.dhis2.bindings.profilePicturePath
 import org.dhis2.commons.bindings.trackedEntityTypeForTei
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
+import org.dhis2.commons.biometrics.BIOMETRICS_SEARCH_PATTERN
 import org.dhis2.commons.data.TeiAttributesInfo
 import org.dhis2.commons.matomo.Actions.Companion.CREATE_TEI
 import org.dhis2.commons.matomo.Categories.Companion.TRACKER_LIST
@@ -257,14 +258,13 @@ class EnrollmentPresenterImpl(
             saveAfterRegisterLast = false
             return
         }
-        
+
         val teiUid = teiRepository.blockingGet()?.uid() ?: ""
         val programUid = getProgram()?.uid() ?: ""
         val hasEnrollmentAccess = d2.enrollmentModule().enrollmentService()
             .blockingGetEnrollmentAccess(teiUid, programUid)
         if (hasEnrollmentAccess == EnrollmentAccess.WRITE_ACCESS) {
-            //EyeSeeTea customization - never visible, biometrics field ui contains buttons to save
-            //view.setSaveButtonVisible(visible = true)
+            view.setSaveButtonVisible(visible = true)
         } else {
             view.setSaveButtonVisible(visible = false)
         }
@@ -348,6 +348,11 @@ class EnrollmentPresenterImpl(
                 view.registerLast(sessionId)
                 saveAfterRegisterLast = true
             }
+
+            val isVisible = biometricsUiModel != null && !biometricsUiModel!!.value.isNullOrBlank() && (!biometricsUiModel!!.value!!.startsWith(
+                BIOMETRICS_SEARCH_PATTERN
+            ))
+            view.setSaveButtonVisible(visible = isVisible)
         }
     }
 
