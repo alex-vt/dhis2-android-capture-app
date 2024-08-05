@@ -328,8 +328,6 @@ class SearchTEList : FragmentGlobalAbstract() {
                     liveAdapter.addOnPagesUpdatedListener {
                         onInitDataLoaded()
 
-                        viewModel.onBiometricsDataLoaded(liveAdapter.itemCount)
-
                         viewModel.evaluateIfNewRequestIdRequired(liveAdapter.snapshot().items)
                     }
 

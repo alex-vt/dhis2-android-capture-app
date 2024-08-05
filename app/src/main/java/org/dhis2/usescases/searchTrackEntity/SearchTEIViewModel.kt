@@ -1032,10 +1032,6 @@ class SearchTEIViewModel(
         return presenter.biometricsSearchStatus
     }
 
-    fun onBiometricsDataLoaded(count: Int) {
-        presenter.onDataLoaded(count)
-    }
-
     fun evaluateIfNewRequestIdRequired(results: List<SearchTeiModel>) {
         // EyeSeeTea customization to remove (parent-child) confirm with Nacho -
         // This not working well after upgrade to 3.0 nad how the client want's anymore I comment it

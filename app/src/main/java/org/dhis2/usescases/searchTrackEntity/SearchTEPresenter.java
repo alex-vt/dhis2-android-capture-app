@@ -400,7 +400,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
             String guid = getBiometricsValueFromTEI(tei);
 
-            view.hideIdentificationPlusButton();
             view.sendBiometricsConfirmIdentity(sessionId, guid, teiUid, enrollmentUid, isOnline);
         }
     }
@@ -660,7 +659,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     @Override
     public void onBiometricsNoneOfTheAboveClick() {
         if (sessionId != null) {
-            view.hideIdentificationPlusButton();
             biometricsSearchStatus = false;
             view.sendBiometricsNoneSelected(sessionId);
         }
@@ -669,7 +667,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     @Override
     public void onBiometricsEnrolmentLastClick() {
         if (biometricsSearchStatus) {
-            view.hideIdentificationPlusButton();
             biometricsSearchStatus = false;
             view.biometricsEnrollmentLast(sessionId);
         }
@@ -698,14 +695,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                         syncStatusController.observeDownloadProcess().getValue()
                 ).isProgramDownloading(program.uid())
         )).collect(Collectors.toList());
-    }
-
-    public void onDataLoaded(int count) {
-        view.onDataLoaded(count);
-
-  /*      if(this.getBiometricsSearchStatus()==false){
-            view.closeFilters();
-        }*/
     }
 
     private BiometricsSearchListener biometricsSearchListener;

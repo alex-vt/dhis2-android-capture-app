@@ -71,9 +71,6 @@ public class SearchTEContractsModule {
         void showBiometricsSearchConfirmation(SearchTeiModel item);
         void sendBiometricsNoneSelected(String sessionId);
         void biometricsEnrollmentLast(String sessionId);
-        void showIdentificationPlusButton();
-        void hideIdentificationPlusButton();
-        void onDataLoaded(int count);
     }
 
     public interface Presenter {
@@ -152,8 +149,6 @@ public class SearchTEContractsModule {
         void onBiometricsNoneOfTheAboveClick();
 
         void onBiometricsEnrolmentLastClick();
-
-        void onDataLoaded(int count);
 
         void setBiometricListener(SearchTEPresenter.BiometricsSearchListener biometricsSearchListener);
 

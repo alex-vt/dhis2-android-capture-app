@@ -264,7 +264,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         if (SyncStatusDialogNavigatorKt.shouldLaunchSyncDialog(getIntent())) {
             openSyncDialog();
         }
-        initBiometrics();
+
     }
 
     private void initializeVariables(Bundle savedInstanceState) {
@@ -481,29 +481,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void biometricsEnrollmentLast(String sessionId) {
         BiometricsClientFactory.INSTANCE.get(this).registerLast(this, sessionId);
-    }
-
-    @Override
-    public void showIdentificationPlusButton() {
-        binding.biometricsButtonsContainer.identificationPlusButton.setVisibility(VISIBLE);
-    }
-
-    @Override
-    public void hideIdentificationPlusButton() {
-        binding.biometricsButtonsContainer.identificationPlusButton.setVisibility(GONE);
-    }
-
-    @Override
-    public void onDataLoaded(int count) {
-        if (presenter.getBiometricsSearchStatus()) {
-            //presenter.clearQueryData();
-            showIdentificationPlusButton();
-        }
-    }
-
-    private void initBiometrics() {
-        binding.biometricsButtonsContainer.identificationPlusButtonIcon.setImageDrawable(
-                AppCompatResources.getDrawable(this, getBioIconBasic(getContext())));
     }
 
     @Override
