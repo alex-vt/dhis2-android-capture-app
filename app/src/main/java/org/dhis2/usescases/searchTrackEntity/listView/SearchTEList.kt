@@ -79,6 +79,7 @@ class SearchTEList : FragmentGlobalAbstract() {
             onDownloadTei = viewModel::onDownloadTei,
             onTeiClick = viewModel::onTeiClick,
             onImageClick = ::displayImageDetail,
+            onSearchTeiModelClick = viewModel::onSearchTeiModelClick,
         )
     }
 
@@ -92,6 +93,7 @@ class SearchTEList : FragmentGlobalAbstract() {
             onDownloadTei = viewModel::onDownloadTei,
             onTeiClick = viewModel::onTeiClick,
             onImageClick = ::displayImageDetail,
+            onSearchTeiModelClick = viewModel::onSearchTeiModelClick,
         )
     }
 

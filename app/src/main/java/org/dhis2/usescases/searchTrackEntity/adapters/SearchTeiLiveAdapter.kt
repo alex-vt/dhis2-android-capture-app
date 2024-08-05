@@ -35,6 +35,8 @@ class SearchTeiLiveAdapter(
     private val onDownloadTei: (teiUid: String, enrollmentUid: String?) -> Unit,
     private val onTeiClick: (teiUid: String, enrollmentUid: String?, isOnline: Boolean) -> Unit,
     private val onImageClick: (imagePath: String) -> Unit,
+    //EyeSeetea customization
+    private val onSearchTeiModelClick: (item: SearchTeiModel) -> Unit,
 ) : PagingDataAdapter<SearchTeiModel, RecyclerView.ViewHolder>(SearchAdapterDiffCallback()) {
 
     private enum class SearchItem {
@@ -100,6 +102,8 @@ class SearchTeiLiveAdapter(
                                         it.selectedEnrollment?.uid(),
                                         it.isOnline,
                                     )
+
+                                    onSearchTeiModelClick.invoke(it)
                                 }
                             },
                             onImageClick = { path ->

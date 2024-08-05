@@ -21,6 +21,7 @@ import org.dhis2.bindings.hasFollowUp
 import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.toDateSpan
 import org.dhis2.commons.date.toOverdueOrScheduledUiText
+import org.dhis2.commons.date.toUi
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.ui.model.ListCardUiModel
 import org.dhis2.form.extensions.isNotBiometricText
@@ -121,7 +122,7 @@ class TEICardMapper(
 
         // EyeSeeTea customization - only remove non biometric empty attributes
         //attributeList.removeIf { it.value.isEmpty() || it.value == "-" }
-        attributeList.removeIf {it.key!!.isNotBiometricText() && (it.value.isEmpty() || it.value == "-") }
+        attributeList.removeIf { it.key!!.isNotBiometricText() && (it.value.isEmpty() || it.value == "-") }
 
         // EyeSeeTea customization
         val finalAttributeList = addAttrBiometricsYesNOIfRequired(attributeList).toMutableList()
@@ -166,6 +167,7 @@ class TEICardMapper(
             )
         }
     }
+
 
     private fun checkFollowUp(
         list: MutableList<AdditionalInfoItem>,
@@ -400,4 +402,115 @@ class TEICardMapper(
         }
         item?.let { list.add(it) }
     }
+
+    private fun addEnrollmentDate(
+        programUid: String,
+        list: MutableList<AdditionalInfoItem>,
+        programLabel: String?,
+        enrollmentDate: Date?,
+    ) {
+        list.add(
+            AdditionalInfoItem(
+                key = "${
+                    programLabel ?: resourceManager.formatWithEnrollmentLabel(
+                        programUid,
+                        R.string.enrollment_date_V2,
+                        1,
+                    )
+                }:",
+                value = enrollmentDate.toUi() ?: "",
+                isConstantItem = true,
+            ),
+        )
+    }
+
+    // EyeSeeTea customization
+    private val firstNameAttrUid = "y1w2R6leVmh"
+    private val lastNameAttrUid = "eo3A0YXVBqr"
+    private val sexAttrUid = "jgfoabWymU9"
+
+    private val attributeKeysToRemove = listOf(firstNameAttrUid, lastNameAttrUid, sexAttrUid)
+    fun mapForConfirmationDialog(
+        searchTEIModel: SearchTeiModel
+    ): ListCardUiModel {
+        return ListCardUiModel(
+            title = getConfirmationDialogTitle(searchTEIModel),
+            subTitle = getConfirmationDialogSubtitle(searchTEIModel),
+            lastUpdated = searchTEIModel.tei.lastUpdated().toDateSpan(context),
+            additionalInfo = getAdditionalInfoListForConfirmationDialog(searchTEIModel),
+            actionButton = { },
+            expandLabelText = "",
+            shrinkLabelText = "",
+            onCardCLick = { },
+        )
+    }
+
+    private fun getConfirmationDialogTitle(item: SearchTeiModel): String {
+        return if (item.attributeValues.isEmpty()) {
+            "-"
+        } else {
+            val firsNameValue =
+                item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == firstNameAttrUid }
+                    ?.value()
+            val lastNameValue =
+                item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == lastNameAttrUid }
+                    ?.value()
+
+            "$firsNameValue $lastNameValue"
+        }
+    }
+
+    private fun getConfirmationDialogSubtitle(item: SearchTeiModel): String {
+        return if (item.attributeValues.isEmpty()) {
+            "-"
+        } else {
+            val sexValue =
+                item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == sexAttrUid }
+                    ?.value()
+
+
+            sexValue ?: ""
+        }
+    }
+
+    private fun getAdditionalInfoListForConfirmationDialog(searchTEIModel: SearchTeiModel): List<AdditionalInfoItem> {
+        val attributeList = searchTEIModel.attributeValues.filter {
+            !attributeKeysToRemove.contains(it.value.trackedEntityAttribute())
+        }.map {
+            AdditionalInfoItem(
+                key = "${it.key}:",
+                value = it.value.value() ?: "",
+            )
+        }.toMutableList()
+
+        if (searchTEIModel.header == null) {
+            attributeList.removeFirstOrNull()
+        }
+
+        attributeList.removeIf { it.key!!.isNotBiometricText() && (it.value.isEmpty() || it.value == "-") }
+
+        val finalAttributeList = addAttrBiometricsIconIfRequired(attributeList).toMutableList()
+
+        return finalAttributeList.also { list ->
+            checkEnrolledIn(
+                list = list,
+                enrolledOrgUnit = searchTEIModel.enrolledOrgUnit,
+            )
+        }.also { list ->
+            val program =
+                searchTEIModel.allProgramInfo.firstOrNull { it.uid() == searchTEIModel.selectedEnrollment?.program() }
+
+            program?.let {
+                addEnrollmentDate(
+                    it.uid(),
+                    list,
+                    it.enrollmentDateLabel(),
+                    searchTEIModel.selectedEnrollment.enrollmentDate(),
+                )
+            }
+
+
+        }
+    }
+
 }

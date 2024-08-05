@@ -583,6 +583,8 @@ class SearchTEIViewModel(
         )
     }
 
+
+
     fun onDataLoaded(
         programResultCount: Int,
         globalResultCount: Int? = null,
@@ -1097,6 +1099,12 @@ class SearchTEIViewModel(
 
     private fun onSearchHelperAction (action: SearchHelperSelectedAction) {
         filterIsOpenCallback?.let { it(action) }
+    }
+
+    fun onSearchTeiModelClick(item:SearchTeiModel) {
+        _legacyInteraction.postValue(
+            LegacyInteraction.OnSearchTeiModelClick(item),
+        )
     }
 }
 

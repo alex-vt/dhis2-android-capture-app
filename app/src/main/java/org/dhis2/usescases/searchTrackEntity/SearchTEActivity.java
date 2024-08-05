@@ -2,12 +2,12 @@ package org.dhis2.usescases.searchTrackEntity;
 
 import static android.view.View.GONE;
 import static org.dhis2.commons.extensions.ViewExtensionsKt.closeKeyboard;
+import static org.dhis2.usescases.biometrics.ui.confirmationDialog.BiometricsSearchConfirmationDialogKt.BIOMETRICS_SEARCH_CONFIRMATION_DIALOG_TAG;
 import static org.dhis2.usescases.searchTrackEntity.searchparameters.SearchParametersScreenKt.initSearchScreen;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -29,6 +29,7 @@ import org.dhis2.R;
 import org.dhis2.bindings.ExtensionsKt;
 import org.dhis2.bindings.ViewExtensionsKt;
 import org.dhis2.commons.Constants;
+import org.dhis2.commons.data.SearchTeiModel;
 import org.dhis2.commons.featureconfig.data.FeatureConfigRepository;
 import org.dhis2.commons.filters.FilterItem;
 import org.dhis2.commons.filters.FilterManager;
@@ -47,14 +48,15 @@ import org.dhis2.data.forms.dataentry.ProgramAdapter;
 import org.dhis2.databinding.ActivitySearchBinding;
 import org.dhis2.form.ui.intent.FormIntent;
 import org.dhis2.ui.ThemeManager;
+import org.dhis2.usescases.biometrics.ui.confirmationDialog.BiometricsSearchConfirmationDialog;
 import org.dhis2.usescases.biometrics.ui.SearchHelperFragment;
 import org.dhis2.usescases.biometrics.ui.SearchHelperSelectedAction;
 import org.dhis2.usescases.general.ActivityGlobalAbstract;
 import org.dhis2.usescases.searchTrackEntity.listView.SearchTEList;
 import org.dhis2.usescases.searchTrackEntity.mapView.SearchTEMap;
 import org.dhis2.usescases.searchTrackEntity.ui.SearchScreenConfigurator;
+import org.dhis2.usescases.searchTrackEntity.ui.mapper.TEICardMapper;
 import org.dhis2.utils.DateUtils;
-import org.dhis2.utils.LastSelection;
 import org.dhis2.utils.OrientationUtilsKt;
 import org.dhis2.utils.customviews.BreakTheGlassBottomDialog;
 import org.dhis2.utils.granularsync.SyncStatusDialog;
@@ -74,11 +76,10 @@ import javax.inject.Inject;
 
 import dhis2.org.analytics.charts.ui.GroupAnalyticsFragment;
 import io.reactivex.functions.Consumer;
-import kotlin.Function;
 import kotlin.Pair;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
 import timber.log.Timber;
+
 import static android.view.View.VISIBLE;
 
 import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_CONFIRM_IDENTITY_REQUEST;
@@ -87,7 +88,6 @@ import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_IDENT
 import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_USER_NOT_FOUND;
 import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconBasic;
 import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconFunnel;
-import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconNoneOfTheAbove;
 import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconSearch;
 
 public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTEContractsModule.View {
@@ -118,6 +118,9 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     @Inject
     ResourceManager resourceManager;
+
+    @Inject
+    TEICardMapper teiCardMapper;
 
     private static final String INITIAL_PAGE = "initialPage";
 
@@ -154,7 +157,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     private CustomDialog biometricsErrorDialog;
 
-    private LastSelection lastSelection;
+    private SearchTeiModel lastSelection;
 
     //---------------------------------------------------------------------------------------------
     private enum Content {
@@ -179,7 +182,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @SuppressLint("ClickableViewAccessibility")
     @Override
     @OptIn(markerClass = ExperimentalAnimationApi.class)
-    protected void  onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
 
         initializeVariables(savedInstanceState);
         inject();
@@ -223,7 +226,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         }
 
         viewModel.setOnSearchHelperActionListener(action -> {
-            if (action != null){
+            if (action != null) {
                 if (action instanceof SearchHelperSelectedAction.SearchWithBiometrics) {
                     searchByBiometrics();
                 } else if (action instanceof SearchHelperSelectedAction.SearchWithAttributes) {
@@ -436,35 +439,51 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
 
     @Override
-    public void sendBiometricsConfirmIdentity(String sessionId, String guid, String teiUid,
-            String enrollmentUid, boolean isOnline) {
-        lastSelection = new LastSelection(teiUid, enrollmentUid, isOnline);
+    public void showBiometricsSearchConfirmation(SearchTeiModel item) {
+        lastSelection = item;
 
-        HashMap extras = new HashMap<>();
-        extras.put(BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID, teiUid);
+        BiometricsSearchConfirmationDialog dialog = new BiometricsSearchConfirmationDialog(
+                item,
+                teiCardMapper,
+                () -> {
+                    lastSelection = null;
+                    presenter.onBiometricsNoneOfTheAboveClick();
+                    return Unit.INSTANCE;
+                },
+                () -> {
+                    presenter.sendBiometricsConfirmIdentity(lastSelection.getTei().uid(),
+                            lastSelection.getSelectedEnrollment().uid(), lastSelection.isOnline());
+                    return Unit.INSTANCE;
+                }
+        );
 
-        BiometricsClientFactory.INSTANCE.get(this).confirmIdentify(this, sessionId, guid, extras);
+        dialog.show(getSupportFragmentManager(), BIOMETRICS_SEARCH_CONFIRMATION_DIALOG_TAG);
     }
+
+    @Override
+    public void sendBiometricsConfirmIdentity(String sessionId, String guid, String teiUid,
+                                              String enrollmentUid, boolean isOnline) {
+        if (lastSelection != null){
+            HashMap extras = new HashMap<>();
+            extras.put(BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID, lastSelection.getTei().uid());
+
+            BiometricsClientFactory.INSTANCE.get(this).confirmIdentify(this, sessionId, guid, extras);
+            viewModel.clearQueryData();
+        }
+    }
+
+
+
 
     @Override
     public void sendBiometricsNoneSelected(String sessionId) {
         BiometricsClientFactory.INSTANCE.get(this).noneSelected(this, sessionId);
+        viewModel.clearQueryData();
     }
 
     @Override
     public void biometricsEnrollmentLast(String sessionId) {
         BiometricsClientFactory.INSTANCE.get(this).registerLast(this, sessionId);
-    }
-
-
-    @Override
-    public void showNoneOfTheAboveButton() {
-        binding.biometricsButtonsContainer.noneOfTheAboveButton.setVisibility(VISIBLE);
-    }
-
-    @Override
-    public void hideNoneOfTheAboveButton() {
-        binding.biometricsButtonsContainer.noneOfTheAboveButton.setVisibility(GONE);
     }
 
     @Override
@@ -490,7 +509,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     @Override
     public void setBiometricsVisibility(boolean visible) {
-        if (visible){
+        if (visible) {
             binding.biometricSearch.setVisibility(VISIBLE);
         } else {
             binding.biometricSearch.setVisibility(GONE);
@@ -501,20 +520,13 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     public void onDataLoaded(int count) {
         if (presenter.getBiometricsSearchStatus()) {
             //presenter.clearQueryData();
-            if (count > 0) {
-                showNoneOfTheAboveButton();
-            } else {
-                hideNoneOfTheAboveButton();
-            }
             showIdentificationPlusButton();
         }
     }
 
-    private void initBiometrics(){
+    private void initBiometrics() {
         binding.biometricsButtonsContainer.identificationPlusButtonIcon.setImageDrawable(
                 AppCompatResources.getDrawable(this, getBioIconBasic(getContext())));
-        binding.biometricsButtonsContainer.noneOfTheAboveButtonIcon.setImageDrawable(
-                AppCompatResources.getDrawable(this, getBioIconNoneOfTheAbove(getContext())));
         binding.biometricSearch.setImageDrawable(
                 AppCompatResources.getDrawable(this, getBioIconSearch(getContext())));
         binding.biometricSearch.setOnClickListener(v -> {
@@ -574,8 +586,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             }
             case BIOMETRICS_CONFIRM_IDENTITY_REQUEST: {
                 if (lastSelection != null) {
-                    presenter.onTEIClick(lastSelection.getTeiUid(), lastSelection.getEnrollmentUid(),
-                            lastSelection.isOnline());
+                    presenter.onSearchTEIModelClick(lastSelection);
                     lastSelection = null;
                 }
             }
@@ -755,12 +766,17 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         );
                     }
                     case ON_TEI_CLICK -> {
-                        LegacyInteraction.OnTeiClick interaction = (LegacyInteraction.OnTeiClick) legacyInteraction;
+                        // Eyeseetea customization, we use ON_SEARCH_TEI_MODEL_CLICK
+                    /*    LegacyInteraction.OnTeiClick interaction = (LegacyInteraction.OnTeiClick) legacyInteraction;
                         presenter.onTEIClick(
                                 interaction.getTeiUid(),
                                 interaction.getEnrollmentUid(),
                                 interaction.getOnline()
-                        );
+                        );*/
+                    }
+                    case ON_SEARCH_TEI_MODEL_CLICK -> {
+                        LegacyInteraction.OnSearchTeiModelClick interaction = (LegacyInteraction.OnSearchTeiModelClick) legacyInteraction;
+                        presenter.onSearchTEIModelClick(interaction.getItem());
                     }
                 }
 

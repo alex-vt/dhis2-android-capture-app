@@ -54,9 +54,6 @@ fun Context.getBioIconWarning() =
     if (getBioIcon(this) == BiometricsIcon.FINGERPRINT) R.drawable.ic_bio_fingerprint_warning_orange
     else R.drawable.ic_bio_face_warning_orange
 
-fun Context.getBioIconNoneOfTheAbove() =
-    if (getBioIcon(this) == BiometricsIcon.FINGERPRINT) R.drawable.ic_bio_fingerprint_warning_red
-    else R.drawable.ic_bio_face_warning_red
 
 private fun getBioIcon(context: Context): BiometricsIcon {
     val preferences = BasicPreferenceProviderImpl(context)

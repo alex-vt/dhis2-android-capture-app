@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.dhis2.commons.data.SearchTeiModel;
 import org.dhis2.commons.filters.FilterItem;
 import org.dhis2.commons.filters.FilterManager;
 import org.dhis2.commons.filters.Filters;
@@ -66,11 +67,10 @@ public class SearchTEContractsModule {
 
         void sendBiometricsConfirmIdentity(String sessionId, String guid, String teiUid,
                 String enrollmentUid, boolean isOnline);
+
+        void showBiometricsSearchConfirmation(SearchTeiModel item);
         void sendBiometricsNoneSelected(String sessionId);
         void biometricsEnrollmentLast(String sessionId);
-
-        void showNoneOfTheAboveButton();
-        void hideNoneOfTheAboveButton();
         void showIdentificationPlusButton();
         void hideIdentificationPlusButton();
 
@@ -99,6 +99,7 @@ public class SearchTEContractsModule {
         void enrollmentWithBiometrics(String biometricsGuid);
 
         void onTEIClick(String teiUid, String enrollmentUid, boolean isOnline);
+        void onSearchTEIModelClick(SearchTeiModel item);
 
         TrackedEntityType getTrackedEntityName();
 
@@ -159,5 +160,7 @@ public class SearchTEContractsModule {
         void onDataLoaded(int count);
 
         void setBiometricListener(SearchTEPresenter.BiometricsSearchListener biometricsSearchListener);
+
+        void sendBiometricsConfirmIdentity(String teiUid, String enrollmentUid, boolean isOnline);
     }
 }

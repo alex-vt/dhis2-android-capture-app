@@ -1,11 +1,14 @@
 package org.dhis2.usescases.searchTrackEntity
 
+import org.dhis2.commons.data.SearchTeiModel
+
 enum class LegacyInteractionID {
     ON_ENROLL_CLICK,
     ON_ADD_RELATIONSHIP,
     ON_SYNC_CLICK,
     ON_ENROLL,
     ON_TEI_CLICK,
+    ON_SEARCH_TEI_MODEL_CLICK
 }
 
 sealed class LegacyInteraction(val id: LegacyInteractionID) {
@@ -29,4 +32,9 @@ sealed class LegacyInteraction(val id: LegacyInteractionID) {
 
     data class OnTeiClick(val teiUid: String, val enrollmentUid: String?, val online: Boolean) :
         LegacyInteraction(LegacyInteractionID.ON_TEI_CLICK)
+
+    // EyeSeeTea customization
+    // Alternative interaction to the official to pass the SearchTeiModel
+    data class OnSearchTeiModelClick(val item: SearchTeiModel) :
+        LegacyInteraction(LegacyInteractionID.ON_SEARCH_TEI_MODEL_CLICK)
 }

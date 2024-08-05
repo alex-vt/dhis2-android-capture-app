@@ -193,6 +193,10 @@ public class SearchTeiModel implements CarouselItemModel {
         }
     }
 
+    public List<Program> getAllProgramInfo() {
+        return programInfo;
+    }
+
     public MetadataIconData getMetadataIconData(@Nullable String programUid) {
         MetadataIconData iconData = metadataIconDataMap.get(programUid);
         if (iconData != null) {

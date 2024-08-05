@@ -15,43 +15,6 @@
         android:layout_height="wrap_content">
 
         <LinearLayout
-            android:id="@+id/none_of_the_above_button"
-            style="@style/ButtonRoundedGrey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingVertical="4dp"
-            android:paddingHorizontal="8dp"
-            android:layout_marginBottom="16dp"
-            android:gravity="center"
-            android:layout_marginHorizontal="8dp"
-            android:onClick="@{()->presenter.onBiometricsNoneOfTheAboveClick()}"
-            app:layout_constraintBottom_toTopOf="@+id/navigationBar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:visibility="gone">
-
-            <ImageView
-                android:id="@+id/none_of_the_above_button_icon"
-                android:layout_width="27dp"
-                android:layout_height="27dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_bio_fingerprint_warning_red"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/none_of_the_above_button_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:fontFamily="@font/rubik_medium"
-                android:text="@string/biometrics_none_of_the_above"
-                android:textAllCaps="true"
-                android:textColor="@color/white"
-                android:textSize="12sp"/>
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/identification_plus_button"
             style="@style/ButtonRoundedGrey"
             android:layout_width="wrap_content"
