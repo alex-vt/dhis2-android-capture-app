@@ -551,6 +551,8 @@ class TEIDataPresenter(
             } else {
                 lastVerificationResult = VerifyResult.Match
             }
+
+            view.refreshCard()
         }
     }
 

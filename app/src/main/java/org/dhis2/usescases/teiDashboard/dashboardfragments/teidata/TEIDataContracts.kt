@@ -49,5 +49,7 @@ class TEIDataContracts {
             orgUnitUid: String,
             trackedEntityInstance: String
         )
+
+        fun refreshCard()
     }
 }

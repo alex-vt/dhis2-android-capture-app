@@ -617,6 +617,10 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         biometricsClient.verify(this, guid, orgUnitUid, extras)
     }
 
+    override fun refreshCard() {
+        showDetailCard()
+    }
+
     companion object {
         const val RC_EVENTS_COMPLETED = 1601
         const val PREF_COMPLETED_EVENT = "COMPLETED_EVENT"

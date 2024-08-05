@@ -74,6 +74,7 @@ import org.hisp.dhis.android.core.settings.AnalyticsDhisVisualizationsGroup;
 import org.hisp.dhis.android.core.settings.ProgramConfigurationSetting;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue;
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValueObjectRepository;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstanceCreateProjection;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityType;
@@ -99,6 +100,7 @@ import dhis2.org.analytics.charts.Charts;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import kotlin.Unit;
 
 public class SearchRepositoryImpl implements SearchRepository {
 
@@ -253,7 +255,7 @@ public class SearchRepositoryImpl implements SearchRepository {
             }
         }
 
-        if (searchParametersModel.getUIds().size() >0){
+        if (searchParametersModel.getUIds().size() > 0) {
             trackedEntityInstanceQuery = trackedEntityInstanceQuery.byUIds().in(searchParametersModel.getUIds());
         }
 
@@ -965,10 +967,10 @@ public class SearchRepositoryImpl implements SearchRepository {
     public Observable<Boolean> programHasBiometrics() {
         String biometricAttributeUid = getBiometricAttributeUid();
 
-        if (biometricAttributeUid != null && BIOMETRICS_ENABLED){
+        if (biometricAttributeUid != null && BIOMETRICS_ENABLED) {
             return Observable.just(true);
         } else {
-            return  Observable.just(false);
+            return Observable.just(false);
         }
     }
 
@@ -989,6 +991,21 @@ public class SearchRepositoryImpl implements SearchRepository {
 
         }
 
-        return  null;
+        return null;
+    }
+
+    @Override
+    public void updateAttributeValue(String teiUid, String biometricUid, String guid) {
+        TrackedEntityAttributeValueObjectRepository valueRepository =
+                d2.trackedEntityModule().trackedEntityAttributeValues()
+                        .value(biometricUid, teiUid);
+
+        ValueExtensionsKt.blockingSetCheck(valueRepository, d2, biometricUid, guid, (_at, _atr) -> {
+            crashReportController.addBreadCrumb(
+                    "blockingSetCheck Crash",
+                    "Attribute: $_attrUid," +
+                            "" + " value: $_value");
+            return Unit.INSTANCE;
+        });
     }
 }

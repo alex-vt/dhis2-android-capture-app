@@ -400,6 +400,8 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
             String guid = getBiometricsValueFromTEI(tei);
 
+            searchRepository.updateAttributeValue(teiUid, biometricUid, guid);
+
             view.sendBiometricsConfirmIdentity(sessionId, guid, teiUid, enrollmentUid, isOnline);
         }
     }
