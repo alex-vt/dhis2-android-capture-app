@@ -252,6 +252,12 @@ class EnrollmentPresenterImpl(
     }
 
     fun showOrHideSaveButton() {
+        if (saveAfterRegisterLast) {
+            view.performSaveClick()
+            saveAfterRegisterLast = false
+            return
+        }
+        
         val teiUid = teiRepository.blockingGet()?.uid() ?: ""
         val programUid = getProgram()?.uid() ?: ""
         val hasEnrollmentAccess = d2.enrollmentModule().enrollmentService()
@@ -272,13 +278,7 @@ class EnrollmentPresenterImpl(
     }
 
     fun onBiometricsCompleted(guid: String) {
-        biometricsUiModel!!.onClear()
         saveBiometricValue(guid)
-
-        if (saveAfterRegisterLast) {
-            view.performSaveClick()
-            saveAfterRegisterLast = false
-        }
     }
 
     fun onBiometricsFailure() {
