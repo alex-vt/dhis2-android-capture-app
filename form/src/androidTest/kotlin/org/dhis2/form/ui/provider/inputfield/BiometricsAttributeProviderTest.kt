@@ -71,6 +71,9 @@ class BiometricsAttributeProviderTest {
             null,
             null,
             null,
+            null,
+            null,
+            null,
             null
         )
     }
