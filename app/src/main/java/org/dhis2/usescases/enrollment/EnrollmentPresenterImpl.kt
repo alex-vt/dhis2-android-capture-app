@@ -349,14 +349,18 @@ class EnrollmentPresenterImpl(
                 saveAfterRegisterLast = true
             }
 
-            val isVisible = biometricsUiModel != null && !biometricsUiModel!!.value.isNullOrBlank() && (!biometricsUiModel!!.value!!.startsWith(
-                BIOMETRICS_SEARCH_PATTERN
-            ))
+            val isVisible =
+                biometricsUiModel != null && !biometricsUiModel!!.value.isNullOrBlank() && (!biometricsUiModel!!.value!!.startsWith(
+                    BIOMETRICS_SEARCH_PATTERN
+                ))
             view.setSaveButtonVisible(visible = isVisible)
         }
     }
 
     fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
+        val allMandatoryFieldsHasValue =
+            fields.count { it.mandatory && (it.value == null || it.value!!.isEmpty())} == 0
+
         return fields.map {
             if (it is BiometricsAttributeUiModelImpl) {
                 val biometricsUiModel = it
@@ -376,6 +380,7 @@ class EnrollmentPresenterImpl(
 
                 biometricsUiModel
                     .setValue(parentBiometricsValue?.value() ?: biometricsUiModel.value)
+                    .setEditable(allMandatoryFieldsHasValue)
             } else {
                 it
             }

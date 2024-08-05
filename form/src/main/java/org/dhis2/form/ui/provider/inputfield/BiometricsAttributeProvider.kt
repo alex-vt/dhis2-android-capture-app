@@ -14,10 +14,11 @@ internal fun ProvideBiometricsAttribute(
     resources: ResourceManager,
 ) {
     BiometricsTEIRegistration(
-        fieldUiModel.value,
-        fieldUiModel::onBiometricsClick,
-        fieldUiModel::onSaveWithoutBiometrics,
-        fieldUiModel::registerLastAndSave
+        value = fieldUiModel.value,
+        enabled = fieldUiModel.editable,
+        onBiometricsClick = fieldUiModel::onBiometricsClick,
+        onSaveWithoutBiometrics = fieldUiModel::onSaveWithoutBiometrics,
+        registerLastAndSave = fieldUiModel::registerLastAndSave
     ) { state ->
         when (state) {
             BiometricsTEIState.INITIAL -> null

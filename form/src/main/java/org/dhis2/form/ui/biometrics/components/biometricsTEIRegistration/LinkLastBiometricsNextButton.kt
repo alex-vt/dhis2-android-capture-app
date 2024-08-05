@@ -12,20 +12,25 @@ import org.dhis2.form.R
 import org.dhis2.form.ui.biometrics.components.defaultButtonColor
 import org.hisp.dhis.mobile.ui.designsystem.component.Button
 import org.hisp.dhis.mobile.ui.designsystem.component.ButtonStyle
+import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 
 @Composable
 internal fun LinkLastBiometricsNextButton(
+    enabled: Boolean,
     onClick: (() -> Unit),
 ) {
-    val color = android.graphics.Color.parseColor(
-        defaultButtonColor
-    )
+    val color = if (enabled) Color(
+        android.graphics.Color.parseColor(
+            defaultButtonColor
+        )
+    ) else SurfaceColor.DisabledSurface
 
     Button(
         text = stringResource(R.string.next).uppercase(),
         style = ButtonStyle.TEXT_LIGHT,
-        modifier = Modifier.fillMaxWidth().background(Color(color))
+        modifier = Modifier.fillMaxWidth().background(color)
             .height(50.dp),
         onClick = onClick,
+        enabled = enabled
     )
 }

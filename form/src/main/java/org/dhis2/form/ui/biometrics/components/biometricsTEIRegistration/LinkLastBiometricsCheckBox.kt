@@ -18,6 +18,7 @@ import org.dhis2.form.ui.biometrics.components.defaultButtonColor
 @Composable
 internal fun LinkLastBiometricsCheckBox(
     value: Boolean,
+    enabled: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?
 ) {
     Row(
@@ -27,10 +28,11 @@ internal fun LinkLastBiometricsCheckBox(
     ) {
         Text(
             "Link last biometrics",
-            color = Color(parseColor(defaultButtonColor)),
+            color = if (enabled) Color(parseColor(defaultButtonColor)) else Color.LightGray,
             style = MaterialTheme.typography.body1,
         )
         Checkbox(
+            enabled = enabled,
             checked = value,
             onCheckedChange = onCheckedChange,
             colors = androidx.compose.material.CheckboxDefaults.colors(

@@ -17,16 +17,23 @@ import androidx.compose.ui.unit.dp
 import org.dhis2.form.R
 import org.hisp.dhis.mobile.ui.designsystem.component.Button
 import org.hisp.dhis.mobile.ui.designsystem.component.ButtonStyle
+import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 
 @Composable
 internal fun RegistrationResult(
     onBiometricsClick: (() -> Unit),
+    enabled: Boolean,
     resultText: Int,
     resultIcon: Int?,
     resultColor: String,
     showRetake: Boolean,
 ) {
 
+    val color = if (enabled) Color(
+        android.graphics.Color.parseColor(
+            resultColor
+        )
+    ) else SurfaceColor.DisabledSurface
 
 
     Row(
@@ -35,14 +42,16 @@ internal fun RegistrationResult(
         Button(
             text = stringResource(resultText).uppercase(),
             style = ButtonStyle.TEXT_LIGHT,
-            icon =  {
-                resultIcon?.let { Icon(
-                    painter = painterResource(resultIcon),
-                    contentDescription = stringResource(resultText),
-                    tint = Color.Unspecified,
-                ) }
+            icon = {
+                resultIcon?.let {
+                    Icon(
+                        painter = painterResource(resultIcon),
+                        contentDescription = stringResource(resultText),
+                        tint = Color.Unspecified,
+                    )
+                }
             },
-            modifier = Modifier.background(Color(android.graphics.Color.parseColor(resultColor)))
+            modifier = Modifier.background(color)
                 .weight(1f)
                 .height(50.dp),
             onClick = {
@@ -50,6 +59,7 @@ internal fun RegistrationResult(
                     onBiometricsClick()
                 }
             },
+            enabled = enabled
         )
 
         if (showRetake) {
@@ -75,8 +85,10 @@ internal fun RegistrationResult(
                     .width(200.dp)
                     .height(50.dp),
                 onClick = { onBiometricsClick() },
+                enabled = enabled
 
-                )
+            )
+
         }
     }
 }

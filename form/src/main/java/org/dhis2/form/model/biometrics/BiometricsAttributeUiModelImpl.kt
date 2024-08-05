@@ -29,6 +29,7 @@ data class BiometricsAttributeUiModelImpl(
     override val eventCategories: List<EventCategory>?,
     override val periodSelector: PeriodSelector?,
     override val url: String?,
+    override val editable: Boolean = true,
 ) : FieldUiModel, BiometricsTEIRegistrationUIModel {
 
     private var callback: FieldUiModel.Callback? = null
@@ -49,7 +50,6 @@ data class BiometricsAttributeUiModelImpl(
 
     override val focused = false
     override val error: String? = null
-    override val editable = false
     override val warning: String? = null
     override val mandatory = false
     override val label = ""
@@ -147,7 +147,7 @@ data class BiometricsAttributeUiModelImpl(
 
     override fun setError(error: String?) = this.copy()
 
-    override fun setEditable(editable: Boolean) = this.copy()
+    override fun setEditable(editable: Boolean) = this.copy(editable = editable)
 
     override fun setLegend(legendValue: LegendValue?) = this.copy()
 

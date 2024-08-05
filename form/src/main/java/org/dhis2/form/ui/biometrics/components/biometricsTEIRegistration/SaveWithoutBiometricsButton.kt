@@ -14,24 +14,25 @@ import org.dhis2.form.ui.biometrics.components.defaultButtonColor
 
 @Composable
 internal fun SaveWithoutBiometricsButton(
+    enabled: Boolean,
     onClick: (() -> Unit),
 ) {
-    val color = android.graphics.Color.parseColor(
-        defaultButtonColor
-    )
+    val color = if (enabled) Color(
+        android.graphics.Color.parseColor(
+        defaultButtonColor)
+    ) else Color.LightGray
 
     OutlinedButton(
         onClick = onClick,
+        enabled = enabled,
         modifier = Modifier
             .fillMaxWidth()
             .height(50.dp)
             .padding(1.dp)
             .border(
-                1.dp, Color(
-                    color
-                )
+                1.dp, color
             ),
     ) {
-        Text("Save without biometrics".uppercase(), color = Color(color))
+        Text("Save without biometrics".uppercase(), color = color)
     }
 }

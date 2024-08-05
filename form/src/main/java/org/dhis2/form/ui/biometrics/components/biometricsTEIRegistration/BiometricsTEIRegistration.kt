@@ -27,6 +27,7 @@ enum class BiometricsTEIState {
 @Composable
 fun BiometricsTEIRegistration(
     value: String?,
+    enabled:Boolean,
     onBiometricsClick: () -> Unit,
     onSaveWithoutBiometrics: () -> Unit,
     registerLastAndSave: (sessionId: String) -> Unit,
@@ -64,6 +65,7 @@ fun BiometricsTEIRegistration(
         if (biometricsSearchSessionId != null) {
             LinkLastBiometricsCheckBox(
                 value = linkLastBiometrics,
+                enabled= enabled,
                 onCheckedChange = { linkLastBiometrics = it }
             )
         }
@@ -71,10 +73,17 @@ fun BiometricsTEIRegistration(
         Spacer(modifier = Modifier.height(96.dp))
 
         if (linkLastBiometrics && biometricsSearchSessionId != null) {
-            LinkLastBiometricsNextButton { registerLastAndSave(biometricsSearchSessionId) }
+            LinkLastBiometricsNextButton(enabled = enabled) { registerLastAndSave(biometricsSearchSessionId) }
         } else {
-            RegistrationButton(biometricsState, onBiometricsClick, getIconByState)
-            SaveWithoutBiometricsButton(onSaveWithoutBiometrics)
+            RegistrationButton(
+                biometricsState=  biometricsState,
+                enabled = enabled,
+                onBiometricsClick = onBiometricsClick,
+                getIconByState = getIconByState)
+
+            SaveWithoutBiometricsButton(
+                enabled=enabled,
+                onClick = onSaveWithoutBiometrics)
         }
     }
 }
@@ -82,6 +91,7 @@ fun BiometricsTEIRegistration(
 @Composable
 fun RegistrationButton(
     biometricsState: BiometricsTEIState,
+    enabled: Boolean,
     onBiometricsClick: () -> Unit,
     getIconByState: (BiometricsTEIState) -> Int?
 ) {
@@ -90,6 +100,7 @@ fun RegistrationButton(
         BiometricsTEIState.INITIAL -> {
             RegistrationResult(
                 onBiometricsClick = onBiometricsClick,
+                enabled = enabled,
                 resultText = R.string.biometrics_register_and_save,
                 resultIcon = getIconByState(BiometricsTEIState.INITIAL),
                 resultColor = defaultButtonColor,
@@ -100,6 +111,7 @@ fun RegistrationButton(
         BiometricsTEIState.SUCCESS -> {
             RegistrationResult(
                 onBiometricsClick = onBiometricsClick,
+                enabled = enabled,
                 resultText = R.string.biometrics_completed,
                 resultIcon = getIconByState(BiometricsTEIState.SUCCESS),
                 resultColor = successButtonColor,
@@ -110,6 +122,7 @@ fun RegistrationButton(
         BiometricsTEIState.FAILURE -> {
             RegistrationResult(
                 onBiometricsClick = onBiometricsClick,
+                enabled = enabled,
                 resultText = R.string.biometrics_declined,
                 resultIcon = getIconByState(BiometricsTEIState.FAILURE),
                 resultColor = failedButtonColor,
@@ -119,12 +132,55 @@ fun RegistrationButton(
     }
 }
 
+@Preview(showBackground = true, name = "Initial After biometrics search")
+@Composable
+fun PreviewBiometricsTEIRegistrationInitialAfterSearch() {
+
+    BiometricsTEIRegistration(
+        value = BIOMETRICS_SEARCH_PATTERN,
+        enabled = true,
+        onBiometricsClick = { },
+        onSaveWithoutBiometrics = {},
+        registerLastAndSave = { },
+        getIconByState = { null }
+    )
+}
+
+@Preview(showBackground = true, name = "Initial State disabled")
+@Composable
+fun PreviewBiometricsTEIRegistrationInitialDisabled() {
+
+    BiometricsTEIRegistration(
+        value = null,
+        enabled = false,
+        onBiometricsClick = { },
+        onSaveWithoutBiometrics = {},
+        registerLastAndSave = { },
+        getIconByState = { null }
+    )
+}
+
+@Preview(showBackground = true, name = "Initial After biometrics search disabled")
+@Composable
+fun PreviewBiometricsTEIRegistrationInitialAfterSearchDisabled() {
+
+    BiometricsTEIRegistration(
+        value = BIOMETRICS_SEARCH_PATTERN,
+        enabled = false,
+        onBiometricsClick = { },
+        onSaveWithoutBiometrics = {},
+        registerLastAndSave = { },
+        getIconByState = { null }
+    )
+}
+
 @Preview(showBackground = true, name = "Initial State")
 @Composable
 fun PreviewBiometricsTEIRegistrationInitial() {
 
     BiometricsTEIRegistration(
         value = null,
+        enabled = true,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
         registerLastAndSave = { },
@@ -137,6 +193,7 @@ fun PreviewBiometricsTEIRegistrationInitial() {
 fun PreviewBiometricsTEIRegistrationSuccess() {
     BiometricsTEIRegistration(
         value = "927232-2-323-2-32-32-32",
+        enabled = true,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
         registerLastAndSave = { },
@@ -149,11 +206,14 @@ fun PreviewBiometricsTEIRegistrationSuccess() {
 fun PreviewBiometricsTEIRegistrationFailure() {
     BiometricsTEIRegistration(
         value = BIOMETRICS_FAILURE_PATTERN,
+        enabled = true,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
         registerLastAndSave = { },
         getIconByState = { R.drawable.ic_bio_face_failed }
     )
 }
+
+
 
 
