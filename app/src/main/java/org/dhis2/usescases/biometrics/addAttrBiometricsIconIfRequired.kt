@@ -26,3 +26,20 @@ fun addAttrBiometricsIconIfRequired(additionalInfo: List<AdditionalInfoItem>): L
 
     } else additionalInfo
 }
+
+fun addAttrBiometricsYesNOIfRequired(additionalInfo: List<AdditionalInfoItem>): List<AdditionalInfoItem> {
+    return if (BIOMETRICS_ENABLED) additionalInfo.map {
+        val key = it.key ?: ""
+
+        if (key.isBiometricText()) {
+            if (it.value.isNotBlank() && it.value != "-") {
+                it.copy(value = "Yes")
+            } else {
+                it.copy(value = "No")
+            }
+        } else {
+            it
+        }
+
+    } else additionalInfo
+}
