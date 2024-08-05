@@ -472,9 +472,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         }
     }
 
-
-
-
     @Override
     public void sendBiometricsNoneSelected(String sessionId) {
         BiometricsClientFactory.INSTANCE.get(this).noneSelected(this, sessionId);
@@ -497,26 +494,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     @Override
-    public void activeBiometricsSearch(boolean active) {
-        if (active) {
-            binding.biometricSearch.setImageDrawable(AppCompatResources.getDrawable(this,
-                    getBioIconFunnel(this)));
-        } else {
-            binding.biometricSearch.setImageDrawable(AppCompatResources.getDrawable(this,
-                    getBioIconSearch(this)));
-        }
-    }
-
-    @Override
-    public void setBiometricsVisibility(boolean visible) {
-        if (visible) {
-            binding.biometricSearch.setVisibility(VISIBLE);
-        } else {
-            binding.biometricSearch.setVisibility(GONE);
-        }
-    }
-
-    @Override
     public void onDataLoaded(int count) {
         if (presenter.getBiometricsSearchStatus()) {
             //presenter.clearQueryData();
@@ -527,11 +504,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private void initBiometrics() {
         binding.biometricsButtonsContainer.identificationPlusButtonIcon.setImageDrawable(
                 AppCompatResources.getDrawable(this, getBioIconBasic(getContext())));
-        binding.biometricSearch.setImageDrawable(
-                AppCompatResources.getDrawable(this, getBioIconSearch(getContext())));
-        binding.biometricSearch.setOnClickListener(v -> {
-            searchByBiometrics();
-        });
     }
 
     @Override

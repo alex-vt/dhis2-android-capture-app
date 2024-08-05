@@ -176,11 +176,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                                 }, Timber::d
                         ));
 
-        compositeDisposable.add(searchRepository.programHasBiometrics()
-                .subscribeOn(schedulerProvider.io())
-                .observeOn(schedulerProvider.ui())
-                .subscribe(view::setBiometricsVisibility, Timber::d));
-
         compositeDisposable.add(
                 FilterManager.getInstance().ouTreeFlowable()
                         .subscribeOn(schedulerProvider.io())
@@ -277,7 +272,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         searchRepository.setCurrentProgram(selectedProgram != null ? selectedProgram.uid() : null);
         currentProgram.onNext(selectedProgram != null ? selectedProgram.uid() : "");
         biometricsSearchStatus = false;
-        view.activeBiometricsSearch(false);
     }
 
     @Override
@@ -386,7 +380,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
         if (biometricsSearchStatus) {
             view.showBiometricsSearchConfirmation(item);
-            view.activeBiometricsSearch(false);
             biometricsSearchStatus = false;
         } else {
             if (!isOnline) {
@@ -653,7 +646,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
             }
 
             biometricsSearchStatus = true;
-            view.activeBiometricsSearch(true);
 
             biometricsSearchListener.onBiometricsSearch(biometricUid, sb.toString());
         }
@@ -669,7 +661,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         if (sessionId != null) {
             view.hideIdentificationPlusButton();
             biometricsSearchStatus = false;
-            view.activeBiometricsSearch(false);
             view.sendBiometricsNoneSelected(sessionId);
         }
     }

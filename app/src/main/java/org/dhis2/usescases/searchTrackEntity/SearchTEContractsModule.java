@@ -73,10 +73,6 @@ public class SearchTEContractsModule {
         void biometricsEnrollmentLast(String sessionId);
         void showIdentificationPlusButton();
         void hideIdentificationPlusButton();
-
-        void activeBiometricsSearch(boolean active);
-        void setBiometricsVisibility(boolean visible);
-
         void onDataLoaded(int count);
     }
 
