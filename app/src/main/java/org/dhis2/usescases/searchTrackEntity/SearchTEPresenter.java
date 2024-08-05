@@ -1,6 +1,7 @@
 package org.dhis2.usescases.searchTrackEntity;
 
 import static android.app.Activity.RESULT_OK;
+import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_SEARCH_PATTERN;
 import static org.dhis2.commons.matomo.Actions.MAP_VISUALIZATION;
 import static org.dhis2.commons.matomo.Actions.OPEN_ANALYTICS;
 import static org.dhis2.commons.matomo.Actions.SYNC_TEI;
@@ -282,8 +283,8 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
     @Override
     public void onEnrollClick(HashMap<String, String> queryData) {
-        if (!enrollmentWithBiometricsMode) {
-            queryData.remove(biometricUid);
+        if (queryData.containsKey(biometricUid)){
+            queryData.put(biometricUid, BIOMETRICS_SEARCH_PATTERN + sessionId + "_" + queryData.get(biometricUid));
         }
 
         if (selectedProgram != null)

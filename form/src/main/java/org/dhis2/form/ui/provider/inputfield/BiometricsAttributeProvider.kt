@@ -14,7 +14,7 @@ internal fun ProvideBiometricsAttribute(
     fieldUiModel: BiometricsAttributeUiModelImpl,
     resources: ResourceManager,
 ) {
-    BiometricsTEIRegistration(fieldUiModel.value, fieldUiModel::onBiometricsClick
+    BiometricsTEIRegistration(fieldUiModel.value, fieldUiModel::onBiometricsClick, fieldUiModel::onSaveWithoutBiometrics
     ) { state ->
         when (state) {
             BiometricsTEIState.INITIAL -> resources.context.getBioIconNew()

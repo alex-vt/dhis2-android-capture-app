@@ -1,10 +1,14 @@
 package org.dhis2.form.ui.biometrics.components.biometricsTEIRegistration
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.tooling.preview.Preview
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.form.R
+import org.dhis2.form.ui.biometrics.components.defaultButtonColor
+import org.dhis2.form.ui.biometrics.components.failedButtonColor
+import org.dhis2.form.ui.biometrics.components.successButtonColor
 
 enum class BiometricsTEIState {
     INITIAL,
@@ -18,7 +22,8 @@ enum class BiometricsTEIState {
 fun BiometricsTEIRegistration(
     value: String?,
     onBiometricsClick: () -> Unit,
-    getIconByState: (BiometricsTEIState) -> Int
+    onSaveWithoutBiometrics: () -> Unit,
+    getIconByState: (BiometricsTEIState) -> Int?
 ) {
     val biometricsState = remember(value) {
         if (!value.isNullOrEmpty()) {
@@ -32,13 +37,26 @@ fun BiometricsTEIRegistration(
         }
     }
 
+    Column {
+        RegistrationButton(biometricsState, onBiometricsClick, getIconByState)
+        SaveWithoutBiometricsButton(onSaveWithoutBiometrics)
+    }
+}
+
+@Composable
+fun RegistrationButton(
+    biometricsState: BiometricsTEIState,
+    onBiometricsClick: () -> Unit,
+    getIconByState: (BiometricsTEIState) -> Int?
+) {
+
     when (biometricsState) {
         BiometricsTEIState.INITIAL -> {
             RegistrationResult(
                 onBiometricsClick = onBiometricsClick,
                 resultText =  R.string.biometrics_get,
                 resultIcon = getIconByState(BiometricsTEIState.INITIAL),
-                resultColor = "#4d4d4d",
+                resultColor = defaultButtonColor,
                 showRetake = false
             )
         }
@@ -48,7 +66,7 @@ fun BiometricsTEIRegistration(
                 onBiometricsClick = onBiometricsClick,
                 resultText =  R.string.biometrics_completed,
                 resultIcon = getIconByState(BiometricsTEIState.SUCCESS),
-                resultColor = "#FF35835D",
+                resultColor = successButtonColor,
                 showRetake = true
             )
         }
@@ -58,7 +76,7 @@ fun BiometricsTEIRegistration(
                 onBiometricsClick = onBiometricsClick,
                 resultText =  R.string.biometrics_declined,
                 resultIcon = getIconByState(BiometricsTEIState.FAILURE),
-                resultColor = "#C57704",
+                resultColor = failedButtonColor,
                 showRetake = true
             )
         }
@@ -68,23 +86,22 @@ fun BiometricsTEIRegistration(
 @Preview(showBackground = true, name = "Initial State")
 @Composable
 fun PreviewBiometricsTEIRegistrationInitial() {
-    val onBiometricsClick = remember { {} }
 
     BiometricsTEIRegistration(
         value = null,
-        onBiometricsClick = onBiometricsClick,
-        getIconByState = { R.drawable.ic_bio_face_new }
+        onBiometricsClick = { },
+        onSaveWithoutBiometrics = {},
+        getIconByState = { null }
     )
 }
 
 @Preview(showBackground = true, name = "Success State")
 @Composable
 fun PreviewBiometricsTEIRegistrationSuccess() {
-    val onBiometricsClick = remember { {} }
-
     BiometricsTEIRegistration(
         value = "927232-2-323-2-32-32-32",
-        onBiometricsClick = onBiometricsClick,
+        onBiometricsClick = { },
+        onSaveWithoutBiometrics = {},
         getIconByState = { R.drawable.ic_bio_face_success }
     )
 }
@@ -95,6 +112,7 @@ fun PreviewBiometricsTEIRegistrationFailure() {
     BiometricsTEIRegistration(
         value = BIOMETRICS_FAILURE_PATTERN,
         onBiometricsClick = { },
+        onSaveWithoutBiometrics = {},
         getIconByState = { R.drawable.ic_bio_face_failed }
     )
 }

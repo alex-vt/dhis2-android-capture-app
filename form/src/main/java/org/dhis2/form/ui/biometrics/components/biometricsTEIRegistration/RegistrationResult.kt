@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
@@ -17,34 +18,29 @@ import org.dhis2.form.R
 import org.hisp.dhis.mobile.ui.designsystem.component.Button
 import org.hisp.dhis.mobile.ui.designsystem.component.ButtonStyle
 
-enum class BiometricsState {
-    INITIAL,
-    SUCCESS,
-    FAILURE,
-}
-
 @Composable
 internal fun RegistrationResult(
     onBiometricsClick: (() -> Unit),
     resultText: Int,
-    resultIcon: Int,
+    resultIcon: Int?,
     resultColor: String,
     showRetake: Boolean,
 ) {
 
 
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
     ) {
         Button(
             text = stringResource(resultText).uppercase(),
             style = ButtonStyle.TEXT_LIGHT,
-            icon = {
-                Icon(
+            icon =  {
+                resultIcon?.let { Icon(
                     painter = painterResource(resultIcon),
                     contentDescription = stringResource(resultText),
                     tint = Color.Unspecified,
-                )
+                ) }
             },
             modifier = Modifier.background(Color(android.graphics.Color.parseColor(resultColor)))
                 .weight(1f)

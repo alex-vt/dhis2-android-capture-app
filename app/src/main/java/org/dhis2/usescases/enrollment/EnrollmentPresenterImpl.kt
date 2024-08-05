@@ -256,7 +256,8 @@ class EnrollmentPresenterImpl(
         val hasEnrollmentAccess = d2.enrollmentModule().enrollmentService()
             .blockingGetEnrollmentAccess(teiUid, programUid)
         if (hasEnrollmentAccess == EnrollmentAccess.WRITE_ACCESS) {
-            view.setSaveButtonVisible(visible = true)
+            //EyeSeeTea customization - never visible, biometrics field ui contains buttons to save
+            //view.setSaveButtonVisible(visible = true)
         } else {
             view.setSaveButtonVisible(visible = false)
         }
@@ -284,17 +285,14 @@ class EnrollmentPresenterImpl(
                     BIOMETRICS_FAILURE_PATTERN
                 )
             ) {
-                biometricsUiModel!!.onTextChange(null)
-                biometricsUiModel!!.onSave(null)
+                saveBiometricValue(null)
             }
         }
     }
 
-    private fun saveBiometricValue(value: String) {
-        if (biometricsUiModel != null) {
+    private fun saveBiometricValue(value: String?) {
             biometricsUiModel!!.onTextChange(value)
             biometricsUiModel!!.onSave(value)
-        }
     }
 
     fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
@@ -327,15 +325,18 @@ class EnrollmentPresenterImpl(
                 it is BiometricsAttributeUiModelImpl
             }?.let { it as BiometricsAttributeUiModelImpl }
 
-            biometricsUiModel?.setBiometricsRegisterListener(
-                object : BiometricsAttributeUiModelImpl.BiometricsOnRegisterClickListener {
-                    override fun onClick() {
-                        val orgUnit = enrollmentObjectRepository.get().blockingGet()
-                            ?.organisationUnit()!!
-                        view.registerBiometrics(orgUnit)
+            biometricsUiModel?.setBiometricsRegisterListener {
+                val orgUnit = enrollmentObjectRepository.get().blockingGet()
+                    ?.organisationUnit()!!
 
-                    }
-                })
+                view.registerBiometrics(orgUnit)
+            }
+
+            biometricsUiModel?.setSaveWithoutBiometrics {
+                saveBiometricValue(null)
+                view.performSaveClick()
+
+            }
         }
     }
 
