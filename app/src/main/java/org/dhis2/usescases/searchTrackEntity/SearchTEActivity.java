@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.compose.animation.ExperimentalAnimationApi;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
@@ -49,9 +48,9 @@ import org.dhis2.data.forms.dataentry.ProgramAdapter;
 import org.dhis2.databinding.ActivitySearchBinding;
 import org.dhis2.form.ui.intent.FormIntent;
 import org.dhis2.ui.ThemeManager;
+import org.dhis2.usescases.biometrics.ui.SequentialSearchAction;
 import org.dhis2.usescases.biometrics.ui.confirmationDialog.BiometricsSearchConfirmationDialog;
 import org.dhis2.usescases.biometrics.ui.SearchHelperFragment;
-import org.dhis2.usescases.biometrics.ui.SearchHelperSelectedAction;
 import org.dhis2.usescases.general.ActivityGlobalAbstract;
 import org.dhis2.usescases.searchTrackEntity.listView.SearchTEList;
 import org.dhis2.usescases.searchTrackEntity.mapView.SearchTEMap;
@@ -221,15 +220,17 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             ViewExtensionsKt.clipWithRoundedCorners(binding.mainComponent, ExtensionsKt.getDp(16));
         }
 
-        viewModel.setOnSearchHelperActionListener(action -> {
+        viewModel.setOnSequentialSearchActionListener(action -> {
             if (action != null) {
-                if (action instanceof SearchHelperSelectedAction.SearchWithBiometrics) {
+                if (action instanceof SequentialSearchAction.SearchWithBiometrics) {
                     searchByBiometrics();
-                } else if (action instanceof SearchHelperSelectedAction.SearchWithAttributes) {
+                } else if (action instanceof SequentialSearchAction.SearchWithAttributes) {
                     viewModel.openSearchForm();
                 } else {
                     // register new
-                    presenter.onEnrollClick(new HashMap<>());
+                    presenter.onEnrollClick(new HashMap<>(viewModel.getQueryData()));
+
+                    viewModel.resetSequentialSearch();
                 }
             }
 

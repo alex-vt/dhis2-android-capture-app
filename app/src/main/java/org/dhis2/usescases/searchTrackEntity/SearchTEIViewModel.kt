@@ -31,9 +31,9 @@ import org.dhis2.form.ui.intent.FormIntent
 import org.dhis2.form.ui.provider.DisplayNameProvider
 import org.dhis2.maps.layer.basemaps.BaseMapStyle
 import org.dhis2.maps.usecases.MapStyleConfiguration
-import org.dhis2.usescases.biometrics.ui.SearchHelperSelectedAction
+import org.dhis2.usescases.biometrics.biometricAttributeId
 import org.dhis2.usescases.biometrics.ui.SequentialSearch
-import org.dhis2.usescases.biometrics.ui.SequentialSearchNextAction
+import org.dhis2.usescases.biometrics.ui.SequentialSearchAction
 import org.dhis2.usescases.biometrics.usecases.GetRelatedTEIUIdsByUid
 import org.dhis2.usescases.searchTrackEntity.listView.SearchResult
 import org.dhis2.usescases.searchTrackEntity.searchparameters.model.SearchParametersUiState
@@ -123,15 +123,28 @@ class SearchTEIViewModel(
         }
 
         presenter.setBiometricListener { simprintsItems, biometricAttributeUid, filterValue ->
+            val previousSearch = when (sequentialSearch.value) {
+                is SequentialSearch.BiometricsSearch -> null
+                is SequentialSearch.AttributeSearch -> sequentialSearch.value
+                null -> null
+            }
+
+            val nextAction = if (previousSearch == null) {
+                SequentialSearchAction.SearchWithAttributes
+            } else {
+                SequentialSearchAction.RegisterNew
+            }
+
             _sequentialSearch.postValue(
                 SequentialSearch.BiometricsSearch(
-                    previousSearch = sequentialSearch.value,
                     simprintsItems = simprintsItems,
-                    nextAction = SequentialSearchNextAction.SearchWithBiometrics
+                    previousSearch = previousSearch,
+                    nextAction = nextAction
                 )
             )
 
             Timber.d("Search by biometrics %s", filterValue)
+            queryData.clear()
             queryData[biometricAttributeUid] = filterValue
 
             searchChildren = true
@@ -474,6 +487,28 @@ class SearchTEIViewModel(
     fun onSearch() {
         searchRepository.clearFetchedList()
         performSearch()
+
+        val isAttributeSearch = queryData.keys.any { it != biometricAttributeId }
+
+        if (isAttributeSearch) {
+            val previousSearch = when (sequentialSearch.value) {
+                is SequentialSearch.AttributeSearch -> null
+                is SequentialSearch.BiometricsSearch -> sequentialSearch.value
+                null -> null
+            }
+
+            val nextAction = if (previousSearch == null) {
+                SequentialSearchAction.SearchWithBiometrics
+            } else {
+                SequentialSearchAction.RegisterNew
+            }
+
+            _sequentialSearch.postValue(
+                SequentialSearch.AttributeSearch(
+                    previousSearch = previousSearch, nextAction = nextAction
+                )
+            )
+        }
     }
 
     private fun performSearch() {
@@ -1081,13 +1116,14 @@ class SearchTEIViewModel(
         }
     }
 
-    fun onSearchHelperActionSelected(action: SearchHelperSelectedAction) {
+    fun onSearchHelperActionSelected(action: SequentialSearchAction) {
         closeSearchHelper()
 
         onSearchHelperAction(action)
     }
 
-    private var filterIsOpenCallback: ((helperAction: SearchHelperSelectedAction) -> Unit)? = null
+    private var onSequentialSearchActionCallback: ((helperAction: SequentialSearchAction) -> Unit)? =
+        null
 
     private fun closeSearchHelper() {
         _screenState.value.takeIf { it is SearchList }?.let {
@@ -1102,12 +1138,12 @@ class SearchTEIViewModel(
         }
     }
 
-    fun setOnSearchHelperActionListener(filterIsOpenCallback: (helperAction: SearchHelperSelectedAction) -> Unit) {
-        this.filterIsOpenCallback = filterIsOpenCallback
+    fun setOnSequentialSearchActionListener(filterIsOpenCallback: (action: SequentialSearchAction) -> Unit) {
+        this.onSequentialSearchActionCallback = filterIsOpenCallback
     }
 
-    private fun onSearchHelperAction(action: SearchHelperSelectedAction) {
-        filterIsOpenCallback?.let { it(action) }
+    private fun onSearchHelperAction(action: SequentialSearchAction) {
+        onSequentialSearchActionCallback?.let { it(action) }
     }
 
     fun onSearchTeiModelClick(item: SearchTeiModel) {
@@ -1117,12 +1153,8 @@ class SearchTEIViewModel(
     }
 
     fun sequentialSearchNextAction() {
-        if (sequentialSearch.value?.nextAction is SequentialSearchNextAction.SearchWithBiometrics) {
-            onSearchHelperActionSelected(SearchHelperSelectedAction.SearchWithAttributes)
-        } else if (sequentialSearch.value?.nextAction is SequentialSearchNextAction.SearchWithAttributes) {
-            onSearchHelperActionSelected(SearchHelperSelectedAction.SearchWithAttributes)
-        } else if (sequentialSearch.value?.nextAction is SequentialSearchNextAction.RegisterNew) {
-            onSearchHelperActionSelected(SearchHelperSelectedAction.RegisterNew)
+        if (sequentialSearch.value?.nextAction != null) {
+            onSearchHelperActionSelected(sequentialSearch.value!!.nextAction!!)
         }
     }
 

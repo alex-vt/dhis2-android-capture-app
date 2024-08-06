@@ -76,24 +76,24 @@ class SearchHelperFragment : Fragment() {
 }
 
 @Composable
-fun SearchHelperContent(onAction: (action: SearchHelperSelectedAction) -> Unit = { }) {
+fun SearchHelperContent(onAction: (action: SequentialSearchAction) -> Unit = { }) {
     Surface(color = Color.White) {
         Box(contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 SearchWithBiometricsButton(
-                    onClick = { onAction(SearchHelperSelectedAction.SearchWithBiometrics) })
+                    onClick = { onAction(SequentialSearchAction.SearchWithBiometrics) })
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SearchWithAttributesButton(
-                    onClick = { onAction(SearchHelperSelectedAction.SearchWithAttributes) })
+                    onClick = { onAction(SequentialSearchAction.SearchWithAttributes) })
 
                 Spacer(modifier = Modifier.height(64.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("New patient?")
                     TextButton(
-                        onClick = { onAction(SearchHelperSelectedAction.RegisterNew) }) {
+                        onClick = { onAction(SequentialSearchAction.RegisterNew) }) {
                         Text(
                             "Register",
                             color = Color(0xFF0281cb),
