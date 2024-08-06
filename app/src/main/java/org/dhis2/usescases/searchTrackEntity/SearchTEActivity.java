@@ -44,6 +44,7 @@ import org.dhis2.data.biometrics.BiometricsClient;
 import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.data.biometrics.IdentifyResult;
 import org.dhis2.data.biometrics.RegisterResult;
+import org.dhis2.data.biometrics.SimprintsItem;
 import org.dhis2.data.forms.dataentry.ProgramAdapter;
 import org.dhis2.databinding.ActivitySearchBinding;
 import org.dhis2.form.ui.intent.FormIntent;
@@ -80,15 +81,10 @@ import kotlin.Pair;
 import kotlin.Unit;
 import timber.log.Timber;
 
-import static android.view.View.VISIBLE;
-
 import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_CONFIRM_IDENTITY_REQUEST;
 import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_ENROLL_LAST_REQUEST;
 import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_IDENTIFY_REQUEST;
 import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_USER_NOT_FOUND;
-import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconBasic;
-import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconFunnel;
-import static org.dhis2.commons.biometrics.ExtensionsKt.getBioIconSearch;
 
 public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTEContractsModule.View {
 
@@ -447,10 +443,12 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 teiCardMapper,
                 () -> {
                     lastSelection = null;
+                    viewModel.resetSequentialSearch();
                     presenter.onBiometricsNoneOfTheAboveClick();
                     return Unit.INSTANCE;
                 },
                 () -> {
+                    viewModel.resetSequentialSearch();
                     presenter.sendBiometricsConfirmIdentity(lastSelection.getTei().uid(),
                             lastSelection.getSelectedEnrollment().uid(), lastSelection.isOnline());
                     return Unit.INSTANCE;
@@ -496,7 +494,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         IdentifyResult.Completed completedResult =
                                 (IdentifyResult.Completed) result;
 
-                        presenter.searchOnBiometrics(completedResult.getGuids(),
+                        presenter.searchOnBiometrics(completedResult.getItems(),
                                 completedResult.getSessionId());
                     } else if (result instanceof IdentifyResult.BiometricsDeclined) {
                         Toast.makeText(getContext(), R.string.biometrics_declined,
@@ -506,7 +504,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         Toast.makeText(getContext(), R.string.biometrics_user_not_found,
                                 Toast.LENGTH_SHORT).show();
                         presenter.searchOnBiometrics(
-                                Collections.singletonList(BIOMETRICS_USER_NOT_FOUND),
+                                Collections.singletonList(new SimprintsItem(BIOMETRICS_USER_NOT_FOUND, 0)),
                                 ((IdentifyResult.UserNotFound) result).getSessionId());
                     } else if (result instanceof IdentifyResult.Failure) {
                         showBiometricsErrorDialog();

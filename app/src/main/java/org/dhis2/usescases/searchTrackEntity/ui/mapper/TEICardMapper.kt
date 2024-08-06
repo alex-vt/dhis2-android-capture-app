@@ -25,8 +25,8 @@ import org.dhis2.commons.date.toUi
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.ui.model.ListCardUiModel
 import org.dhis2.form.extensions.isNotBiometricText
-import org.dhis2.usescases.biometrics.addAttrBiometricsIconIfRequired
-import org.dhis2.usescases.biometrics.addAttrBiometricsYesNOIfRequired
+import org.dhis2.usescases.biometrics.addAttrBiometricsEmojiIfRequired
+import org.dhis2.usescases.biometrics.addBiometricsConfidentScoreIfRequired
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.enrollment.Enrollment
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
@@ -125,7 +125,8 @@ class TEICardMapper(
         attributeList.removeIf { it.key!!.isNotBiometricText() && (it.value.isEmpty() || it.value == "-") }
 
         // EyeSeeTea customization
-        val finalAttributeList = addAttrBiometricsYesNOIfRequired(attributeList).toMutableList()
+        val attributeListWithBioYesNo = addAttrBiometricsEmojiIfRequired(attributeList)
+        val finalAttributeList = addBiometricsConfidentScoreIfRequired(attributeListWithBioYesNo).toMutableList()
 
         return finalAttributeList.also { list ->
             if (searchTEIModel.displayOrgUnit) {
@@ -489,7 +490,7 @@ class TEICardMapper(
 
         attributeList.removeIf { it.key!!.isNotBiometricText() && (it.value.isEmpty() || it.value == "-") }
 
-        val finalAttributeList = addAttrBiometricsIconIfRequired(attributeList).toMutableList()
+        val finalAttributeList = addAttrBiometricsEmojiIfRequired(attributeList).toMutableList()
 
         return finalAttributeList.also { list ->
             checkEnrolledIn(

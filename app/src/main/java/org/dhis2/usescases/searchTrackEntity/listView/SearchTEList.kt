@@ -21,16 +21,22 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
+import androidx.paging.map
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.dhis2.bindings.dp
+import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.dialogs.imagedetail.ImageDetailActivity
 import org.dhis2.commons.filters.workingLists.WorkingListViewModel
 import org.dhis2.commons.filters.workingLists.WorkingListViewModelFactory
 import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.databinding.FragmentSearchListBinding
+import org.dhis2.usescases.biometrics.biometricAttributeId
+import org.dhis2.usescases.biometrics.ui.SequentialSearch
+import org.dhis2.usescases.biometrics.ui.SequentialSearchAction
+import org.dhis2.usescases.biometrics.ui.bioMatchKey
 import org.dhis2.usescases.general.FragmentGlobalAbstract
 import org.dhis2.usescases.searchTrackEntity.SearchTEActivity
 import org.dhis2.usescases.searchTrackEntity.SearchTEIViewModel
@@ -40,6 +46,7 @@ import org.dhis2.usescases.searchTrackEntity.ui.CreateNewButton
 import org.dhis2.usescases.searchTrackEntity.ui.FullSearchButtonAndWorkingList
 import org.dhis2.usescases.searchTrackEntity.ui.mapper.TEICardMapper
 import org.dhis2.utils.isLandscape
+import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
 import javax.inject.Inject
 
 const val ARG_FROM_RELATIONSHIP = "ARG_FROM_RELATIONSHIP"
@@ -141,7 +148,10 @@ class SearchTEList : FragmentGlobalAbstract() {
         return FragmentSearchListBinding.inflate(inflater, container, false).apply {
             configureList(scrollView)
             configureOpenSearchButton(openSearchButton)
-            configureCreateButton(createButton)
+
+            //EyeSeeTea customization
+            //configureCreateButton(createButton)
+            configureSequentialSearchNextAction(createButton)
         }.root.also {
             observeNewData()
         }
@@ -180,8 +190,11 @@ class SearchTEList : FragmentGlobalAbstract() {
             )
             setContent {
                 val teTypeName by viewModel.teTypeName.observeAsState()
+                val sequentialSearch by viewModel.sequentialSearch.observeAsState(false)
 
-                if (!teTypeName.isNullOrBlank()) {
+                val seqSearch = (sequentialSearch as SequentialSearch?)
+
+                if (seqSearch == null && !teTypeName.isNullOrBlank()) {
                     val isFilterOpened by viewModel.filtersOpened.observeAsState(false)
                     val createButtonVisibility by viewModel
                         .createButtonScrollVisibility.observeAsState(true)
@@ -331,12 +344,12 @@ class SearchTEList : FragmentGlobalAbstract() {
                         viewModel.evaluateIfNewRequestIdRequired(liveAdapter.snapshot().items)
                     }
 
-                    // I think this is possible to be removed BiometricsDuplicatesDialogAdapter areContentsTheSame
-                    for (element in liveAdapter.snapshot().items) {
-                        element.setBiometricsSearchStatus(viewModel.getBiometricsSearchStatus())
+                    val pagingData = it.map { searchResult ->
+                        searchResult.setBiometricsSearchStatus(viewModel.getBiometricsSearchStatus())
+                        assignBiometricsConfidentScoreIfRequired(searchResult)
                     }
 
-                    liveAdapter.submitData(lifecycle, it)
+                    liveAdapter.submitData(lifecycle, pagingData)
 
                 } ?: onInitDataLoaded()
             }
@@ -397,4 +410,54 @@ class SearchTEList : FragmentGlobalAbstract() {
             resultAdapter.submitList(result)
         }
     }
+
+    private fun assignBiometricsConfidentScoreIfRequired(searchResultItem: SearchTeiModel): SearchTeiModel {
+        val sequentialSearch = viewModel.sequentialSearch.value
+
+        if (sequentialSearch != null && sequentialSearch is SequentialSearch.BiometricsSearch) {
+            val simprintsItems = sequentialSearch.simprintsItems
+
+            val biometricGuid = searchResultItem.attributeValues.values.find {
+                it.trackedEntityAttribute() == biometricAttributeId
+            }?.value()
+
+            val simprintsItem = simprintsItems.find { simprintsItem ->
+                simprintsItem.guid == biometricGuid
+            }
+
+            if (simprintsItem != null) {
+                searchResultItem.attributeValues[bioMatchKey] =
+                    TrackedEntityAttributeValue.builder().value(simprintsItem.confidence.toString())
+                        .build()
+            }
+        }
+
+        return searchResultItem
+    }
+
+    @ExperimentalAnimationApi
+    private fun configureSequentialSearchNextAction(createButton: ComposeView) {
+        createButton.apply {
+            setViewCompositionStrategy(
+                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed,
+            )
+            setContent {
+                val sequentialSearch by viewModel.sequentialSearch.observeAsState()
+
+                updateLayoutParams<CoordinatorLayout.LayoutParams> {
+                    val bottomMargin = if (viewModel.isBottomNavigationBarVisible()) {
+                        56.dp
+                    } else {
+                        16.dp
+                    }
+                    setMargins(0, 0, 0, bottomMargin)
+                }
+
+                if (sequentialSearch?.nextAction != null){
+                    SequentialSearchAction(onClick = { viewModel.sequentialSearchNextAction()})
+                }
+            }
+        }
+    }
+
 }

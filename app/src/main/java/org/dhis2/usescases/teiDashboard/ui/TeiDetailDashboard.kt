@@ -4,21 +4,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import org.dhis2.R
-import org.dhis2.form.extensions.isBiometricText
-import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.commons.data.EventCreationType
-import org.dhis2.usescases.biometrics.addAttrBiometricsIconIfRequired
+import org.dhis2.usescases.biometrics.addAttrBiometricsEmojiIfRequired
 import org.dhis2.usescases.teiDashboard.ui.model.InfoBarUiModel
 import org.dhis2.usescases.teiDashboard.ui.model.TeiBiometricsVerificationModel
 import org.dhis2.usescases.teiDashboard.ui.model.TeiCardUiModel
-import org.hisp.dhis.mobile.ui.designsystem.component.AdditionalInfoItem
 import org.dhis2.usescases.teiDashboard.ui.model.TimelineEventsHeaderModel
 import org.hisp.dhis.mobile.ui.designsystem.component.CardDetail
 import org.hisp.dhis.mobile.ui.designsystem.component.InfoBar
@@ -97,7 +92,7 @@ fun TeiDetailDashboard(
 
         card?.let {
             // Eyeseetea customization
-            val additionalInfoList = addAttrBiometricsIconIfRequired(card.additionalInfo)
+            val additionalInfoList = addAttrBiometricsEmojiIfRequired(card.additionalInfo)
 
             CardDetail(
                 title = card.title,

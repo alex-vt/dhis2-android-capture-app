@@ -9,6 +9,7 @@ import org.dhis2.commons.data.SearchTeiModel;
 import org.dhis2.commons.filters.FilterItem;
 import org.dhis2.commons.filters.FilterManager;
 import org.dhis2.commons.filters.Filters;
+import org.dhis2.data.biometrics.SimprintsItem;
 import org.dhis2.maps.model.StageStyle;
 import org.dhis2.usescases.general.AbstractActivityContracts;
 import org.hisp.dhis.android.core.arch.call.D2Progress;
@@ -142,7 +143,7 @@ public class SearchTEContractsModule {
 
         void trackSearchMapVisualization();
 
-        void searchOnBiometrics(List<String> guids, String sessionId);
+        void searchOnBiometrics(List <SimprintsItem> simprintsItems, String sessionId);
 
         boolean getBiometricsSearchStatus();
 

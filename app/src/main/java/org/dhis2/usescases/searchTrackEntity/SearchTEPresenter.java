@@ -39,6 +39,7 @@ import org.dhis2.commons.resources.ColorUtils;
 import org.dhis2.commons.resources.ObjectStyleUtils;
 import org.dhis2.commons.resources.ResourceManager;
 import org.dhis2.commons.schedulers.SchedulerProvider;
+import org.dhis2.data.biometrics.SimprintsItem;
 import org.dhis2.data.service.SyncStatusController;
 import org.dhis2.maps.model.StageStyle;
 import org.dhis2.utils.analytics.AnalyticsHelper;
@@ -628,11 +629,12 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     @Override
-    public void searchOnBiometrics(List<String> guids, String sessionId) {
+    public void searchOnBiometrics(List <SimprintsItem> simprintsItems, String sessionId) {
         if (biometricsSearchListener != null) {
             this.sessionId = sessionId;
+            List<String> guids = simprintsItems.stream().map(SimprintsItem::getGuid).collect(Collectors.toList());
 
-            if (guids == null || guids.size() <= 0) return;
+            if (guids.size() == 0) return;
 
             StringBuilder sb = new StringBuilder();
 
@@ -649,7 +651,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
             biometricsSearchStatus = true;
 
-            biometricsSearchListener.onBiometricsSearch(biometricUid, sb.toString());
+            biometricsSearchListener.onBiometricsSearch(simprintsItems, biometricUid, sb.toString());
         }
     }
 
@@ -706,6 +708,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     public interface BiometricsSearchListener {
-        void onBiometricsSearch(String biometricUid, String value);
+        void onBiometricsSearch(List<SimprintsItem> simprintsItems,String biometricAttributeUid, String filterValue);
     }
 }

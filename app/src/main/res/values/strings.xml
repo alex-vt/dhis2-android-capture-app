@@ -1001,5 +1001,6 @@
     <string name="biometrics_retake">Retake</string>
     <string name="confirm">CONFIRM</string>
     <string name="biometrics_confirm_patient_identity">Please confirm the patient\'s identity:</string>
+    <string name="search_with_attributes">Search with attributes</string>
     <!--endregion-->
 </resources>
