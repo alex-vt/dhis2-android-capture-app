@@ -485,12 +485,11 @@ class SearchTEIViewModel(
     }
 
     fun onSearch() {
-        searchRepository.clearFetchedList()
-        performSearch()
-
         val isAttributeSearch = queryData.keys.any { it != biometricAttributeId }
 
         if (isAttributeSearch) {
+            queryData.remove(biometricAttributeId)
+
             val previousSearch = when (sequentialSearch.value) {
                 is SequentialSearch.AttributeSearch -> null
                 is SequentialSearch.BiometricsSearch -> sequentialSearch.value
@@ -509,6 +508,9 @@ class SearchTEIViewModel(
                 )
             )
         }
+
+        searchRepository.clearFetchedList()
+        performSearch()
     }
 
     private fun performSearch() {
@@ -727,6 +729,7 @@ class SearchTEIViewModel(
             else ->
                 listOf(SearchResult(SearchResult.SearchResultType.NO_RESULTS))
         }
+
         _dataResult.postValue(result)
     }
 
