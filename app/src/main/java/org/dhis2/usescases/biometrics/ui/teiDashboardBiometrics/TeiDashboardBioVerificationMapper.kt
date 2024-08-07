@@ -6,6 +6,7 @@ import org.dhis2.commons.biometrics.getBioIconSuccess
 import org.dhis2.commons.biometrics.getBioIconWarning
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.biometrics.VerifyResult
+import org.dhis2.usescases.biometrics.ui.defaultButtonColor
 
 class TeiDashboardBioVerificationMapper(
     val resourceManager: ResourceManager,
@@ -59,7 +60,7 @@ class TeiDashboardBioVerificationMapper(
         verifyResult: VerifyResult?
     ): String {
         if (verifyResult == null) {
-            return "#4d4d4d"
+            return defaultButtonColor
         } else {
             return when (verifyResult) {
                 is VerifyResult.Match -> "#FF35835D"
