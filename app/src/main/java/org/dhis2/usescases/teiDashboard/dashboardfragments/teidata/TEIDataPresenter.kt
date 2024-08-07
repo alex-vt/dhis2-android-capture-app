@@ -529,6 +529,12 @@ class TEIDataPresenter(
 
     fun handleVerifyResponse(result: VerifyResult) {
         lastVerificationResult = result
+
+        val biometricsValue = dashboardModel?.getBiometricValue()
+
+        if (biometricsValue != null){
+            teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
+        }
     }
 
     private fun refreshVerificationStatus() {
