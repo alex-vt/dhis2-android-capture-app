@@ -24,4 +24,3 @@ sealed class SequentialSearchAction {
     data object RegisterNew : SequentialSearchAction()
 }
 
-const val bioMatchKey: String = "Bio Match"

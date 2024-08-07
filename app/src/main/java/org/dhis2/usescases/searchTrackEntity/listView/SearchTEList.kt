@@ -27,16 +27,13 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.dhis2.bindings.dp
-import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.dialogs.imagedetail.ImageDetailActivity
 import org.dhis2.commons.filters.workingLists.WorkingListViewModel
 import org.dhis2.commons.filters.workingLists.WorkingListViewModelFactory
 import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.databinding.FragmentSearchListBinding
-import org.dhis2.usescases.biometrics.biometricAttributeId
 import org.dhis2.usescases.biometrics.ui.SequentialNextSearchAction
 import org.dhis2.usescases.biometrics.ui.SequentialSearch
-import org.dhis2.usescases.biometrics.ui.bioMatchKey
 import org.dhis2.usescases.general.FragmentGlobalAbstract
 import org.dhis2.usescases.searchTrackEntity.SearchTEActivity
 import org.dhis2.usescases.searchTrackEntity.SearchTEIViewModel
@@ -46,7 +43,6 @@ import org.dhis2.usescases.searchTrackEntity.ui.CreateNewButton
 import org.dhis2.usescases.searchTrackEntity.ui.FullSearchButtonAndWorkingList
 import org.dhis2.usescases.searchTrackEntity.ui.mapper.TEICardMapper
 import org.dhis2.utils.isLandscape
-import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
 import javax.inject.Inject
 
 const val ARG_FROM_RELATIONSHIP = "ARG_FROM_RELATIONSHIP"
@@ -346,7 +342,8 @@ class SearchTEList : FragmentGlobalAbstract() {
 
                     val pagingData = it.map { searchResult ->
                         searchResult.setBiometricsSearchStatus(viewModel.getBiometricsSearchStatus())
-                        assignBiometricsConfidentScoreIfRequired(searchResult)
+
+                        searchResult
                     }
 
                     liveAdapter.submitData(lifecycle, pagingData)
@@ -409,30 +406,6 @@ class SearchTEList : FragmentGlobalAbstract() {
         recycler.post {
             resultAdapter.submitList(result)
         }
-    }
-
-    private fun assignBiometricsConfidentScoreIfRequired(searchResultItem: SearchTeiModel): SearchTeiModel {
-        val sequentialSearch = viewModel.sequentialSearch.value
-
-        if (sequentialSearch != null && sequentialSearch is SequentialSearch.BiometricsSearch) {
-            val simprintsItems = sequentialSearch.simprintsItems
-
-            val biometricGuid = searchResultItem.attributeValues.values.find {
-                it.trackedEntityAttribute() == biometricAttributeId
-            }?.value()
-
-            val simprintsItem = simprintsItems.find { simprintsItem ->
-                simprintsItem.guid == biometricGuid
-            }
-
-            if (simprintsItem != null) {
-                searchResultItem.attributeValues[bioMatchKey] =
-                    TrackedEntityAttributeValue.builder().value(simprintsItem.confidence.toString())
-                        .build()
-            }
-        }
-
-        return searchResultItem
     }
 
     @ExperimentalAnimationApi
