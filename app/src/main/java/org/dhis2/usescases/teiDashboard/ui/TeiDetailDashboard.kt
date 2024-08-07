@@ -11,8 +11,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import org.dhis2.commons.data.EventCreationType
 import org.dhis2.usescases.biometrics.addAttrBiometricsEmojiIfRequired
+import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioButton
+import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioModel
 import org.dhis2.usescases.teiDashboard.ui.model.InfoBarUiModel
-import org.dhis2.usescases.teiDashboard.ui.model.TeiBiometricsVerificationModel
 import org.dhis2.usescases.teiDashboard.ui.model.TeiCardUiModel
 import org.dhis2.usescases.teiDashboard.ui.model.TimelineEventsHeaderModel
 import org.hisp.dhis.mobile.ui.designsystem.component.CardDetail
@@ -29,7 +30,7 @@ fun TeiDetailDashboard(
     timelineEventHeaderModel: TimelineEventsHeaderModel,
     isGrouped: Boolean = true,
     timelineOnEventCreationOptionSelected: (EventCreationType) -> Unit,
-    verification: TeiBiometricsVerificationModel?
+    teiDashboardBioModel: TeiDashboardBioModel
 ) {
     Column(
         modifier = Modifier
@@ -114,9 +115,7 @@ fun TeiDetailDashboard(
             Spacer(modifier = Modifier.size(Spacing.Spacing8))
         }
 
-        if (verification != null) {
-            TeiVerificationButton(verification)
-        }
+        TeiDashboardBioButton(teiDashboardBioModel)
     }
 }
 

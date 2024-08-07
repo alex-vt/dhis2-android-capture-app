@@ -1004,5 +1004,6 @@
     <string name="search_with_attributes">Search with attributes</string>
     <string name="register_new_patient">Register new patient</string>
     <string name="biometrics_search">Biometrics Search</string>
+    <string name="enroll_biometrics">Enroll biometrics</string>
     <!--endregion-->
 </resources>

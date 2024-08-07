@@ -29,6 +29,7 @@ import org.dhis2.commons.resources.D2ErrorUtils
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.viewmodel.DispatcherProvider
+import org.dhis2.data.biometrics.RegisterResult
 import org.dhis2.data.biometrics.VerifyResult
 import org.dhis2.form.data.FormValueStore
 import org.dhis2.form.data.OptionsRepository
@@ -36,6 +37,9 @@ import org.dhis2.form.data.RulesUtilsProviderImpl
 import org.dhis2.form.model.EventMode
 import org.dhis2.mobileProgramRules.RuleEngineHelper
 import org.dhis2.usescases.biometrics.isLastVerificationValid
+import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioModel
+import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioRegistrationMapper
+import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioVerificationMapper
 import org.dhis2.usescases.events.ScheduledEventActivity.Companion.getIntent
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity.Companion.getActivityBundleWithBiometrics
@@ -48,8 +52,6 @@ import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.TeiDataIdling
 import org.dhis2.usescases.teiDashboard.dashboardfragments.teidata.TeiDataIdlingResourceSingleton.increment
 import org.dhis2.usescases.teiDashboard.domain.GetNewEventCreationTypeOptions
 import org.dhis2.usescases.teiDashboard.ui.EventCreationOptions
-import org.dhis2.usescases.teiDashboard.ui.mapper.TeiBiometricsVerificationMapper
-import org.dhis2.usescases.teiDashboard.ui.model.TeiBiometricsVerificationModel
 import org.dhis2.utils.Result
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.dhis2.utils.analytics.CREATE_EVENT_TEI
@@ -102,6 +104,7 @@ class TEIDataPresenter(
     private var orgUnitUid: String? = null
 
     private var lastVerificationResult: VerifyResult? = null
+    private var lastRegisterResult: RegisterResult? = null
 
     fun init() {
         programUid?.let {
@@ -177,7 +180,7 @@ class TEIDataPresenter(
                 .observeOn(schedulerProvider.ui())
                 .subscribe(
                     { model ->
-                        if (model is DashboardEnrollmentModel){
+                        if (model is DashboardEnrollmentModel) {
                             dashboardModel = model
                             programUid = model.currentProgram().uid()
                             orgUnitUid = model.orgUnits[0].uid()
@@ -197,8 +200,8 @@ class TEIDataPresenter(
             val enrollment = d2.enrollment(enrollmentUid)
             val showButton =
                 enrollment != null &&
-                    !isGrouping && enrollment.status() == EnrollmentStatus.ACTIVE &&
-                    canAddNewEvents()
+                        !isGrouping && enrollment.status() == EnrollmentStatus.ACTIVE &&
+                        canAddNewEvents()
             _shouldDisplayEventCreationButton.postValue(showButton)
         }
     }
@@ -339,7 +342,8 @@ class TEIDataPresenter(
 
     fun onScheduleSelected(uid: String?, sharedView: View?) {
         uid?.let {
-            val intent = getIntent(view.context, uid, dashboardModel!!.getBiometricValue(),-1,orgUnitUid!!)
+            val intent =
+                getIntent(view.context, uid, dashboardModel!!.getBiometricValue(), -1, orgUnitUid!!)
             val options = sharedView?.let { it1 ->
                 ActivityOptionsCompat.makeSceneTransitionAnimation(
                     view.abstractActivity,
@@ -357,7 +361,7 @@ class TEIDataPresenter(
         if (eventStatus == EventStatus.ACTIVE || eventStatus == EventStatus.COMPLETED) {
             uidForEvent = uid
 
-            launchEventCapture(uid, dashboardModel?.getBiometricValue()?:"", -1)
+            launchEventCapture(uid, dashboardModel?.getBiometricValue() ?: "", -1)
         } else {
             val event = d2.event(uid)
             val intent = Intent(view.context, EventInitialActivity::class.java)
@@ -373,7 +377,7 @@ class TEIDataPresenter(
                     enrollmentUid,
                     0,
                     teiDataRepository.getEnrollment().blockingGet()?.status(),
-                    dashboardModel?.getBiometricValue()?:"",
+                    dashboardModel?.getBiometricValue() ?: "",
                     -1,
                     orgUnitUid
                 )
@@ -456,10 +460,10 @@ class TEIDataPresenter(
             .filter { !stagesToHide.contains(it.uid()) }
             .filter { stage ->
                 stage.repeatable() == true ||
-                    events.value?.none { event ->
-                        event.stage?.uid() == stage.uid() &&
-                            event.type == EventViewModelType.EVENT
-                    } == true
+                        events.value?.none { event ->
+                            event.stage?.uid() == stage.uid() &&
+                                    event.type == EventViewModelType.EVENT
+                        } == true
             }.sortedBy { stage -> stage.sortOrder() }
 
     fun checkOrgUnitCount(programUid: String, programStageUid: String) {
@@ -516,12 +520,22 @@ class TEIDataPresenter(
     }
 
     fun verifyBiometrics() {
-        if (dashboardModel != null){
-            val biometricValue = dashboardModel!!.getBiometricValue()?: return
-            val orgUnit = orgUnitUid?:return
+        if (dashboardModel != null) {
+            val biometricValue = dashboardModel!!.getBiometricValue() ?: return
+            val orgUnit = orgUnitUid ?: return
 
             view.launchBiometricsVerification(
                 biometricValue,
+                orgUnit, dashboardModel!!.trackedEntityInstance.uid()
+            )
+        }
+    }
+
+    fun registerBiometrics() {
+        if (dashboardModel != null) {
+            val orgUnit = orgUnitUid ?: return
+
+            view.registerBiometrics(
                 orgUnit, dashboardModel!!.trackedEntityInstance.uid()
             )
         }
@@ -532,7 +546,17 @@ class TEIDataPresenter(
 
         val biometricsValue = dashboardModel?.getBiometricValue()
 
-        if (biometricsValue != null){
+        if (biometricsValue != null && result == VerifyResult.Match) {
+            teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
+        }
+    }
+
+    fun handleRegisterResponse(result: RegisterResult) {
+        lastRegisterResult = result
+
+        if (result is RegisterResult.Completed) {
+            val biometricsValue = result.guid
+
             teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
         }
     }
@@ -542,7 +566,8 @@ class TEIDataPresenter(
             val values =
                 dashboardRepository.getTEIAttributeValues(programUid, teiUid).blockingSingle()
 
-            val value = values.firstOrNull { it.trackedEntityAttribute() == dashboardModel!!.getBiometricsAttributeUid() }
+            val value =
+                values.firstOrNull { it.trackedEntityAttribute() == dashboardModel!!.getBiometricsAttributeUid() }
 
             val lastBiometricsVerificationDuration = basicPreferenceProvider.getInt(
                 BiometricsPreference.LAST_VERIFICATION_DURATION, 0
@@ -562,14 +587,17 @@ class TEIDataPresenter(
         }
     }
 
-    fun getBiometricsVerificationModel(): TeiBiometricsVerificationModel? {
-        return if (dashboardModel?.isTrackedBiometricEntityExistAndHasValue() == true){
-            TeiBiometricsVerificationMapper(resourceManager).map(
+    fun getBiometricsModel(): TeiDashboardBioModel {
+        return if (dashboardModel?.isTrackedBiometricEntityExistAndHasValue() == true) {
+            TeiDashboardBioVerificationMapper(resourceManager).map(
                 lastVerificationResult
             ) { verifyBiometrics() }
         } else {
-            null
+            TeiDashboardBioRegistrationMapper(resourceManager).map(
+                lastRegisterResult
+            ) { registerBiometrics() }
         }
-
     }
+
+
 }

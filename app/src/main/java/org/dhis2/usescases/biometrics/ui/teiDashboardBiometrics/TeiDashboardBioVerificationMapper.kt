@@ -1,4 +1,4 @@
-package org.dhis2.usescases.teiDashboard.ui.mapper
+package org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics
 
 import org.dhis2.R
 import org.dhis2.commons.biometrics.getBioIconFailed
@@ -6,16 +6,15 @@ import org.dhis2.commons.biometrics.getBioIconSuccess
 import org.dhis2.commons.biometrics.getBioIconWarning
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.biometrics.VerifyResult
-import org.dhis2.usescases.teiDashboard.ui.model.TeiBiometricsVerificationModel
 
-class TeiBiometricsVerificationMapper(
+class TeiDashboardBioVerificationMapper(
     val resourceManager: ResourceManager,
 ) {
     fun map(
         verifyResult: VerifyResult?,
         actionCallback: () -> Unit,
-    ): TeiBiometricsVerificationModel {
-        return TeiBiometricsVerificationModel(
+    ): TeiDashboardBioModel {
+        return TeiDashboardBioModel(
             text = getText(verifyResult),
             backgroundColor = getBackgroundColor(verifyResult),
             icon = getIcon(verifyResult) ,

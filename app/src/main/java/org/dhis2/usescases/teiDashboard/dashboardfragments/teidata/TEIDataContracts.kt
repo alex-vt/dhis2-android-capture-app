@@ -51,5 +51,6 @@ class TEIDataContracts {
         )
 
         fun refreshCard()
+        fun registerBiometrics(orgUnit: String, uid: String)
     }
 }
