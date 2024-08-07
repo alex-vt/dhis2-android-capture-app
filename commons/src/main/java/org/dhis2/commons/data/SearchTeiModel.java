@@ -24,6 +24,9 @@ import java.util.Objects;
 public class SearchTeiModel implements CarouselItemModel {
 
     private LinkedHashMap<String, TrackedEntityAttributeValue> attributeValues;
+
+    private LinkedHashMap<String, TrackedEntityAttributeValue> allAttributeValues;
+
     private LinkedHashMap<String, TrackedEntityAttributeValue> textAttributeValues;
 
     private List<Trio<String, String, String>> enrollmentsInfo;
@@ -71,6 +74,7 @@ public class SearchTeiModel implements CarouselItemModel {
         this.enrolledOrgUnit = null;
         this.onlineErrorMessage = null;
         this.metadataIconDataMap = new HashMap<>();
+        this.allAttributeValues = new LinkedHashMap<>();
     }
 
     public void addEnrollmentInfo(Trio<String, String, String> enrollmentInfo) {
@@ -289,5 +293,13 @@ public class SearchTeiModel implements CarouselItemModel {
 
     public boolean isBiometricsSearchInProgress() {
         return biometricsSearchInProgress;
+    }
+
+    public LinkedHashMap<String, TrackedEntityAttributeValue> getAllAttributeValues() {
+        return allAttributeValues;
+    }
+
+    public void addToAllAttributes(String attributeName, TrackedEntityAttributeValue attributeValues) {
+        this.allAttributeValues.put(attributeName, attributeValues);
     }
 }

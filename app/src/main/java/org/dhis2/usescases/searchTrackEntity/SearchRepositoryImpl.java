@@ -407,6 +407,7 @@ public class SearchRepositoryImpl implements SearchRepository {
                 .build();
 
         searchTei.addAttributeValue(attribute.getDisplayFormName(), attributeValue);
+        searchTei.addToAllAttributes(attribute.getDisplayFormName(), attributeValue);
 
         if (attribute.getValueType() == ValueType.TEXT || attribute.getValueType() == ValueType.LONG_TEXT) {
             searchTei.addTextAttribute(attribute.getDisplayName(), attributeValue);
