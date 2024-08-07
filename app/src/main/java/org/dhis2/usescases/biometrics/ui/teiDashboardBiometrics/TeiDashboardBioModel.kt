@@ -2,7 +2,7 @@ package org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics
 
 data class TeiDashboardBioModel(
     val verificationStatusModel: BioVerificationStatus?,
-    val buttonModel: BioButtonModel,
+    val buttonModel: BioButtonModel?,
 )
 
 data class BioButtonModel(

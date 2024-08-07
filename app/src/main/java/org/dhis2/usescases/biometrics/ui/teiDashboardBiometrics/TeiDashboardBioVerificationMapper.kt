@@ -15,6 +15,25 @@ class TeiDashboardBioVerificationMapper(
         verifyResult: VerifyResult?,
         actionCallback: () -> Unit,
     ): TeiDashboardBioModel {
+        val buttonModel = if (verifyResult == null){
+            BioButtonModel(
+                text = resourceManager.getString(R.string.biometrics_verification_not_done),
+                backgroundColor = defaultButtonColor,
+                icon = resourceManager.context.getBioIconSuccess(),
+                onActionClick = actionCallback
+            )
+        } else {
+            if (verifyResult == VerifyResult.NoMatch) {
+                BioButtonModel(
+                    text = resourceManager.context.getString(R.string.retake_biometrics),
+                    backgroundColor = defaultButtonColor,
+                    icon = R.drawable.ic_bio_fingerprint,
+                    onActionClick = actionCallback)
+            } else {
+                null
+            }
+        }
+
         return TeiDashboardBioModel(
             verificationStatusModel = verifyResult?.let {
                 BioVerificationStatus(
@@ -23,14 +42,7 @@ class TeiDashboardBioVerificationMapper(
                     icon = getIcon(verifyResult)
                 )
             },
-            buttonModel = BioButtonModel(
-                text = if (verifyResult == null)
-                    resourceManager.getString(R.string.biometrics_verification_not_done)
-                else resourceManager.context.getString(R.string.retake_biometrics),
-                backgroundColor = defaultButtonColor,
-                icon = R.drawable.ic_bio_fingerprint,
-                onActionClick = actionCallback
-            )
+            buttonModel = buttonModel
         )
     }
 
@@ -63,9 +75,9 @@ class TeiDashboardBioVerificationMapper(
         verifyResult: VerifyResult
     ): String {
         return when (verifyResult) {
-            is VerifyResult.Match -> "#FF35835D"
-            is VerifyResult.NoMatch -> "#a14545"
-            is VerifyResult.Failure -> "#C57704"
+            is VerifyResult.Match -> "#34835d"
+            is VerifyResult.NoMatch -> "#e30613"
+            is VerifyResult.Failure -> "#a6a5a4"
         }
     }
 }
