@@ -14,13 +14,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -31,8 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -40,7 +36,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import org.dhis2.form.R
 import org.dhis2.usescases.searchTrackEntity.SearchTEActivity
 import org.dhis2.usescases.searchTrackEntity.SearchTEIViewModel
 import org.dhis2.usescases.searchTrackEntity.SearchTeiViewModelFactory
@@ -122,8 +117,8 @@ fun SearchWithBiometricsButton(
 
     val modifier = Modifier
         .wrapContentWidth()
-        .height(65.dp)
-        .padding(horizontal = 32.dp, vertical = 8.dp)
+        .width(270.dp)
+        .height(50.dp)
 
     Button(
         modifier = modifier,
@@ -139,11 +134,6 @@ fun SearchWithBiometricsButton(
 
             ) {
             Row() {
-                Icon(
-                    painter = painterResource(R.drawable.ic_bio_fingerprint),
-                    contentDescription = stringResource(R.string.biometrics_get),
-                    tint = Color.Unspecified,
-                )
                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSize))
                 Text(text = "Search with biometrics", color = Color.White)
             }
