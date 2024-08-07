@@ -1,6 +1,8 @@
 package org.dhis2.usescases.biometrics.ui
 
+import android.graphics.Color.parseColor
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -10,18 +12,17 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import org.dhis2.R
-
+import org.hisp.dhis.mobile.ui.designsystem.component.Button
+import org.hisp.dhis.mobile.ui.designsystem.component.ButtonStyle
 
 
 @Composable
@@ -59,17 +60,20 @@ internal fun SequentialNextSearchAction(
             }
         }
         is SequentialSearchAction.RegisterNew -> {
-            TextButton(
-                onClick = onClick) {
-                Text(
-                    stringResource(R.string.register_new_patient),
-                    color = Color(0xFF0281cb),
-                    style = TextStyle(
-                        textDecoration = TextDecoration.Underline,
-                        fontWeight = FontWeight.Bold
+            Button(
+                text = stringResource(R.string.register_new_patient),
+                style = ButtonStyle.TEXT_LIGHT,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.register_new_patient),
+                        tint = Color.White,
                     )
-                )
-            }
+                },
+                modifier = Modifier.background(Color(parseColor(defaultButtonColor)))
+                    .height(50.dp),
+                onClick = onClick,
+            )
         }
     }
 }
