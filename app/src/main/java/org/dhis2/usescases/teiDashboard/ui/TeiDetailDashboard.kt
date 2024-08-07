@@ -13,6 +13,7 @@ import org.dhis2.commons.data.EventCreationType
 import org.dhis2.usescases.biometrics.addAttrBiometricsEmojiIfRequired
 import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioButton
 import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioModel
+import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioStatus
 import org.dhis2.usescases.teiDashboard.ui.model.InfoBarUiModel
 import org.dhis2.usescases.teiDashboard.ui.model.TeiCardUiModel
 import org.dhis2.usescases.teiDashboard.ui.model.TimelineEventsHeaderModel
@@ -30,7 +31,7 @@ fun TeiDetailDashboard(
     timelineEventHeaderModel: TimelineEventsHeaderModel,
     isGrouped: Boolean = true,
     timelineOnEventCreationOptionSelected: (EventCreationType) -> Unit,
-    teiDashboardBioModel: TeiDashboardBioModel
+    teiDashboardBioModel: TeiDashboardBioModel?
 ) {
     Column(
         modifier = Modifier
@@ -93,6 +94,10 @@ fun TeiDetailDashboard(
 
         card?.let {
             // Eyeseetea customization
+            if (teiDashboardBioModel?.verificationStatusModel != null){
+                TeiDashboardBioStatus(teiDashboardBioModel.verificationStatusModel)
+            }
+
             val additionalInfoList = addAttrBiometricsEmojiIfRequired(card.additionalInfo)
 
             CardDetail(
@@ -115,7 +120,9 @@ fun TeiDetailDashboard(
             Spacer(modifier = Modifier.size(Spacing.Spacing8))
         }
 
-        TeiDashboardBioButton(teiDashboardBioModel)
+        if (teiDashboardBioModel?.buttonModel != null){
+            TeiDashboardBioButton(teiDashboardBioModel.buttonModel)
+        }
     }
 }
 

@@ -587,15 +587,29 @@ class TEIDataPresenter(
         }
     }
 
-    fun getBiometricsModel(): TeiDashboardBioModel {
-        return if (dashboardModel?.isTrackedBiometricEntityExistAndHasValue() == true) {
-            TeiDashboardBioVerificationMapper(resourceManager).map(
-                lastVerificationResult
-            ) { verifyBiometrics() }
+    fun getBiometricsModel(): TeiDashboardBioModel? {
+        return if (dashboardModel?.isBiometricsEnabled() == true) {
+            val bioValue = dashboardModel!!.getBiometricValue()
+
+            if (bioValue.isNullOrBlank() || lastRegisterResult != null) {
+                TeiDashboardBioRegistrationMapper(resourceManager).map(
+                    lastRegisterResult
+                ) {
+                    registerBiometrics()
+                }
+            } else {
+                TeiDashboardBioVerificationMapper(resourceManager).map(
+                    lastVerificationResult
+                ) {
+                    if (lastVerificationResult == null) {
+                        verifyBiometrics()
+                    } else {
+                        registerBiometrics()
+                    }
+                }
+            }
         } else {
-            TeiDashboardBioRegistrationMapper(resourceManager).map(
-                lastRegisterResult
-            ) { registerBiometrics() }
+            null
         }
     }
 

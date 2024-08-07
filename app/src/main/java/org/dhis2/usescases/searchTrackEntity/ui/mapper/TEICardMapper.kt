@@ -424,8 +424,8 @@ class TEICardMapper(
     }
 
     // EyeSeeTea customization
-    private val firstNameAttrUid = "y1w2R6leVmh"
-    private val lastNameAttrUid = "eo3A0YXVBqr"
+    val firstNameAttrUid = "y1w2R6leVmh"
+    val lastNameAttrUid = "eo3A0YXVBqr"
 
 
     private val dateOfBirthUid = "S4eTdBrXPpj"

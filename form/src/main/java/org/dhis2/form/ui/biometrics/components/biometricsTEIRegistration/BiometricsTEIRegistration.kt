@@ -115,7 +115,7 @@ fun RegistrationButton(
                 resultText = R.string.biometrics_completed,
                 resultIcon = getIconByState(BiometricsTEIState.SUCCESS),
                 resultColor = successButtonColor,
-                showRetake = true
+                showRetake = false
             )
         }
 

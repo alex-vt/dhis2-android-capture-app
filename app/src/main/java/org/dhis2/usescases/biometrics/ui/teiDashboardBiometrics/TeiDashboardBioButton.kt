@@ -17,9 +17,10 @@ import org.dhis2.R
 import org.hisp.dhis.mobile.ui.designsystem.component.Button
 import org.hisp.dhis.mobile.ui.designsystem.component.ButtonStyle
 
+
 @Composable
 fun TeiDashboardBioButton(
-    model: TeiDashboardBioModel
+    model: BioButtonModel
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -45,12 +46,11 @@ fun TeiDashboardBioButton(
 
 @Preview
 @Composable
-fun TeiDataBiometricsButtonPreview() {
-    TeiDashboardBioButton(model = TeiDashboardBioModel(
+fun TeiDashboardBioButtonPreview() {
+    TeiDashboardBioButton(model = BioButtonModel(
         text = "Biometrics",
         backgroundColor = "#4d4d4d",
         icon = R.drawable.ic_bio_face_success,
         onActionClick = {})
     )
 }
-

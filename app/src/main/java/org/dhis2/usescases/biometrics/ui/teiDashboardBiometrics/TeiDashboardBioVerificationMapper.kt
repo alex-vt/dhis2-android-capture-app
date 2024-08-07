@@ -16,57 +16,56 @@ class TeiDashboardBioVerificationMapper(
         actionCallback: () -> Unit,
     ): TeiDashboardBioModel {
         return TeiDashboardBioModel(
-            text = getText(verifyResult),
-            backgroundColor = getBackgroundColor(verifyResult),
-            icon = getIcon(verifyResult) ,
-            onActionClick = actionCallback
+            verificationStatusModel = verifyResult?.let {
+                BioVerificationStatus(
+                    text = getText(verifyResult),
+                    backgroundColor = getBackgroundColor(verifyResult),
+                    icon = getIcon(verifyResult)
+                )
+            },
+            buttonModel = BioButtonModel(
+                text = if (verifyResult == null)
+                    resourceManager.getString(R.string.biometrics_verification_not_done)
+                else resourceManager.context.getString(R.string.retake_biometrics),
+                backgroundColor = defaultButtonColor,
+                icon = R.drawable.ic_bio_fingerprint,
+                onActionClick = actionCallback
+            )
         )
     }
 
     private fun getText(
-        verifyResult: VerifyResult?
+        verifyResult: VerifyResult
     ): String {
-        if (verifyResult == null) {
-            return resourceManager.getString(R.string.biometrics_verification_not_done)
-        } else {
-            return when (verifyResult) {
-                is VerifyResult.Match ->
-                    resourceManager.getString(R.string.biometrics_verification_match)
+        return when (verifyResult) {
+            is VerifyResult.Match ->
+                resourceManager.getString(R.string.biometrics_verified)
 
-                is VerifyResult.NoMatch ->
-                    resourceManager.getString(R.string.biometrics_verification_no_match)
+            is VerifyResult.NoMatch ->
+                resourceManager.getString(R.string.verification_failed)
 
-                is VerifyResult.Failure ->
-                    resourceManager.getString(R.string.biometrics_verification_failed)
-            }
+            is VerifyResult.Failure ->
+                resourceManager.getString(R.string.verification_declined)
         }
     }
 
     private fun getIcon(
-        verifyResult: VerifyResult?
-    ):Int {
-        if (verifyResult == null) {
-            return resourceManager.context.getBioIconSuccess()
-        } else {
-            return when (verifyResult) {
-                is VerifyResult.Match ->resourceManager.context.getBioIconSuccess()
-                is VerifyResult.NoMatch ->resourceManager.context.getBioIconFailed()
-                is VerifyResult.Failure ->resourceManager.context.getBioIconWarning()
-            }
+        verifyResult: VerifyResult
+    ): Int {
+        return when (verifyResult) {
+            is VerifyResult.Match -> resourceManager.context.getBioIconSuccess()
+            is VerifyResult.NoMatch -> resourceManager.context.getBioIconFailed()
+            is VerifyResult.Failure -> resourceManager.context.getBioIconWarning()
         }
     }
 
     private fun getBackgroundColor(
-        verifyResult: VerifyResult?
+        verifyResult: VerifyResult
     ): String {
-        if (verifyResult == null) {
-            return defaultButtonColor
-        } else {
-            return when (verifyResult) {
-                is VerifyResult.Match -> "#FF35835D"
-                is VerifyResult.NoMatch ->"#a14545"
-                is VerifyResult.Failure ->"#C57704"
-            }
+        return when (verifyResult) {
+            is VerifyResult.Match -> "#FF35835D"
+            is VerifyResult.NoMatch -> "#a14545"
+            is VerifyResult.Failure -> "#C57704"
         }
     }
 }

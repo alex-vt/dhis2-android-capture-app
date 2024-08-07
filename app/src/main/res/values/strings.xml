@@ -1005,5 +1005,9 @@
     <string name="register_new_patient">Register New Patient</string>
     <string name="biometrics_search">Search with Biometrics</string>
     <string name="enroll_biometrics">Enroll biometrics</string>
+    <string name="retake_biometrics">Retake Biometrics</string>
+    <string name="biometrics_verified">Biometrics verified</string>
+    <string name="verification_failed">Verification failed</string>
+    <string name="verification_declined">Verification declined</string>
     <!--endregion-->
 </resources>

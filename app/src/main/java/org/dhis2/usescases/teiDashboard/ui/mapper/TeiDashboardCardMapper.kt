@@ -28,6 +28,9 @@ import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 import java.io.File
 import java.util.Date
 
+val firstNameAttrUid = "y1w2R6leVmh"
+val lastNameAttrUid = "eo3A0YXVBqr"
+
 class TeiDashboardCardMapper(
     val resourceManager: ResourceManager,
 ) {
@@ -76,7 +79,8 @@ class TeiDashboardCardMapper(
     }
 
     private fun getTitle(item: DashboardModel): String {
-        return when {
+        // EyeSeeTea customization
+   /*     return when {
             item.teiHeader != null -> item.teiHeader!!
             item is DashboardEnrollmentModel -> item.trackedEntityAttributes.takeIf { it.isNotEmpty() }
                 ?.let {
@@ -87,8 +91,23 @@ class TeiDashboardCardMapper(
                 } ?: "-"
 
             else -> "-"
+        }*/
+
+        return if (item.trackedEntityAttributeValues.isEmpty()) {
+            "-"
+        } else {
+            val firsNameValue =
+                item.trackedEntityAttributeValues.firstOrNull { it.trackedEntityAttribute() == firstNameAttrUid }
+                    ?.value()
+            val lastNameValue =
+                item.trackedEntityAttributeValues.firstOrNull { it.trackedEntityAttribute() == lastNameAttrUid }
+                    ?.value()
+
+            "$firsNameValue $lastNameValue"
         }
     }
+
+
 
     private fun getAdditionalInfo(
         item: DashboardModel,
@@ -252,5 +271,5 @@ class TeiDashboardCardMapper(
             .filter {
                 (it.first.displayFormName()?.isBiometricText() == false && it.second.value()
                     ?.isNotEmpty() == true) || (it.first.displayFormName() ?:"").isBiometricText()
-            }
+            }.filter { it.first.uid() != firstNameAttrUid && it.first.uid() != lastNameAttrUid }
 }

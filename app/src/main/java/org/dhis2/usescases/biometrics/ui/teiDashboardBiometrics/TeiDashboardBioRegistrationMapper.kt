@@ -17,10 +17,13 @@ class TeiDashboardBioRegistrationMapper(
         actionCallback: () -> Unit,
     ): TeiDashboardBioModel {
         return TeiDashboardBioModel(
-            text = getText(registerResult),
-            backgroundColor = getBackgroundColor(registerResult),
-            icon = getIcon(registerResult),
-            onActionClick = actionCallback
+            verificationStatusModel = null,
+            buttonModel = BioButtonModel(
+                text = getText(registerResult),
+                backgroundColor = getBackgroundColor(registerResult),
+                icon = getIcon(registerResult),
+                onActionClick = actionCallback
+            )
         )
     }
 
@@ -33,8 +36,10 @@ class TeiDashboardBioRegistrationMapper(
             when (registerResult) {
                 is RegisterResult.Completed ->
                     resourceManager.getString(R.string.biometrics_completed)
+
                 is RegisterResult.Failure ->
                     resourceManager.getString(R.string.biometrics_declined)
+
                 is RegisterResult.PossibleDuplicates ->
                     resourceManager.getString(R.string.biometrics_declined)
             }
