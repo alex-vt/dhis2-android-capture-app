@@ -347,8 +347,8 @@ class EnrollmentPresenterImpl(
             }
 
             biometricsUiModel?.setRegisterLastAndSave { sessionId ->
-                view.registerLast(sessionId)
                 pendingSave = true
+                view.registerLast(sessionId)
             }
 
             val isVisible =

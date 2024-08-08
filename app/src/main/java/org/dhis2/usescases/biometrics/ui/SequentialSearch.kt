@@ -6,10 +6,22 @@ sealed class SequentialSearch(
     open val previousSearch: SequentialSearch?,
     open val nextAction: SequentialSearchAction?
 ) {
+    val sequentialSessionId: String?
+        get() = when (this) {
+            is BiometricsSearch -> {
+                this.sessionId
+            }
+
+            is AttributeSearch -> {
+                (previousSearch as? BiometricsSearch)?.sessionId
+            }
+        }
+
     data class BiometricsSearch(
         override val previousSearch: SequentialSearch?,
         override val nextAction: SequentialSearchAction?,
-        val simprintsItems: List<SimprintsItem>
+        val simprintsItems: List<SimprintsItem>,
+        val sessionId: String
     ) : SequentialSearch(previousSearch, nextAction)
 
     data class AttributeSearch(

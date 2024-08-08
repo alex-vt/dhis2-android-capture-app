@@ -87,14 +87,12 @@ public class SearchTEContractsModule {
 
         void onBackClick();
 
-        void onEnrollClick(HashMap<String, String> queryData);
+        void onEnrollClick(HashMap<String, String> queryData, SequentialSearch sequentialSearch);
 
         void enroll(String programUid, String teiUid, HashMap<String, String> queryData);
 
-        void enrollmentWithBiometrics(String biometricsGuid);
-
         void onTEIClick(String teiUid, String enrollmentUid, boolean isOnline);
-        void onSearchTEIModelClick(SearchTeiModel item,SequentialSearch sequentialSearch);
+        void onSearchTEIModelClick(SearchTeiModel item, SequentialSearch sequentialSearch);
 
         TrackedEntityType getTrackedEntityName();
 
