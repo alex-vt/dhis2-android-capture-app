@@ -245,7 +245,7 @@ class BiometricsClient(
         Timber.d("guid: $guid")
         printExtras(extras)
 
-        val intent = simHelper.confirmIdentity(activity, sessionId, guid)
+        val intent = simHelper.confirmIdentity(sessionId, guid)
 
         extras.forEach { intent.putExtra(it.key, it.value) }
 
@@ -263,7 +263,7 @@ class BiometricsClient(
         Timber.d("guid: $guid")
         printExtras(extras)
 
-        val intent = simHelper.confirmIdentity(fragment.requireContext(), sessionId, guid)
+        val intent = simHelper.confirmIdentity(sessionId, guid)
 
         extras.forEach { intent.putExtra(it.key, it.value) }
 
@@ -275,7 +275,7 @@ class BiometricsClient(
         Timber.d("sessionId: $sessionId")
         Timber.d("guid: none_selected")
 
-        val intent = simHelper.confirmIdentity(activity, sessionId, "none_selected")
+        val intent = simHelper.confirmIdentity(sessionId, "none_selected")
 
         launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
     }
