@@ -11,6 +11,7 @@ import org.dhis2.commons.filters.FilterManager;
 import org.dhis2.commons.filters.Filters;
 import org.dhis2.data.biometrics.SimprintsItem;
 import org.dhis2.maps.model.StageStyle;
+import org.dhis2.usescases.biometrics.ui.SequentialSearch;
 import org.dhis2.usescases.general.AbstractActivityContracts;
 import org.hisp.dhis.android.core.arch.call.D2Progress;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
@@ -93,7 +94,7 @@ public class SearchTEContractsModule {
         void enrollmentWithBiometrics(String biometricsGuid);
 
         void onTEIClick(String teiUid, String enrollmentUid, boolean isOnline);
-        void onSearchTEIModelClick(SearchTeiModel item);
+        void onSearchTEIModelClick(SearchTeiModel item,SequentialSearch sequentialSearch);
 
         TrackedEntityType getTrackedEntityName();
 

@@ -534,7 +534,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             }
             case BIOMETRICS_CONFIRM_IDENTITY_REQUEST: {
                 if (lastSelection != null) {
-                    presenter.onSearchTEIModelClick(lastSelection);
+                    presenter.onSearchTEIModelClick(lastSelection, viewModel.getSequentialSearch().getValue());
                     lastSelection = null;
                 }
             }
@@ -724,7 +724,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                     }
                     case ON_SEARCH_TEI_MODEL_CLICK -> {
                         LegacyInteraction.OnSearchTeiModelClick interaction = (LegacyInteraction.OnSearchTeiModelClick) legacyInteraction;
-                        presenter.onSearchTEIModelClick(interaction.getItem());
+                        presenter.onSearchTEIModelClick(interaction.getItem(), viewModel.getSequentialSearch().getValue());
                     }
                 }
 

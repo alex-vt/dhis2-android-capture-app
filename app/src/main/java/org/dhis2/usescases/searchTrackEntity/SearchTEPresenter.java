@@ -42,6 +42,7 @@ import org.dhis2.commons.schedulers.SchedulerProvider;
 import org.dhis2.data.biometrics.SimprintsItem;
 import org.dhis2.data.service.SyncStatusController;
 import org.dhis2.maps.model.StageStyle;
+import org.dhis2.usescases.biometrics.ui.SequentialSearch;
 import org.dhis2.utils.analytics.AnalyticsHelper;
 import org.hisp.dhis.android.core.D2;
 import org.hisp.dhis.android.core.common.FeatureType;
@@ -375,12 +376,12 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     @Override
-    public void onSearchTEIModelClick(SearchTeiModel item) {
+    public void onSearchTEIModelClick(SearchTeiModel item, SequentialSearch sequentialSearch) {
         String TeiUid = item.getTei().uid();
         String enrollmentUid = item.getSelectedEnrollment().uid();
         boolean isOnline = item.isOnline();
 
-        if (biometricsSearchStatus) {
+        if (sequentialSearch instanceof SequentialSearch.BiometricsSearch) {
             view.showBiometricsSearchConfirmation(item);
             biometricsSearchStatus = false;
         } else {
