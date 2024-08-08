@@ -559,6 +559,9 @@ class TEIDataPresenter(
             val biometricsValue = result.guid
 
             teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
+
+            lastRegisterResult = null
+            lastVerificationResult = VerifyResult.Match
         }
     }
 
