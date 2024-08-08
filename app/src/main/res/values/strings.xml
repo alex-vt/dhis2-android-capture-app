@@ -1009,5 +1009,9 @@
     <string name="biometrics_verified">Biometrics verified</string>
     <string name="verification_failed">Verification failed</string>
     <string name="verification_declined">Verification declined</string>
+    <string name="patient_not_shown_search_a_different_way">Patient not shown? Search a different way</string>
+    <string name="results_not_found_search_a_different_way">No results found? Search a different way</string>
+    <string name="patient_not_found_register_a_new_patient">Patient not found? Register a new patient</string>
+    <string name="results_not_found_register_a_new_patient">No results found? Register a new patient</string>
     <!--endregion-->
 </resources>

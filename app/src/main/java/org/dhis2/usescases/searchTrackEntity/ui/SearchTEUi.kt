@@ -94,6 +94,8 @@ fun SearchResultUi(searchResult: SearchResult, onSearchOutsideClick: () -> Unit)
         SearchResult.SearchResultType.UNABLE_SEARCH_OUTSIDE -> UnableToSearchOutside(
             uiData = searchResult.uiData as UnableToSearchOutsideData,
         )
+
+        SearchResult.SearchResultType.SEQUENTIAL_SEARCH -> NoMoreResults(searchResult.extraData!!)
     }
 }
 

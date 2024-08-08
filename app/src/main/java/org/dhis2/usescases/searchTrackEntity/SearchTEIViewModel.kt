@@ -697,7 +697,8 @@ class SearchTEIViewModel(
 
             hasGlobalResults == null && searchRepository.getProgram(initialProgramUid) != null &&
                     searchRepository.filterQueryForProgram(queryData, null).isNotEmpty() &&
-                    searchRepository.filtersApplyOnGlobalSearch() -> {
+                    searchRepository.filtersApplyOnGlobalSearch() &&
+                    sequentialSearch.value != null && sequentialSearch.value is SequentialSearch.AttributeSearch -> {
                 listOf(
                     SearchResult(
                         SearchResult.SearchResultType.SEARCH_OUTSIDE,
@@ -709,7 +710,8 @@ class SearchTEIViewModel(
 
             hasGlobalResults == null && searchRepository.getProgram(initialProgramUid) != null &&
                     searchRepository.trackedEntityTypeFields().isNotEmpty() &&
-                    searchRepository.filtersApplyOnGlobalSearch() -> {
+                    searchRepository.filtersApplyOnGlobalSearch() &&
+                    sequentialSearch.value != null && sequentialSearch.value is SequentialSearch.AttributeSearch -> {
                 listOf(
                     SearchResult(
                         type = SearchResult.SearchResultType.UNABLE_SEARCH_OUTSIDE,
@@ -730,7 +732,11 @@ class SearchTEIViewModel(
                 listOf(SearchResult(SearchResult.SearchResultType.NO_RESULTS))
         }
 
-        _dataResult.postValue(result)
+        val sequentialSearchMessage = getSearchResultSequentialSearchMessage(hasProgramResults)
+
+        val resultWithSequentialSearchMessage = result.toMutableList() + sequentialSearchMessage
+
+        _dataResult.postValue(resultWithSequentialSearchMessage)
     }
 
     fun filtersApplyOnGlobalSearch(): Boolean = searchRepository.filtersApplyOnGlobalSearch()
@@ -1163,6 +1169,33 @@ class SearchTEIViewModel(
 
     fun resetSequentialSearch() {
         _sequentialSearch.postValue(null)
+    }
+
+    fun getSearchResultSequentialSearchMessage(hasResults: Boolean): List<SearchResult> {
+        if (sequentialSearch.value == null) return emptyList()
+
+        val isFirstSearch = sequentialSearch.value!!.previousSearch == null
+
+        val message = if (isFirstSearch) {
+            if (hasResults) {
+                resourceManager.getString(R.string.patient_not_shown_search_a_different_way)
+            } else {
+                resourceManager.getString(R.string.results_not_found_search_a_different_way)
+            }
+        } else {
+            if (hasResults) {
+                resourceManager.getString(R.string.patient_not_found_register_a_new_patient)
+            } else {
+                resourceManager.getString(R.string.results_not_found_register_a_new_patient)
+            }
+        }
+
+        return listOf(
+            SearchResult(
+                SearchResult.SearchResultType.SEQUENTIAL_SEARCH,
+                message,
+            ),
+        )
     }
 }
 
