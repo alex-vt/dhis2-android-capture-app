@@ -155,9 +155,10 @@ class TeiDashboardCardMapper(
             }
         }.toMutableList()
 
-        if (item.teiHeader == null) {
+        // // EyeSeeTea customization - not remove first item
+/*        if (item.teiHeader == null) {
             attributesList.removeFirstOrNull()
-        }
+        }*/
 
         return when (item) {
             is DashboardEnrollmentModel ->
