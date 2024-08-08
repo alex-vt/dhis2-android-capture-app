@@ -15,6 +15,7 @@ internal fun ProvideBiometricsAttribute(
 ) {
     BiometricsTEIRegistration(
         value = fieldUiModel.value,
+        ageUnderThreshold = fieldUiModel.ageUnderThreshold,
         enabled = fieldUiModel.editable,
         onBiometricsClick = fieldUiModel::onBiometricsClick,
         onSaveWithoutBiometrics = fieldUiModel::onSaveWithoutBiometrics,

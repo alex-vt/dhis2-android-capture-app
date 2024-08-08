@@ -30,6 +30,7 @@ data class BiometricsAttributeUiModelImpl(
     override val periodSelector: PeriodSelector?,
     override val url: String?,
     override val editable: Boolean = true,
+    val ageUnderThreshold: Boolean = false
 ) : FieldUiModel, BiometricsTEIRegistrationUIModel {
 
     private var callback: FieldUiModel.Callback? = null
@@ -156,6 +157,8 @@ data class BiometricsAttributeUiModelImpl(
     override fun setFieldMandatory() = this.copy()
 
     override fun isSectionWithFields() = false
+
+    fun setAgeUnderThreshold(value: Boolean) = this.copy(ageUnderThreshold = value)
 
     // We don't use the FieldUiModel onItemClick() to avoid infrastructure to listen in FormViewModel
     // because we need listen in enrollmentPresenterImpl to register biometrics

@@ -21,13 +21,14 @@ import org.dhis2.form.ui.biometrics.components.successButtonColor
 enum class BiometricsTEIState {
     INITIAL,
     SUCCESS,
-    FAILURE,
+    FAILURE
 }
 
 @Composable
 fun BiometricsTEIRegistration(
     value: String?,
-    enabled:Boolean,
+    ageUnderThreshold: Boolean,
+    enabled: Boolean,
     onBiometricsClick: () -> Unit,
     onSaveWithoutBiometrics: () -> Unit,
     registerLastAndSave: (sessionId: String) -> Unit,
@@ -36,7 +37,7 @@ fun BiometricsTEIRegistration(
     var linkLastBiometrics by remember { mutableStateOf(true) }
 
     val biometricsSearchSessionId = remember(value) {
-        if (!value.isNullOrEmpty()) {
+        if (!value.isNullOrEmpty() && !ageUnderThreshold) {
             if (value.startsWith(BIOMETRICS_SEARCH_PATTERN)) {
                 value.split("_")[2]
             } else {
@@ -51,7 +52,7 @@ fun BiometricsTEIRegistration(
         if (!value.isNullOrEmpty()) {
             if (value.startsWith(BIOMETRICS_FAILURE_PATTERN)) {
                 BiometricsTEIState.FAILURE
-            }else if (value.startsWith(BIOMETRICS_SEARCH_PATTERN)) {
+            } else if (value.startsWith(BIOMETRICS_SEARCH_PATTERN)) {
                 BiometricsTEIState.INITIAL
             } else {
                 BiometricsTEIState.SUCCESS
@@ -65,7 +66,7 @@ fun BiometricsTEIRegistration(
         if (biometricsSearchSessionId != null) {
             LinkLastBiometricsCheckBox(
                 value = linkLastBiometrics,
-                enabled= enabled,
+                enabled = enabled,
                 onCheckedChange = { linkLastBiometrics = it }
             )
         }
@@ -73,17 +74,25 @@ fun BiometricsTEIRegistration(
         Spacer(modifier = Modifier.height(96.dp))
 
         if (linkLastBiometrics && biometricsSearchSessionId != null) {
-            LinkLastBiometricsNextButton(enabled = enabled) { registerLastAndSave(biometricsSearchSessionId) }
+            LinkLastBiometricsNextButton(enabled = enabled) {
+                registerLastAndSave(
+                    biometricsSearchSessionId
+                )
+            }
         } else {
-            RegistrationButton(
-                biometricsState=  biometricsState,
-                enabled = enabled,
-                onBiometricsClick = onBiometricsClick,
-                getIconByState = getIconByState)
+            if (!ageUnderThreshold) {
+                RegistrationButton(
+                    biometricsState = biometricsState,
+                    enabled = enabled,
+                    onBiometricsClick = onBiometricsClick,
+                    getIconByState = getIconByState
+                )
+            }
 
             SaveWithoutBiometricsButton(
-                enabled=enabled,
-                onClick = onSaveWithoutBiometrics)
+                enabled = enabled,
+                onClick = onSaveWithoutBiometrics
+            )
         }
     }
 }
@@ -139,6 +148,7 @@ fun PreviewBiometricsTEIRegistrationInitialAfterSearch() {
     BiometricsTEIRegistration(
         value = BIOMETRICS_SEARCH_PATTERN,
         enabled = true,
+        ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
         registerLastAndSave = { },
@@ -153,6 +163,7 @@ fun PreviewBiometricsTEIRegistrationInitialDisabled() {
     BiometricsTEIRegistration(
         value = null,
         enabled = false,
+        ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
         registerLastAndSave = { },
@@ -167,6 +178,7 @@ fun PreviewBiometricsTEIRegistrationInitialAfterSearchDisabled() {
     BiometricsTEIRegistration(
         value = BIOMETRICS_SEARCH_PATTERN,
         enabled = false,
+        ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
         registerLastAndSave = { },
@@ -181,6 +193,7 @@ fun PreviewBiometricsTEIRegistrationInitial() {
     BiometricsTEIRegistration(
         value = null,
         enabled = true,
+        ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
         registerLastAndSave = { },
@@ -194,6 +207,7 @@ fun PreviewBiometricsTEIRegistrationSuccess() {
     BiometricsTEIRegistration(
         value = "927232-2-323-2-32-32-32",
         enabled = true,
+        ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
         registerLastAndSave = { },
@@ -207,6 +221,7 @@ fun PreviewBiometricsTEIRegistrationFailure() {
     BiometricsTEIRegistration(
         value = BIOMETRICS_FAILURE_PATTERN,
         enabled = true,
+        ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
         registerLastAndSave = { },

@@ -19,6 +19,7 @@ import org.dhis2.data.biometrics.utils.getBiometricsTrackedEntityAttribute
 import org.dhis2.data.biometrics.utils.getParentBiometricsAttributeValueIfRequired
 import org.dhis2.data.biometrics.utils.getTeiByUid
 import org.dhis2.data.biometrics.utils.getTrackedEntityAttributeValueByAttribute
+import org.dhis2.data.biometrics.utils.isUnderAgeThreshold
 import org.dhis2.form.data.EnrollmentRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
@@ -369,18 +370,24 @@ class EnrollmentPresenterImpl(
 
                 val tei = getTeiByUid(d2, teiUid)
 
+                val teiAttrValues = tei?.trackedEntityAttributeValues() ?: listOf()
+                val program = programRepository.blockingGet()?.uid() ?: ""
+
                 val parentBiometricsValue = getParentBiometricsAttributeValueIfRequired(
                     d2,
                     teiAttributesProvider,
                     basicPreferenceProvider,
-                    tei?.trackedEntityAttributeValues() ?: listOf(),
-                    programRepository.blockingGet()?.uid() ?: "",
+                    teiAttrValues,
+                    program,
                     teiRepository.blockingGet()?.uid() ?: ""
                 )
+
+                val isUnderAgeThreshold = isUnderAgeThreshold(basicPreferenceProvider,teiAttrValues,program )
 
                 biometricsUiModel
                     .setValue(parentBiometricsValue?.value() ?: biometricsUiModel.value)
                     .setEditable(allMandatoryFieldsHasValue)
+                    .setAgeUnderThreshold(isUnderAgeThreshold)
             } else {
                 it
             }

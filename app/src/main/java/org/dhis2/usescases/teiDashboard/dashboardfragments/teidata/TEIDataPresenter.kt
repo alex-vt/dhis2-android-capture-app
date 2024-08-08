@@ -31,6 +31,7 @@ import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.data.biometrics.RegisterResult
 import org.dhis2.data.biometrics.VerifyResult
+import org.dhis2.data.biometrics.utils.isUnderAgeThreshold
 import org.dhis2.form.data.FormValueStore
 import org.dhis2.form.data.OptionsRepository
 import org.dhis2.form.data.RulesUtilsProviderImpl
@@ -588,10 +589,15 @@ class TEIDataPresenter(
     }
 
     fun getBiometricsModel(): TeiDashboardBioModel? {
-        return if (dashboardModel?.isBiometricsEnabled() == true) {
+        val teiAttrValues = dashboardModel?.trackedEntityAttributeValues ?: listOf()
+        val program = dashboardModel?.currentProgram()?.uid() ?: ""
+
+        val isUnderAgeThreshold = isUnderAgeThreshold(basicPreferenceProvider,teiAttrValues,program)
+
+        return if (dashboardModel?.isBiometricsEnabled() == true && !isUnderAgeThreshold) {
             val bioValue = dashboardModel!!.getBiometricValue()
 
-            if (bioValue.isNullOrBlank() || lastRegisterResult != null) {
+            if (bioValue.isNullOrBlank() || (lastRegisterResult != null)) {
                 TeiDashboardBioRegistrationMapper(resourceManager).map(
                     lastRegisterResult
                 ) {
