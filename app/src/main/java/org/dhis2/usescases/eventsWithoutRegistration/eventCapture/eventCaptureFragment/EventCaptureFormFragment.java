@@ -303,7 +303,7 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         HashMap extras = new HashMap<>();
         extras.put(BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID, trackedEntityInstanceId);
 
-        BiometricsClientFactory.INSTANCE.get(this.getContext()).verify(this, biometricsGuid, teiOrgUnit, extras);
+        BiometricsClientFactory.INSTANCE.get(this.getContext()).verify(this, biometricsGuid, teiOrgUnit, extras, null);
     }
 
     @Override
@@ -311,6 +311,6 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
         HashMap extras = new HashMap<>();
         extras.put(BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID, trackedEntityInstanceId);
 
-        BiometricsClientFactory.INSTANCE.get(this.getContext()).registerFromFragment(this, teiOrgUnit, extras);
+        BiometricsClientFactory.INSTANCE.get(this.getContext()).registerFromFragment(this, teiOrgUnit, extras , null);
     }
 }

@@ -63,25 +63,38 @@ class BiometricsClient(
     private val simHelper = SimHelper(projectId, userId)
     private val defaultModuleId = "NA"
 
-    fun register(activity: Activity, moduleId: String) {
+    fun register(activity: Activity, moduleId: String, ageInMonths: Long) {
         Timber.d("Biometrics register!")
         Timber.d("moduleId: $moduleId")
+        Timber.d("subjectAge: $ageInMonths")
 
-        val intent = simHelper.register(moduleId)
+        val metadata = com.simprints.libsimprints.Metadata()
+            .put("subjectAge", ageInMonths)
+
+        val intent = simHelper.register(moduleId, metadata)
 
         launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_ENROLL_REQUEST)
     }
 
-    fun registerFromFragment(fragment: Fragment, moduleId: String, extras: Map<String, String>) {
+    fun registerFromFragment(fragment: Fragment, moduleId: String,  extras: Map<String, String>, ageInMonths: Long?) {
         Timber.d("Biometrics register!")
         Timber.d("moduleId: $moduleId")
+        Timber.d("subjectAge: $ageInMonths")
         printExtras(extras)
 
-        val intent = simHelper.register(moduleId)
+        val intent = if (ageInMonths != null){
+            val metadata =  com.simprints.libsimprints.Metadata()
+                .put("subjectAge", ageInMonths)
+
+            simHelper.register(moduleId, metadata)
+        } else {
+            simHelper.register(moduleId)
+        }
+
         extras.forEach { intent.putExtra(it.key, it.value) }
 
         if (fragment.context != null) {
-            launchSimprintsAppFromFragment(fragment,intent,BIOMETRICS_ENROLL_REQUEST)
+            launchSimprintsAppFromFragment(fragment, intent, BIOMETRICS_ENROLL_REQUEST)
         }
     }
 
@@ -94,7 +107,11 @@ class BiometricsClient(
         launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_IDENTIFY_REQUEST)
     }
 
-    fun verify(fragment: Fragment, guid: String, moduleId: String, extras: Map<String, String>) {
+    fun verify(fragment: Fragment,
+               guid: String,
+               moduleId: String, extras: Map<String, String>,
+               ageInMonths: Long? = null) {
+
         if (guid == null) {
             Timber.i("Simprints Verification - Guid is Null - Please check again!")
             return
@@ -102,14 +119,23 @@ class BiometricsClient(
 
         Timber.d("Biometrics verify!")
         Timber.d("moduleId: $moduleId")
+        Timber.d("subjectAge: $ageInMonths")
+
         printExtras(extras)
 
-        val intent = simHelper.verify(moduleId, guid)
+        val intent = if (ageInMonths != null){
+            val metadata =  com.simprints.libsimprints.Metadata()
+                .put("subjectAge", ageInMonths)
+
+           simHelper.verify(moduleId, guid, metadata)
+        } else {
+            simHelper.verify(moduleId, guid)
+        }
 
         extras.forEach { intent.putExtra(it.key, it.value) }
 
         if (fragment.context != null) {
-            launchSimprintsAppFromFragment(fragment,intent,BIOMETRICS_VERIFY_REQUEST)
+            launchSimprintsAppFromFragment(fragment, intent, BIOMETRICS_VERIFY_REQUEST)
         }
     }
 
@@ -267,7 +293,7 @@ class BiometricsClient(
 
         extras.forEach { intent.putExtra(it.key, it.value) }
 
-        launchSimprintsAppFromFragment(fragment,intent,BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
+        launchSimprintsAppFromFragment(fragment, intent, BIOMETRICS_CONFIRM_IDENTITY_REQUEST)
     }
 
     fun noneSelected(activity: Activity, sessionId: String) {
@@ -293,19 +319,33 @@ class BiometricsClient(
     private fun checkBiometricsCompleted(data: Intent) =
         data.getBooleanExtra(Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false)
 
-    private fun launchSimprintsAppFromActivity(activity: Activity, intent: Intent, requestCode: Int) {
+    private fun launchSimprintsAppFromActivity(
+        activity: Activity,
+        intent: Intent,
+        requestCode: Int
+    ) {
         try {
             activity.startActivityForResult(intent, requestCode)
-        } catch (ex: ActivityNotFoundException){
+        } catch (ex: ActivityNotFoundException) {
             Toast.makeText(activity, R.string.biometrics_download_app, Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun launchSimprintsAppFromFragment(fragment: Fragment, intent: Intent, requestCode: Int) {
+    private fun launchSimprintsAppFromFragment(
+        fragment: Fragment,
+        intent: Intent,
+        requestCode: Int
+    ) {
         try {
             fragment.startActivityForResult(intent, requestCode)
-        } catch (ex: ActivityNotFoundException){
-            fragment.context?.let { Toast.makeText(it, R.string.biometrics_download_app, Toast.LENGTH_SHORT).show() }
+        } catch (ex: ActivityNotFoundException) {
+            fragment.context?.let {
+                Toast.makeText(
+                    it,
+                    R.string.biometrics_download_app,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 

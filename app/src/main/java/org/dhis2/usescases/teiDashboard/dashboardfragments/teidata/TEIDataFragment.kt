@@ -616,19 +616,20 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     override fun launchBiometricsVerification(
         guid: String,
         orgUnitUid: String,
-        trackedEntityInstanceId: String
+        trackedEntityInstanceId: String,
+        ageInMonths: Long,
     ) {
         val biometricsClient = get(requireContext())
         val extras: HashMap<String, String> = HashMap()
         extras[BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID] = trackedEntityInstanceId
-        biometricsClient.verify(this, guid, orgUnitUid, extras)
+        biometricsClient.verify(this, guid, orgUnitUid, extras, ageInMonths)
     }
 
-    override fun registerBiometrics(orgUnitUid: String, trackedEntityInstanceUId: String) {
+    override fun registerBiometrics(orgUnitUid: String, trackedEntityInstanceUId: String, ageInMonths: Long) {
         val biometricsClient = get(requireContext())
         val extras: HashMap<String, String> = HashMap()
         extras[BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID] = trackedEntityInstanceUId
-        biometricsClient.registerFromFragment(this, orgUnitUid, extras)
+        biometricsClient.registerFromFragment(this, orgUnitUid, extras, ageInMonths)
     }
 
     override fun refreshCard() {
