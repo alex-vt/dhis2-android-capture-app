@@ -284,9 +284,9 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
 
     @Override
-    public void onEnrollClick(HashMap<String, String> queryData) {
-        if (queryData.containsKey(biometricUid)){
-            queryData.put(biometricUid, BIOMETRICS_SEARCH_PATTERN + sessionId + "_" + queryData.get(biometricUid));
+    public void onEnrollClick(HashMap<String, String> queryData, SequentialSearch sequentialSearch) {
+        if (sequentialSearch.getSequentialSessionId() != null){
+            queryData.put(biometricUid, BIOMETRICS_SEARCH_PATTERN + sequentialSearch.getSequentialSessionId() + "_" + queryData.get(biometricUid));
         }
 
         if (selectedProgram != null)
@@ -296,15 +296,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                 view.displayMessage(view.getContext().getString(R.string.search_access_error));
         else
             view.displayMessage(view.getContext().getString(R.string.search_program_not_selected));
-    }
-
-    @Override
-    public void enrollmentWithBiometrics(String biometricsGuid) {
-        enrollmentWithBiometricsMode = true;
-        HashMap<String, String> queryData = new HashMap<String, String>();
-        queryData.put(biometricUid, biometricsGuid);
-        onEnrollClick(queryData);
-        enrollmentWithBiometricsMode = false;
     }
 
     private boolean canCreateTei() {
@@ -652,7 +643,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
             biometricsSearchStatus = true;
 
-            biometricsSearchListener.onBiometricsSearch(simprintsItems, biometricUid, sb.toString());
+            biometricsSearchListener.onBiometricsSearch(simprintsItems, biometricUid, sb.toString(), sessionId);
         }
     }
 
@@ -709,6 +700,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     public interface BiometricsSearchListener {
-        void onBiometricsSearch(List<SimprintsItem> simprintsItems,String biometricAttributeUid, String filterValue);
+        void onBiometricsSearch(List<SimprintsItem> simprintsItems,String biometricAttributeUid, String filterValue, String sessionId);
     }
 }

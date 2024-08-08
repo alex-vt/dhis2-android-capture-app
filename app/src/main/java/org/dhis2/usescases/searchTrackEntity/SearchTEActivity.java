@@ -228,7 +228,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                     viewModel.openSearchForm();
                 } else {
                     // register new
-                    presenter.onEnrollClick(new HashMap<>(viewModel.getQueryData()));
+                    presenter.onEnrollClick(new HashMap<>(viewModel.getQueryData()),
+                            viewModel.getSequentialSearch().getValue());
 
                     viewModel.resetSequentialSearch();
                 }
@@ -516,22 +517,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 }
                 break;
             }
-            case BIOMETRICS_ENROLL_LAST_REQUEST: {
-                if (resultCode == RESULT_OK) {
-                    RegisterResult result =
-                            BiometricsClientFactory.INSTANCE.get(this).handleRegisterResponse(data);
-
-                    RegisterResult.Completed completed = (RegisterResult.Completed) result;
-
-                    if (result instanceof RegisterResult.Completed) {
-                        presenter.enrollmentWithBiometrics(completed.getGuid());
-                    } else {
-                        Toast.makeText(getContext(), R.string.biometrics_declined,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                }
-                break;
-            }
             case BIOMETRICS_CONFIRM_IDENTITY_REQUEST: {
                 if (lastSelection != null) {
                     presenter.onSearchTEIModelClick(lastSelection, viewModel.getSequentialSearch().getValue());
@@ -695,7 +680,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 switch (legacyInteraction.getId()) {
                     case ON_ENROLL_CLICK -> {
                         LegacyInteraction.OnEnrollClick interaction = (LegacyInteraction.OnEnrollClick) legacyInteraction;
-                        presenter.onEnrollClick(new HashMap<>(interaction.getQueryData()));
+                        presenter.onEnrollClick(new HashMap<>(interaction.getQueryData()),
+                                viewModel.getSequentialSearch().getValue());
                     }
                     case ON_ADD_RELATIONSHIP -> {
                         LegacyInteraction.OnAddRelationship interaction = (LegacyInteraction.OnAddRelationship) legacyInteraction;

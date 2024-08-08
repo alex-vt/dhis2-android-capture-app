@@ -13,9 +13,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -73,7 +74,7 @@ class SearchHelperFragment : Fragment() {
 @Composable
 fun SearchHelperContent(onAction: (action: SequentialSearchAction) -> Unit = { }) {
     Surface(color = Color.White) {
-        Box(contentAlignment = Alignment.Center) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(16.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 SearchWithBiometricsButton(
                     onClick = { onAction(SequentialSearchAction.SearchWithBiometrics) })
@@ -117,7 +118,7 @@ fun SearchWithBiometricsButton(
 
     val modifier = Modifier
         .wrapContentWidth()
-        .width(270.dp)
+        .fillMaxWidth()
         .height(50.dp)
 
     Button(
@@ -145,7 +146,7 @@ fun SearchWithBiometricsButton(
 fun SearchWithAttributesButton(
     onClick: () -> Unit = { },
 ) {
-    OutlinedButton(modifier = Modifier.width(270.dp).height(50.dp),
+    OutlinedButton(modifier = Modifier.fillMaxWidth().height(50.dp),
         border = BorderStroke(
             width = 1.dp,
             color = Color(0xFF0281cb)

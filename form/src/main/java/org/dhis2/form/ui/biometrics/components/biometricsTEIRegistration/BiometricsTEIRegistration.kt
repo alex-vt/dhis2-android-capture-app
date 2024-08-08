@@ -37,7 +37,7 @@ fun BiometricsTEIRegistration(
     var linkLastBiometrics by remember { mutableStateOf(true) }
 
     val biometricsSearchSessionId = remember(value) {
-        if (!value.isNullOrEmpty() && !ageUnderThreshold) {
+        if (!value.isNullOrEmpty()) {
             if (value.startsWith(BIOMETRICS_SEARCH_PATTERN)) {
                 value.split("_")[2]
             } else {
@@ -46,6 +46,7 @@ fun BiometricsTEIRegistration(
         } else {
             null
         }
+
     }
 
     val biometricsState = remember(value) {
@@ -63,7 +64,7 @@ fun BiometricsTEIRegistration(
     }
 
     Column {
-        if (biometricsSearchSessionId != null) {
+        if (biometricsSearchSessionId != null && !ageUnderThreshold) {
             LinkLastBiometricsCheckBox(
                 value = linkLastBiometrics,
                 enabled = enabled,
@@ -73,7 +74,7 @@ fun BiometricsTEIRegistration(
 
         Spacer(modifier = Modifier.height(96.dp))
 
-        if (linkLastBiometrics && biometricsSearchSessionId != null) {
+        if (linkLastBiometrics && biometricsSearchSessionId != null && !ageUnderThreshold) {
             LinkLastBiometricsNextButton(enabled = enabled) {
                 registerLastAndSave(
                     biometricsSearchSessionId

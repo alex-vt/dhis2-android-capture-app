@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,7 +23,7 @@ fun TeiDashboardBioButton(
     model: BioButtonModel
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Button(
@@ -37,7 +37,7 @@ fun TeiDashboardBioButton(
                 )
             },
             modifier = Modifier.background(Color(android.graphics.Color.parseColor(model.backgroundColor)))
-                .width(250.dp)
+                .fillMaxWidth()
                 .height(40.dp),
             onClick = model.onActionClick,
         )
