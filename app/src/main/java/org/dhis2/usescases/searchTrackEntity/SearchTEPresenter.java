@@ -621,7 +621,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     @Override
-    public void searchOnBiometrics(List <SimprintsItem> simprintsItems, String sessionId) {
+    public void searchOnBiometrics(List <SimprintsItem> simprintsItems, String sessionId, Boolean ageNotSupported ) {
         if (biometricsSearchListener != null) {
             this.sessionId = sessionId;
             List<String> guids = simprintsItems.stream().map(SimprintsItem::getGuid).collect(Collectors.toList());
@@ -643,7 +643,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
             biometricsSearchStatus = true;
 
-            biometricsSearchListener.onBiometricsSearch(simprintsItems, biometricUid, sb.toString(), sessionId);
+            biometricsSearchListener.onBiometricsSearch(simprintsItems, biometricUid, sb.toString(), sessionId, ageNotSupported);
         }
     }
 
@@ -700,6 +700,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     public interface BiometricsSearchListener {
-        void onBiometricsSearch(List<SimprintsItem> simprintsItems,String biometricAttributeUid, String filterValue, String sessionId);
+        void onBiometricsSearch(List<SimprintsItem> simprintsItems,String biometricAttributeUid, String filterValue, String sessionId, Boolean ageNotSupported);
     }
 }

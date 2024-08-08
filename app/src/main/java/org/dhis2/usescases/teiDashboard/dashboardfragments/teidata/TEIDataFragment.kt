@@ -315,10 +315,10 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == BIOMETRICS_VERIFY_REQUEST) {
-                onBiometricsAppResponse(data)
+                onBiometricsAppResponse(requestCode, data)
             } else if (requestCode == BIOMETRICS_ENROLL_REQUEST){
                 if (data != null) {
-                    val result = get(requireContext()).handleRegisterResponse(data)
+                    val result = get(requireContext()).handleRegisterResponse(requestCode, data)
 
                     presenter.handleRegisterResponse(result)
                 }
@@ -326,11 +326,11 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         }
     }
 
-    private fun onBiometricsAppResponse(data: Intent?) {
+    private fun onBiometricsAppResponse(resultCode: Int,data: Intent?) {
         if (data == null) return
 
         val result = get(requireContext()).handleVerifyResponse(
-            data
+            resultCode, data
         )
         presenter.handleVerifyResponse(result)
     }

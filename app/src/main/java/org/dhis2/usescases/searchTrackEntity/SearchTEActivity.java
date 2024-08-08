@@ -42,7 +42,6 @@ import org.dhis2.commons.dialogs.DialogClickListener;
 import org.dhis2.data.biometrics.BiometricsClient;
 import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.data.biometrics.IdentifyResult;
-import org.dhis2.data.biometrics.RegisterResult;
 import org.dhis2.data.biometrics.SimprintsItem;
 import org.dhis2.data.forms.dataentry.ProgramAdapter;
 import org.dhis2.databinding.ActivitySearchBinding;
@@ -81,7 +80,6 @@ import kotlin.Unit;
 import timber.log.Timber;
 
 import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_CONFIRM_IDENTITY_REQUEST;
-import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_ENROLL_LAST_REQUEST;
 import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_IDENTIFY_REQUEST;
 import static org.dhis2.commons.biometrics.BiometricConstantsKt.BIOMETRICS_USER_NOT_FOUND;
 
@@ -487,34 +485,35 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode) {
             case BIOMETRICS_IDENTIFY_REQUEST: {
-                if (resultCode == RESULT_OK) {
+
 
                     IdentifyResult result = BiometricsClientFactory.INSTANCE.get(
-                            this).handleIdentifyResponse(data);
+                            this).handleIdentifyResponse(resultCode, data);
 
                     if (result instanceof IdentifyResult.Completed) {
                         IdentifyResult.Completed completedResult =
                                 (IdentifyResult.Completed) result;
 
                         presenter.searchOnBiometrics(completedResult.getItems(),
-                                completedResult.getSessionId());
+                                completedResult.getSessionId(), false);
                     } else if (result instanceof IdentifyResult.BiometricsDeclined) {
                         Toast.makeText(getContext(), R.string.biometrics_declined,
                                 Toast.LENGTH_SHORT).show();
-
                     } else if (result instanceof IdentifyResult.UserNotFound) {
                         Toast.makeText(getContext(), R.string.biometrics_user_not_found,
                                 Toast.LENGTH_SHORT).show();
                         presenter.searchOnBiometrics(
                                 Collections.singletonList(new SimprintsItem(BIOMETRICS_USER_NOT_FOUND, 0)),
-                                ((IdentifyResult.UserNotFound) result).getSessionId());
+                                ((IdentifyResult.UserNotFound) result).getSessionId(), false);
                     } else if (result instanceof IdentifyResult.Failure) {
                         showBiometricsErrorDialog();
+                    }  else if (result instanceof IdentifyResult.AgeGroupNotSupported) {
+                        Toast.makeText(getContext(), R.string.age_group_not_supported,
+                                Toast.LENGTH_SHORT).show();
+
+                        presenter.searchOnBiometrics(
+                                Collections.singletonList(new SimprintsItem(BIOMETRICS_USER_NOT_FOUND, 0)), "NA", true);
                     }
-                } else {
-                    Toast.makeText(getContext(), R.string.biometrics_declined,
-                            Toast.LENGTH_SHORT).show();
-                }
                 break;
             }
             case BIOMETRICS_CONFIRM_IDENTITY_REQUEST: {

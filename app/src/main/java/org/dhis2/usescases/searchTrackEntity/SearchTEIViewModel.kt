@@ -122,7 +122,7 @@ class SearchTEIViewModel(
             )
         }
 
-        presenter.setBiometricListener { simprintsItems, biometricAttributeUid, filterValue, sessionId ->
+        presenter.setBiometricListener { simprintsItems, biometricAttributeUid, filterValue, sessionId, ageNotSupported ->
             val previousSearch = when (sequentialSearch.value) {
                 is SequentialSearch.BiometricsSearch -> null
                 is SequentialSearch.AttributeSearch -> sequentialSearch.value
@@ -139,6 +139,7 @@ class SearchTEIViewModel(
                 SequentialSearch.BiometricsSearch(
                     simprintsItems = simprintsItems,
                     sessionId = sessionId,
+                    isAgeNotSupported = ageNotSupported,
                     previousSearch = previousSearch,
                     nextAction = nextAction
                 )
@@ -1176,18 +1177,28 @@ class SearchTEIViewModel(
         if (sequentialSearch.value == null) return emptyList()
 
         val isFirstSearch = sequentialSearch.value!!.previousSearch == null
+        val isBiometricsSearch = sequentialSearch.value is SequentialSearch.BiometricsSearch
+        val isAgeNotSupported = (sequentialSearch.value as? SequentialSearch.BiometricsSearch)?.isAgeNotSupported ?: false
 
         val message = if (isFirstSearch) {
             if (hasResults) {
                 resourceManager.getString(R.string.patient_not_shown_search_a_different_way)
             } else {
-                resourceManager.getString(R.string.results_not_found_search_a_different_way)
+                if (isBiometricsSearch && isAgeNotSupported) {
+                    resourceManager.getString(R.string.biometrics_not_applicable_for_this_age_group_search_with_personal_details)
+                } else {
+                    resourceManager.getString(R.string.results_not_found_search_a_different_way)
+                }
             }
         } else {
             if (hasResults) {
                 resourceManager.getString(R.string.patient_not_found_register_a_new_patient)
             } else {
-                resourceManager.getString(R.string.results_not_found_register_a_new_patient)
+                if (isBiometricsSearch && isAgeNotSupported){
+                    resourceManager.getString(R.string.biometrics_not_applicable_for_this_age_group_register_a_new_patient)
+                } else {
+                    resourceManager.getString(R.string.results_not_found_register_a_new_patient)
+                }
             }
         }
 

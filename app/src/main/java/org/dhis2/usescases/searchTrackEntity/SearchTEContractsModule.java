@@ -142,7 +142,7 @@ public class SearchTEContractsModule {
 
         void trackSearchMapVisualization();
 
-        void searchOnBiometrics(List <SimprintsItem> simprintsItems, String sessionId);
+        void searchOnBiometrics(List <SimprintsItem> simprintsItems, String sessionId, Boolean ageNotSupported);
 
         boolean getBiometricsSearchStatus();
 

@@ -26,6 +26,8 @@ sealed class RegisterResult {
     data class Completed(val guid: String) : RegisterResult()
     data class PossibleDuplicates(val guids: List<String>, val sessionId: String) : RegisterResult()
     data object Failure : RegisterResult()
+    data object AgeGroupNotSupported : RegisterResult()
+
 }
 
 data class SimprintsItem(
@@ -38,12 +40,15 @@ sealed class IdentifyResult {
     data object BiometricsDeclined : IdentifyResult()
     data class UserNotFound(val sessionId: String) : IdentifyResult()
     data object Failure : IdentifyResult()
+    data object AgeGroupNotSupported : IdentifyResult()
+
 }
 
 sealed class VerifyResult {
     data object Match : VerifyResult()
     data object NoMatch : VerifyResult()
     data object Failure : VerifyResult()
+    data object AgeGroupNotSupported : VerifyResult()
 }
 
 
@@ -140,7 +145,13 @@ class BiometricsClient(
     }
 
 
-    fun handleRegisterResponse(data: Intent): RegisterResult {
+    fun handleRegisterResponse(resultCode: Int, data: Intent): RegisterResult {
+        if (resultCode != Activity.RESULT_OK) {
+            return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
+                RegisterResult.AgeGroupNotSupported
+            else RegisterResult.Failure
+        }
+
         val biometricsCompleted = checkBiometricsCompleted(data)
 
         val handleRegister = {
@@ -155,7 +166,7 @@ class BiometricsClient(
         }
 
         val handlePossibleDuplicates = {
-            when (val identifyResponse = handleIdentifyResponse(data)) {
+            when (val identifyResponse = handleIdentifyResponse(resultCode, data)) {
                 is IdentifyResult.Completed -> {
                     val guids = identifyResponse.items.map { it.guid }
 
@@ -177,6 +188,8 @@ class BiometricsClient(
                 is IdentifyResult.Failure -> {
                     RegisterResult.Failure
                 }
+
+                is IdentifyResult.AgeGroupNotSupported ->  RegisterResult.AgeGroupNotSupported
             }
         }
 
@@ -199,7 +212,13 @@ class BiometricsClient(
         }
     }
 
-    fun handleIdentifyResponse(data: Intent): IdentifyResult {
+    fun handleIdentifyResponse(resultCode: Int, data: Intent): IdentifyResult {
+        if (resultCode != Activity.RESULT_OK) {
+            return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
+                IdentifyResult.AgeGroupNotSupported
+            else IdentifyResult.Failure
+        }
+
         val biometricsCompleted = checkBiometricsCompleted(data)
 
         if (biometricsCompleted) {
@@ -232,7 +251,13 @@ class BiometricsClient(
         }
     }
 
-    fun handleVerifyResponse(data: Intent): VerifyResult {
+    fun handleVerifyResponse(resultCode: Int, data: Intent): VerifyResult {
+        if (resultCode != Activity.RESULT_OK) {
+            return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
+                VerifyResult.AgeGroupNotSupported
+            else VerifyResult.Failure
+        }
+
         val biometricsCompleted = checkBiometricsCompleted(data)
 
         return if (biometricsCompleted) {
