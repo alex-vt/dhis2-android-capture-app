@@ -122,5 +122,5 @@
     <string name="biometrics_verification_match">Success</string>
     <string name="biometrics_verification_no_match">Failed</string>
     <string name="next">Next</string>
-    <string name="link_last_biometrics">Link last biometrics</string>
+    <string name="link_last_biometrics">Use the biometrics captured just now</string>
 </resources>
