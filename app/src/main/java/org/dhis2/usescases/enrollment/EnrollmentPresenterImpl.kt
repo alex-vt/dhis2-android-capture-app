@@ -62,7 +62,7 @@ class EnrollmentPresenterImpl(
     private val teiAttributesProvider: TeiAttributesProvider,
     private val basicPreferenceProvider: BasicPreferenceProvider,
 ) {
-    private var saveAfterRegisterLast: Boolean = false
+    private var pendingSave: Boolean = false
     private val disposable = CompositeDisposable()
     private val backButtonProcessor: FlowableProcessor<Boolean> = PublishProcessor.create()
     private var hasShownIncidentDateEditionWarning = false
@@ -254,9 +254,9 @@ class EnrollmentPresenterImpl(
     }
 
     fun showOrHideSaveButton() {
-        if (saveAfterRegisterLast) {
+        if (pendingSave) {
             view.performSaveClick()
-            saveAfterRegisterLast = false
+            pendingSave = false
             return
         }
 
@@ -338,6 +338,7 @@ class EnrollmentPresenterImpl(
                     ?.organisationUnit()!!
 
                 view.registerBiometrics(orgUnit)
+                pendingSave = true
             }
 
             biometricsUiModel?.setSaveWithoutBiometrics {
@@ -347,7 +348,7 @@ class EnrollmentPresenterImpl(
 
             biometricsUiModel?.setRegisterLastAndSave { sessionId ->
                 view.registerLast(sessionId)
-                saveAfterRegisterLast = true
+                pendingSave = true
             }
 
             val isVisible =
