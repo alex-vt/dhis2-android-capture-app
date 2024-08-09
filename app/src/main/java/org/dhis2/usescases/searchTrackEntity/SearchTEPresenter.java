@@ -372,10 +372,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         String enrollmentUid = item.getSelectedEnrollment().uid();
         boolean isOnline = item.isOnline();
 
-        view.showBiometricsSearchConfirmation(item);
-        biometricsSearchStatus = false;
-
-    /*    if (sequentialSearch instanceof SequentialSearch.BiometricsSearch) {
+        if (sequentialSearch instanceof SequentialSearch.BiometricsSearch) {
             view.showBiometricsSearchConfirmation(item);
             biometricsSearchStatus = false;
         } else {
@@ -384,7 +381,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
             } else {
                 downloadTei(TeiUid, enrollmentUid);
             }
-        }*/
+        }
     }
 
     @Override
@@ -624,7 +621,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     @Override
-    public void searchOnBiometrics(List <SimprintsItem> simprintsItems, String sessionId, Boolean ageNotSupported ) {
+    public void searchOnBiometrics(List <SimprintsItem> simprintsItems, String sessionId, Boolean ageNotSupported) {
         if (biometricsSearchListener != null) {
             this.sessionId = sessionId;
             List<String> guids = simprintsItems.stream().map(SimprintsItem::getGuid).collect(Collectors.toList());
