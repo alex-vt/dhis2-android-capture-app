@@ -104,7 +104,6 @@ fun ConfirmationListCardKey(
         color = color,
         style = MaterialTheme.typography.body1,
         overflow = TextOverflow.Ellipsis,
-        maxLines = 1,
         modifier = modifier,
         onTextLayout = { textLayoutResult ->
             if (textLayoutResult.hasVisualOverflow) {
@@ -129,7 +128,6 @@ internal fun ConfirmationListCardValue(
         color = color,
         style = MaterialTheme.typography.body1,
         overflow = TextOverflow.Ellipsis,
-        maxLines = 2,
         modifier = modifier,
     )
 }
