@@ -285,7 +285,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
     @Override
     public void onEnrollClick(HashMap<String, String> queryData, SequentialSearch sequentialSearch) {
-        if (sequentialSearch.getSequentialSessionId() != null){
+        if (sequentialSearch != null && sequentialSearch.getSequentialSessionId() != null){
             queryData.put(biometricUid, BIOMETRICS_SEARCH_PATTERN + sequentialSearch.getSequentialSessionId() + "_" + queryData.get(biometricUid));
         }
 
