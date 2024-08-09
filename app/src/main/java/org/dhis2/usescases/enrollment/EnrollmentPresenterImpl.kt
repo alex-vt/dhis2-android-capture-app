@@ -281,6 +281,7 @@ class EnrollmentPresenterImpl(
 
     fun onBiometricsFailure() {
         val uuid: UUID = UUID.randomUUID()
+        pendingSave = false
         saveBiometricValue("${BIOMETRICS_FAILURE_PATTERN}_${uuid}")
     }
 
