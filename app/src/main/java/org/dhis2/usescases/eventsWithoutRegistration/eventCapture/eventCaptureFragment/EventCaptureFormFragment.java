@@ -303,18 +303,18 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     }
 
     @Override
-    public void verifyBiometrics(@Nullable String biometricsGuid, @Nullable String teiOrgUnit, @Nullable String trackedEntityInstanceId) {
+    public void verifyBiometrics(@Nullable String biometricsGuid, @Nullable String teiOrgUnit, @Nullable String trackedEntityInstanceId, long ageInMonths) {
         HashMap extras = new HashMap<>();
         extras.put(BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID, trackedEntityInstanceId);
 
-        BiometricsClientFactory.INSTANCE.get(this.getContext()).verify(this, biometricsGuid, teiOrgUnit, extras, null);
+        BiometricsClientFactory.INSTANCE.get(this.getContext()).verify(this, biometricsGuid, teiOrgUnit, extras, ageInMonths);
     }
 
     @Override
-    public void registerBiometrics(@Nullable String teiOrgUnit, @Nullable String trackedEntityInstanceId) {
+    public void registerBiometrics(@Nullable String teiOrgUnit, @Nullable String trackedEntityInstanceId, long ageInMonths) {
         HashMap extras = new HashMap<>();
         extras.put(BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID, trackedEntityInstanceId);
 
-        BiometricsClientFactory.INSTANCE.get(this.getContext()).registerFromFragment(this, teiOrgUnit, extras , null);
+        BiometricsClientFactory.INSTANCE.get(this.getContext()).registerFromFragment(this, teiOrgUnit, extras , ageInMonths);
     }
 }

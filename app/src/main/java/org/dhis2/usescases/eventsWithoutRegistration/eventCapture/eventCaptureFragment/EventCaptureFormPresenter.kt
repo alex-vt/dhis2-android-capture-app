@@ -103,7 +103,9 @@ class EventCaptureFormPresenter(
             biometricsVerificationUiModel?.setBiometricsRetryListener(
                 object : BiometricsDataElementUiModelImpl.BiometricsReTryOnClickListener {
                     override fun onRetryClick() {
-                        view.verifyBiometrics(biometricsGuid, teiOrgUnit, trackedEntityInstanceId)
+                        val ageInMonths = activityPresenter.getTEIAgeInMonths()
+
+                        view.verifyBiometrics(biometricsGuid, teiOrgUnit, trackedEntityInstanceId, ageInMonths)
                     }
                 }
             )
@@ -111,7 +113,9 @@ class EventCaptureFormPresenter(
             biometricsVerificationUiModel?.setBiometricsRegisterListener(
                 object : BiometricsDataElementUiModelImpl.BiometricsRegisterClickListener {
                     override fun onClick() {
-                        view.registerBiometrics(teiOrgUnit, trackedEntityInstanceId)
+                        val ageInMonths = activityPresenter.getTEIAgeInMonths()
+
+                        view.registerBiometrics(teiOrgUnit, trackedEntityInstanceId, ageInMonths)
                     }
                 }
             )
@@ -157,10 +161,13 @@ class EventCaptureFormPresenter(
                     true
                 )
             ) {
+                val ageInMonths = activityPresenter.getTEIAgeInMonths()
+
                 view.verifyBiometrics(
                     this.biometricsGuid,
                     this.teiOrgUnit,
-                    this.trackedEntityInstanceId
+                    this.trackedEntityInstanceId,
+                    ageInMonths
                 )
             } else {
                 refreshBiometricsStatus(1, false)
