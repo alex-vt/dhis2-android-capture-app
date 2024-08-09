@@ -372,10 +372,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         String enrollmentUid = item.getSelectedEnrollment().uid();
         boolean isOnline = item.isOnline();
 
-        view.showBiometricsSearchConfirmation(item);
-        biometricsSearchStatus = false;
-
-    /*    if (sequentialSearch instanceof SequentialSearch.BiometricsSearch) {
+    if (sequentialSearch instanceof SequentialSearch.BiometricsSearch) {
             view.showBiometricsSearchConfirmation(item);
             biometricsSearchStatus = false;
         } else {
@@ -384,7 +381,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
             } else {
                 downloadTei(TeiUid, enrollmentUid);
             }
-        }*/
+        }
     }
 
     @Override
