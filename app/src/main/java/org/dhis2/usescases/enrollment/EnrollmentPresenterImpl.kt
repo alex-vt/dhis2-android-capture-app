@@ -3,6 +3,8 @@ package org.dhis2.usescases.enrollment
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.FlowableProcessor
 import io.reactivex.processors.PublishProcessor
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.dhis2.bindings.profilePicturePath
 import org.dhis2.commons.bindings.trackedEntityTypeForTei
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
@@ -254,12 +256,6 @@ class EnrollmentPresenterImpl(
     }
 
     fun showOrHideSaveButton() {
-        if (pendingSave) {
-            view.performSaveClick()
-            pendingSave = false
-            return
-        }
-
         val teiUid = teiRepository.blockingGet()?.uid() ?: ""
         val programUid = getProgram()?.uid() ?: ""
         val hasEnrollmentAccess = d2.enrollmentModule().enrollmentService()
@@ -301,6 +297,17 @@ class EnrollmentPresenterImpl(
     private fun saveBiometricValue(value: String?) {
         biometricsUiModel!!.onTextChange(value)
         biometricsUiModel!!.onSave(value)
+
+        if (pendingSave) {
+            pendingSave = false
+
+            runBlocking {
+                delay(200)
+                view.performSaveClick()
+            }
+
+            return
+        }
     }
 
     fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
