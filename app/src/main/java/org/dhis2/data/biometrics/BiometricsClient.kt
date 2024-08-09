@@ -12,8 +12,6 @@ import com.simprints.libsimprints.Identification
 import com.simprints.libsimprints.RefusalForm
 import com.simprints.libsimprints.Registration
 import com.simprints.libsimprints.SimHelper
-import com.simprints.libsimprints.Tier
-import com.simprints.libsimprints.Verification
 import org.dhis2.R
 import org.dhis2.commons.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
 import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
@@ -255,13 +253,23 @@ class BiometricsClient(
         if (resultCode != Activity.RESULT_OK) {
             return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
                 VerifyResult.AgeGroupNotSupported
-            else VerifyResult.Failure
+            else VerifyResult.NoMatch
         }
 
         val biometricsCompleted = checkBiometricsCompleted(data)
 
         return if (biometricsCompleted) {
-            val verification: Verification? =
+            val verificationJudgementBySimprints = getVerificationJudgementBySimprints(data)
+
+            if (verificationJudgementBySimprints) {
+                VerifyResult.Match
+            } else {
+                VerifyResult.NoMatch
+            }
+
+            // Old Judgement by confidenceScoreFilter
+            // test with old project id
+ /*           val verification: Verification? =
                 data.getParcelableExtra(Constants.SIMPRINTS_VERIFICATION)
 
             if (verification != null) {
@@ -279,7 +287,7 @@ class BiometricsClient(
                 }
             } else {
                 VerifyResult.Failure
-            }
+            }*/
         } else {
             VerifyResult.Failure
         }
@@ -343,6 +351,11 @@ class BiometricsClient(
 
     private fun checkBiometricsCompleted(data: Intent) =
         data.getBooleanExtra(Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false)
+
+    private fun getVerificationJudgementBySimprints(data: Intent) =
+        // extract the verification judgement
+        data.getBooleanExtra(Constants.SIMPRINTS_VERIFICATION_SUCCESS, false)
+
 
     private fun launchSimprintsAppFromActivity(
         activity: Activity,
