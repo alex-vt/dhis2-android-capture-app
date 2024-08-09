@@ -144,6 +144,8 @@ class BiometricsClient(
 
 
     fun handleRegisterResponse(resultCode: Int, data: Intent): RegisterResult {
+        Timber.d("Result code: $resultCode")
+
         if (resultCode != Activity.RESULT_OK) {
             return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
                 RegisterResult.AgeGroupNotSupported
@@ -211,6 +213,8 @@ class BiometricsClient(
     }
 
     fun handleIdentifyResponse(resultCode: Int, data: Intent): IdentifyResult {
+        Timber.d("Result code: $resultCode")
+
         if (resultCode != Activity.RESULT_OK) {
             return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
                 IdentifyResult.AgeGroupNotSupported
@@ -250,6 +254,8 @@ class BiometricsClient(
     }
 
     fun handleVerifyResponse(resultCode: Int, data: Intent): VerifyResult {
+        Timber.d("Result code: $resultCode")
+
         if (resultCode != Activity.RESULT_OK) {
             return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
                 VerifyResult.AgeGroupNotSupported
