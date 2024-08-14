@@ -315,10 +315,10 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == BIOMETRICS_VERIFY_REQUEST) {
-                onBiometricsAppResponse(requestCode, data)
+                onBiometricsAppResponse(resultCode, data)
             } else if (requestCode == BIOMETRICS_ENROLL_REQUEST){
                 if (data != null) {
-                    val result = get(requireContext()).handleRegisterResponse(requestCode, data)
+                    val result = get(requireContext()).handleRegisterResponse(resultCode, data)
 
                     presenter.handleRegisterResponse(result)
                 }
