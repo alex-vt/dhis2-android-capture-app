@@ -13,8 +13,20 @@ import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureFr
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.event.EventEditableStatus
 
-private const val UPG_Name = "cFKggVHL4pu"
-private const val UPG_UId = "LDh4Dt7xGD0"
+data class UPGProgram(val programUid: String, val upgName: String, val upgUid: String)
+
+private const val seasonPlanProgramUid = "WCJhvPcJomX"
+private const val seasonPlanUPGName = "cFKggVHL4pu"
+private const val seasonPlanUPGUId = "LDh4Dt7xGD0"
+
+private const val endOfSeasonReportProgramUid = "JsM6wTUTsL6"
+private const val endOfSeasonReportUPGName = "T4TY8UuBiza"
+private const val endOfSeasonReportUPGUId = "e3m1f3pdLAl"
+
+private val programsWithUPG = listOf(
+    UPGProgram(seasonPlanProgramUid, seasonPlanUPGName, seasonPlanUPGUId),
+    UPGProgram(endOfSeasonReportProgramUid, endOfSeasonReportUPGName, endOfSeasonReportUPGUId))
+
 
 class EventCaptureFormPresenter(
     private val view: EventCaptureFormView,
@@ -22,6 +34,7 @@ class EventCaptureFormPresenter(
     private val d2: D2,
     private val eventUid: String,
 ) {
+    var programUid: String = d2.eventModule().events().byUid().eq(eventUid).one().blockingGet()?.program() ?: ""
 
     fun handleDataIntegrityResult(result: DataIntegrityCheckResult) {
         when (result) {
@@ -78,13 +91,14 @@ class EventCaptureFormPresenter(
     private var savingSelectedUPG = false
 
     fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
+        val programWithUPG = programsWithUPG.find { it.programUid == programUid } ?: return fields
 
         //Eyeseetea customization - Remove UPG field from the form
         val finalFields = fields
             .map { field ->
-                if (field.uid == UPG_Name) {
+                if (field.uid == programWithUPG.upgName) {
                     field.setEditable(false)
-                } else if (field.uid == UPG_UId){
+                } else if (field.uid == programWithUPG.upgUid){
                     field.setVisible(false)
                 }
                 else {
@@ -92,8 +106,8 @@ class EventCaptureFormPresenter(
                 }
             }
 
-        upgUidUIModel = finalFields.find { it.uid == UPG_UId }
-        upgNameUIModel = finalFields.find { it.uid == UPG_Name }
+        upgUidUIModel = finalFields.find { it.uid == programWithUPG.upgUid }
+        upgNameUIModel = finalFields.find { it.uid == programWithUPG.upgName }
 
         if(upgUidUIModel != null && upgNameUIModel != null){
             val event = d2.eventModule().events().byUid().eq(eventUid).one().blockingGet()
