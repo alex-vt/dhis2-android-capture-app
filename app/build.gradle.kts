@@ -1,3 +1,4 @@
+
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -128,7 +129,7 @@ android {
         getByName("debug") {
             // custom application suffix which allows to
             // install debug and release builds at the same time
-            applicationIdSuffix = ".uat"
+            applicationIdSuffix = ".debug"
 
             // Using dataentry.jks to sign debug build type.
             signingConfig = signingConfigs.getByName("debug")
@@ -185,11 +186,18 @@ android {
             versionName = "2.9.1-psi-fork-2"
         }
 
+        create("ocbauat") {
+            applicationId = "ocba.com.dhis2.uat"
+            dimension = "default"
+            versionCode = libs.versions.vCode.get().toInt()
+            versionName = "2.9.1-ocbauat-fork-1"
+        }
+
         create("ocba") {
             applicationId = "ocba.com.dhis2"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = libs.versions.vName.get()
+            versionName = "2.9.1-ocba-fork-1"
         }
     }
 

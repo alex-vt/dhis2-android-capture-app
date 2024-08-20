@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DHIS2_Capture_App_OCBA_UAT</string>
-    <string name="logo_text">DHIS2_Capture_App_OCBA_UAT</string>
+    <string name="app_name">DHIS2_Capture_App_OCBA</string>
+    <string name="logo_text">DHIS2_Capture_App_OCBA</string>
     <string name="logo_number"></string>
 </resources>
