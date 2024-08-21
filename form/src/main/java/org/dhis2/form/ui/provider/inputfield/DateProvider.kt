@@ -77,6 +77,9 @@ fun ProvideInputDate(
                         allowFutureDates = fieldUiModel.allowFutureDates ?: true,
                     ),
                 )
+
+                // EyeSeeTea customization, force save method to change date
+                fieldUiModel.onSave(formatUIDateToStored(it?.text, fieldUiModel.valueType))
             },
             selectableDates = selectableDates,
             yearRange = yearIntRange,
