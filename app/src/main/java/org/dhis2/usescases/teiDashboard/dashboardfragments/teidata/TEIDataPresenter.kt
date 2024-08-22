@@ -156,6 +156,10 @@ class TEIDataPresenter(
                     ),
             )
 
+            fetchDashboardModel()
+
+            getEventsWithoutCatCombo()
+
             compositeDisposable.add(
                 Observable.interval(0, 2, TimeUnit.SECONDS)
                     .subscribeOn(schedulerProvider.io())
@@ -163,11 +167,6 @@ class TEIDataPresenter(
                     .subscribe(
                         { refreshVerificationStatus() }
                     ) { t: Throwable? -> Timber.e(t) })
-
-
-            fetchDashboardModel()
-
-            getEventsWithoutCatCombo()
         } ?: run {
             _shouldDisplayEventCreationButton.value = false
         }
@@ -186,6 +185,8 @@ class TEIDataPresenter(
                             dashboardModel = model
                             programUid = model.currentProgram().uid()
                             orgUnitUid = model.orgUnits[0].uid()
+
+                            refreshVerificationStatus()
                         }
                     },
                     Timber.Forest::e,
@@ -580,7 +581,7 @@ class TEIDataPresenter(
     }
 
     private fun refreshVerificationStatus() {
-        if (lastVerificationResult == null && dashboardModel != null && dashboardModel!!.isBiometricsEnabled()) {
+        if (dashboardModel != null && dashboardModel!!.isBiometricsEnabled()) {
             val values =
                 dashboardRepository.getTEIAttributeValues(programUid, teiUid).blockingSingle()
 
