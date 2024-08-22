@@ -113,7 +113,7 @@
     <string name="cat_combo">Cat combo</string>
 
     <string name="biometrics_get">Get biometrics</string>
-    <string name="biometrics_register_and_save">Enroll biometrics and save</string>
+    <string name="biometrics_register_and_save">Enrol biometrics and save</string>
     <string name="biometrics_save_without_biometrics">Save without biometrics</string>
     <string name="biometrics_retake">Retake</string>
     <string name="biometrics_completed">Biometrics completed</string>
