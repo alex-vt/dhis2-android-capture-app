@@ -581,7 +581,7 @@ class TEIDataPresenter(
     }
 
     private fun refreshVerificationStatus() {
-        if (dashboardModel != null && dashboardModel!!.isBiometricsEnabled()) {
+        if ((lastVerificationResult == null|| lastVerificationResult == VerifyResult.Match) && dashboardModel != null && dashboardModel!!.isBiometricsEnabled()) {
             val values =
                 dashboardRepository.getTEIAttributeValues(programUid, teiUid).blockingSingle()
 
