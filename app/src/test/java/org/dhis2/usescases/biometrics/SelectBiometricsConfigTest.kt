@@ -1,14 +1,14 @@
 package org.dhis2.usescases.biometrics
 
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import org.dhis2.usescases.biometrics.entities.BiometricsConfig
 import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
 import org.dhis2.usescases.biometrics.usecases.SelectBiometricsConfig
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.kotlin.whenever
 
 
 @RunWith(MockitoJUnitRunner::class)
@@ -77,7 +77,9 @@ val defaultConfig = BiometricsConfig(
     confidenceScoreFilter = 55,
     icon = "fingerprint",
     lastVerificationDuration = 5,
-    program = null
+    program = null,
+    userId = "Admin",
+    lastDeclinedEnrolDuration = null
 )
 
 val configs = listOf(
@@ -88,7 +90,9 @@ val configs = listOf(
         confidenceScoreFilter = 55,
         icon = "face",
         lastVerificationDuration = 5,
-        program = null
+        program = null,
+        userId = "Admin",
+        lastDeclinedEnrolDuration = null
     ),
     BiometricsConfig(
         orgUnitGroup = null,
@@ -96,7 +100,9 @@ val configs = listOf(
         confidenceScoreFilter = 55,
         icon = "fingerprint",
         lastVerificationDuration = 5,
-        program = "DM9n1bUw8W8"
+        program = "DM9n1bUw8W8",
+        userId = "Admin",
+        lastDeclinedEnrolDuration = null
     ),
     BiometricsConfig(
         orgUnitGroup = "aAcGSF3p97c",
@@ -104,6 +110,8 @@ val configs = listOf(
         confidenceScoreFilter = 55,
         icon = "face",
         lastVerificationDuration = 5,
-        program = null
+        program = null,
+        userId = "Admin",
+        lastDeclinedEnrolDuration = null
     )
 )

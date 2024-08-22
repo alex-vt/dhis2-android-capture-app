@@ -5,6 +5,7 @@ import org.dhis2.commons.biometrics.getBioIconFailed
 import org.dhis2.commons.biometrics.getBioIconSuccess
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.biometrics.RegisterResult
+import org.dhis2.usescases.biometrics.ui.declinedButtonColor
 import org.dhis2.usescases.biometrics.ui.defaultButtonColor
 import org.dhis2.usescases.biometrics.ui.failedButtonColor
 import org.dhis2.usescases.biometrics.ui.successButtonColor
@@ -16,14 +17,30 @@ class TeiDashboardBioRegistrationMapper(
         registerResult: RegisterResult?,
         actionCallback: () -> Unit,
     ): TeiDashboardBioModel {
-        return TeiDashboardBioModel(
-            statusModel = null,
-            buttonModel = BioButtonModel(
+        val statusModel = if (registerResult == RegisterResult.Failure) {
+            BioStatus(
+                text = getText(registerResult),
+                backgroundColor = getBackgroundColor(registerResult),
+                icon = getIcon(registerResult)
+            )
+        } else {
+            null
+        }
+
+        val buttonModel = if (registerResult != RegisterResult.Failure) {
+            BioButtonModel(
                 text = getText(registerResult),
                 backgroundColor = getBackgroundColor(registerResult),
                 icon = getIcon(registerResult),
                 onActionClick = actionCallback
             )
+        } else {
+            null
+        }
+
+        return TeiDashboardBioModel(
+            statusModel = statusModel,
+            buttonModel = buttonModel
         )
     }
 
@@ -71,7 +88,7 @@ class TeiDashboardBioRegistrationMapper(
         } else {
             return when (registerResult) {
                 is RegisterResult.Completed -> successButtonColor
-                is RegisterResult.Failure -> failedButtonColor
+                is RegisterResult.Failure -> declinedButtonColor
                 is RegisterResult.PossibleDuplicates -> failedButtonColor
                 is RegisterResult.AgeGroupNotSupported -> failedButtonColor
             }

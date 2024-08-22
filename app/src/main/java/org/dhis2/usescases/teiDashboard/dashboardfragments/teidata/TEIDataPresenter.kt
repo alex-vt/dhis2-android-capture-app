@@ -66,7 +66,9 @@ import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.program.ProgramStage
 import org.hisp.dhis.rules.models.RuleEffect
 import timber.log.Timber
+import java.util.Timer
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.schedule
 
 class TEIDataPresenter(
     private val view: TEIDataContracts.View,
@@ -107,6 +109,12 @@ class TEIDataPresenter(
 
     private var lastVerificationResult: VerifyResult? = null
     private var lastRegisterResult: RegisterResult? = null
+    private val lastBiometricsVerificationDuration = basicPreferenceProvider.getInt(
+        BiometricsPreference.LAST_VERIFICATION_DURATION, 0
+    )
+    val lastDeclinedEnrolDuration = basicPreferenceProvider.getInt(
+        BiometricsPreference.LAST_DECLINED_ENROL_DURATION, 0
+    )
 
     fun init() {
         programUid?.let {
@@ -577,20 +585,25 @@ class TEIDataPresenter(
 
             lastRegisterResult = null
             lastVerificationResult = VerifyResult.Match
+        } else if (result is RegisterResult.Failure && lastDeclinedEnrolDuration > 0) {
+            val lastDeclinedEnrolDurationInMillis =
+                TimeUnit.MINUTES.toMillis(lastDeclinedEnrolDuration.toLong())
+
+            Timer().schedule(lastDeclinedEnrolDurationInMillis) {
+                lastRegisterResult = null
+            }
         }
     }
 
     private fun refreshVerificationStatus() {
-        if ((lastVerificationResult == null|| lastVerificationResult == VerifyResult.Match) && dashboardModel != null && dashboardModel!!.isBiometricsEnabled()) {
+        if ((lastVerificationResult == null || lastVerificationResult == VerifyResult.Match) && dashboardModel != null && dashboardModel!!.isBiometricsEnabled()) {
             val values =
                 dashboardRepository.getTEIAttributeValues(programUid, teiUid).blockingSingle()
 
             val value =
                 values.firstOrNull { it.trackedEntityAttribute() == dashboardModel!!.getBiometricsAttributeUid() }
 
-            val lastBiometricsVerificationDuration = basicPreferenceProvider.getInt(
-                BiometricsPreference.LAST_VERIFICATION_DURATION, 0
-            )
+
             if (!isLastVerificationValid(
                     value?.lastUpdated(),
                     lastBiometricsVerificationDuration,

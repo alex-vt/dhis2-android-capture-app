@@ -25,6 +25,7 @@ class BiometricsConfigRepositoryImpl(
             if (response.isSuccessful && configOptions != null) {
                 preferenceProvider.saveAsJson(BiometricsPreference.CONFIGURATIONS, configOptions)
                 Timber.d("BiometricsConfig synced!")
+                Timber.d("BiometricsConfig: $configOptions")
 
                 val userOrgUnitGroups =
                     d2.organisationUnitModule().organisationUnits()
@@ -85,6 +86,10 @@ class BiometricsConfigRepositoryImpl(
             BiometricsPreference.LAST_VERIFICATION_DURATION,
             config.lastVerificationDuration ?: 0
         )
+        preferenceProvider.setValue(
+            BiometricsPreference.LAST_DECLINED_ENROL_DURATION,
+            config.lastDeclinedEnrolDuration ?: 0
+        )
 
         Timber.d("downloadBiometricsConfig!")
         Timber.d("orgUnitGroup: ${config.orgUnitGroup}")
@@ -94,5 +99,6 @@ class BiometricsConfigRepositoryImpl(
         Timber.d("confidenceScoreFilter: ${config.confidenceScoreFilter}")
         Timber.d("icon: $icon")
         Timber.d("lastVerificationDuration: ${config.lastVerificationDuration}")
+        Timber.d("lastDeclinedEnrolDuration: ${config.lastDeclinedEnrolDuration}")
     }
 }
