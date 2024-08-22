@@ -734,7 +734,10 @@ class FormView : Fragment() {
             dataEntryHeaderHelper.onItemsUpdatedCallback()
             viewModel.onItemsRendered()
             onFieldItemsRendered?.invoke(finalItems.isEmpty())
-            onFieldsLoadedListener?.invoke(finalItems)
+
+            if (!useCompose && onFieldsLoadedListener != null){
+                onFieldsLoadedListener?.invoke(finalItems)
+            }
         }
         layoutManager.scrollToPositionWithOffset(myFirstPositionIndex, offset)
         FormCountingIdlingResource.decrement()
