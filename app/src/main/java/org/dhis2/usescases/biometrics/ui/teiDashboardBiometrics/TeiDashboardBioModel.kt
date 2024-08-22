@@ -1,7 +1,7 @@
 package org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics
 
 data class TeiDashboardBioModel(
-    val verificationStatusModel: BioVerificationStatus?,
+    val statusModel: BioStatus?,
     val buttonModel: BioButtonModel?,
 )
 
@@ -12,7 +12,7 @@ data class BioButtonModel(
     val onActionClick: () -> Unit,
 )
 
-data class BioVerificationStatus(
+data class BioStatus(
     val text: String,
     val backgroundColor: String,
     val icon: Int

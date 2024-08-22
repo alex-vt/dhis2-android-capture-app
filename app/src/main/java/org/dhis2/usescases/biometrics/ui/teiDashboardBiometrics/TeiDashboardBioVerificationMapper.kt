@@ -36,8 +36,8 @@ class TeiDashboardBioVerificationMapper(
         }
 
         return TeiDashboardBioModel(
-            verificationStatusModel = verifyResult?.let {
-                BioVerificationStatus(
+            statusModel = verifyResult?.let {
+                BioStatus(
                     text = getText(verifyResult),
                     backgroundColor = getBackgroundColor(verifyResult),
                     icon = getIcon(verifyResult)

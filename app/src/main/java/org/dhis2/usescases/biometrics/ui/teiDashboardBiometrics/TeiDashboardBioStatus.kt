@@ -22,7 +22,7 @@ import org.dhis2.R
 
 @Composable
 fun TeiDashboardBioStatus(
-    model: BioVerificationStatus
+    model: BioStatus
 ) {
 
     Row(
@@ -65,7 +65,7 @@ fun TeiDashboardBioStatus(
 @Composable
 fun TeiDashboardBioStatusPreview() {
     TeiDashboardBioStatus(
-        model = BioVerificationStatus(
+        model = BioStatus(
             text = "Biometrics",
             backgroundColor = "#4d4d4d",
             icon = R.drawable.ic_bio_face_success

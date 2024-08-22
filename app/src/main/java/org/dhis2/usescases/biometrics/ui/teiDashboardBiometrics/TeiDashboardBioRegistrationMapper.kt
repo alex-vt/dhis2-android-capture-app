@@ -17,7 +17,7 @@ class TeiDashboardBioRegistrationMapper(
         actionCallback: () -> Unit,
     ): TeiDashboardBioModel {
         return TeiDashboardBioModel(
-            verificationStatusModel = null,
+            statusModel = null,
             buttonModel = BioButtonModel(
                 text = getText(registerResult),
                 backgroundColor = getBackgroundColor(registerResult),
