@@ -737,7 +737,9 @@ class SearchTEIViewModel(
                 listOf(SearchResult(SearchResult.SearchResultType.NO_MORE_RESULTS))
 
             else ->
-                listOf(SearchResult(SearchResult.SearchResultType.NO_RESULTS))
+                //EyeSeTea customization - never show icon folder no results
+                //listOf(SearchResult(SearchResult.SearchResultType.NO_RESULTS))
+                listOf()
         }
 
         val sequentialSearchMessage = getSearchResultSequentialSearchMessage(hasProgramResults)
