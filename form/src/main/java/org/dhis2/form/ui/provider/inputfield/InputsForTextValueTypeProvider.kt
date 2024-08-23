@@ -165,6 +165,9 @@ private fun ProvideDefaultTextInput(
                     fieldUiModel.valueType,
                 ),
             )
+
+            // EyeSeeTea customization, force save method to change date
+            fieldUiModel.onSave(value.text)
         },
         autoCompleteList = fieldUiModel.autocompleteList(),
         onAutoCompleteItemSelected = {
