@@ -9,13 +9,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.commons.biometrics.BIOMETRICS_SEARCH_PATTERN
 import org.dhis2.form.R
+import org.dhis2.form.ui.biometrics.components.declinedButtonColor
 import org.dhis2.form.ui.biometrics.components.defaultButtonColor
-import org.dhis2.form.ui.biometrics.components.failedButtonColor
 import org.dhis2.form.ui.biometrics.components.successButtonColor
 
 enum class BiometricsTEIState {
@@ -128,15 +129,11 @@ fun RegistrationButton(
                 showRetake = false
             )
         }
-
         BiometricsTEIState.FAILURE -> {
-            RegistrationResult(
-                onBiometricsClick = onBiometricsClick,
-                enabled = enabled,
-                resultText = R.string.biometrics_declined,
-                resultIcon = getIconByState(BiometricsTEIState.FAILURE),
-                resultColor = failedButtonColor,
-                showRetake = true
+            BiometricsStatusFlag(
+                text = stringResource(id = R.string.biometrics_declined),
+                backgroundColor = declinedButtonColor,
+                icon = getIconByState(BiometricsTEIState.FAILURE) ?: R.drawable.ic_bio_face_failed
             )
         }
     }

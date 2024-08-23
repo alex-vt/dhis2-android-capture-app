@@ -112,7 +112,7 @@ class TEIDataPresenter(
     private val lastBiometricsVerificationDuration = basicPreferenceProvider.getInt(
         BiometricsPreference.LAST_VERIFICATION_DURATION, 0
     )
-    val lastDeclinedEnrolDuration = basicPreferenceProvider.getInt(
+    private val lastDeclinedEnrolDuration = basicPreferenceProvider.getInt(
         BiometricsPreference.LAST_DECLINED_ENROL_DURATION, 0
     )
 
@@ -175,6 +175,7 @@ class TEIDataPresenter(
                     .subscribe(
                         { refreshVerificationStatus() }
                     ) { t: Throwable? -> Timber.e(t) })
+
         } ?: run {
             _shouldDisplayEventCreationButton.value = false
         }

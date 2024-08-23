@@ -1,6 +1,8 @@
 package org.dhis2.usescases.enrollment
 
+import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.processors.FlowableProcessor
 import io.reactivex.processors.PublishProcessor
 import kotlinx.coroutines.delay
@@ -9,6 +11,7 @@ import org.dhis2.bindings.profilePicturePath
 import org.dhis2.commons.bindings.trackedEntityTypeForTei
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.commons.biometrics.BIOMETRICS_SEARCH_PATTERN
+import org.dhis2.commons.biometrics.BiometricsPreference
 import org.dhis2.commons.data.TeiAttributesInfo
 import org.dhis2.commons.matomo.Actions.Companion.CREATE_TEI
 import org.dhis2.commons.matomo.Categories.Companion.TRACKER_LIST
@@ -47,6 +50,7 @@ import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstanceObjectRepository
 import timber.log.Timber
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 private const val TAG = "EnrollmentPresenter"
 
@@ -65,12 +69,17 @@ class EnrollmentPresenterImpl(
     private val teiAttributesProvider: TeiAttributesProvider,
     private val basicPreferenceProvider: BasicPreferenceProvider,
 ) {
+
     private var pendingSave: Boolean = false
     private val disposable = CompositeDisposable()
     private val backButtonProcessor: FlowableProcessor<Boolean> = PublishProcessor.create()
     private var hasShownIncidentDateEditionWarning = false
     private var hasShownEnrollmentDateEditionWarning = false
     private var biometricsUiModel: BiometricsAttributeUiModelImpl? = null
+    private val lastDeclinedEnrolDuration = basicPreferenceProvider.getInt(
+        BiometricsPreference.LAST_DECLINED_ENROL_DURATION, 0
+    )
+    private var resetBiometricsFailureAfterTimeDisposable: Disposable? = null
 
     fun init() {
         view.setSaveButtonVisible(false)
@@ -348,7 +357,8 @@ class EnrollmentPresenterImpl(
 
                 val program = programRepository.blockingGet()?.uid() ?: ""
 
-                val ageInMonths = getAgeInMonthsByFieldUiModel(basicPreferenceProvider,fields, program)
+                val ageInMonths =
+                    getAgeInMonthsByFieldUiModel(basicPreferenceProvider, fields, program)
 
                 view.registerBiometrics(orgUnit, ageInMonths)
                 pendingSave = true
@@ -369,7 +379,30 @@ class EnrollmentPresenterImpl(
                     BIOMETRICS_SEARCH_PATTERN
                 ))
             view.setSaveButtonVisible(visible = isVisible)
+
+           if (biometricsUiModel?.value?.startsWith(BIOMETRICS_FAILURE_PATTERN) == true) {
+                resetBiometricsFailureAfterTime()
+            }
         }
+    }
+
+    private fun resetBiometricsFailureAfterTime() {
+        if (resetBiometricsFailureAfterTimeDisposable != null &&
+            !resetBiometricsFailureAfterTimeDisposable!!.isDisposed) {
+            resetBiometricsFailureAfterTimeDisposable!!.dispose()
+        }
+
+        resetBiometricsFailureAfterTimeDisposable =
+            (Observable.timer(lastDeclinedEnrolDuration.toLong(), TimeUnit.MINUTES)
+                .subscribeOn(schedulerProvider.io())
+                .observeOn(schedulerProvider.ui())
+                .subscribe(
+                    {
+                        saveBiometricValue(null)
+                    }
+                ) { t: Throwable? -> Timber.e(t) })
+
+        disposable.add(resetBiometricsFailureAfterTimeDisposable!!)
     }
 
     fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
@@ -396,7 +429,8 @@ class EnrollmentPresenterImpl(
                     teiRepository.blockingGet()?.uid() ?: ""
                 )
 
-                val isUnderAgeThreshold = isUnderAgeThreshold(basicPreferenceProvider,teiAttrValues,program )
+                val isUnderAgeThreshold =
+                    isUnderAgeThreshold(basicPreferenceProvider, teiAttrValues, program)
 
                 biometricsUiModel
                     .setValue(parentBiometricsValue?.value() ?: biometricsUiModel.value)
