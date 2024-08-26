@@ -22,10 +22,12 @@ import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.toDateSpan
 import org.dhis2.commons.date.toOverdueOrScheduledUiText
 import org.dhis2.commons.date.toUi
+import org.dhis2.commons.prefs.BasicPreferenceProviderImpl
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.ui.model.ListCardUiModel
 import org.dhis2.form.extensions.isNotBiometricText
 import org.dhis2.usescases.biometrics.addAttrBiometricsEmojiIfRequired
+import org.dhis2.usescases.biometrics.isUnderAgeThreshold
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.enrollment.Enrollment
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
@@ -123,8 +125,15 @@ class TEICardMapper(
         //attributeList.removeIf { it.value.isEmpty() || it.value == "-" }
         attributeList.removeIf { it.key!!.isNotBiometricText() && (it.value.isEmpty() || it.value == "-") }
 
+        val isUnderAgeThreshold = isUnderAgeThreshold(
+            BasicPreferenceProviderImpl(context),
+            searchTEIModel.allAttributeValues.values.toList(),
+            searchTEIModel.selectedEnrollment.program() ?: ""
+        )
+
         // EyeSeeTea customization
-        val finalAttributeList = addAttrBiometricsEmojiIfRequired(attributeList).toMutableList()
+        val finalAttributeList =
+            addAttrBiometricsEmojiIfRequired(attributeList, isUnderAgeThreshold).toMutableList()
 
         return finalAttributeList.also { list ->
             if (searchTEIModel.displayOrgUnit) {
@@ -497,7 +506,13 @@ class TEICardMapper(
             )
         }.toMutableList()
 
-        return addAttrBiometricsEmojiIfRequired(attributeList).toMutableList()
+        val isUnderAgeThreshold = isUnderAgeThreshold(
+            BasicPreferenceProviderImpl(context),
+            searchTEIModel.allAttributeValues.values.toList(),
+            searchTEIModel.selectedEnrollment.program() ?: ""
+        )
+
+        return addAttrBiometricsEmojiIfRequired(attributeList, isUnderAgeThreshold).toMutableList()
     }
 
 }

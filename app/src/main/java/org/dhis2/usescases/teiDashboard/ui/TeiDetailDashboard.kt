@@ -31,7 +31,8 @@ fun TeiDetailDashboard(
     timelineEventHeaderModel: TimelineEventsHeaderModel,
     isGrouped: Boolean = true,
     timelineOnEventCreationOptionSelected: (EventCreationType) -> Unit,
-    teiDashboardBioModel: TeiDashboardBioModel?
+    teiDashboardBioModel: TeiDashboardBioModel?,
+    isUnderAgeThreshold:Boolean
 ) {
     Column(
         modifier = Modifier
@@ -98,7 +99,7 @@ fun TeiDetailDashboard(
                 TeiDashboardBioStatus(teiDashboardBioModel.statusModel)
             }
 
-            val additionalInfoList = addAttrBiometricsEmojiIfRequired(card.additionalInfo)
+            val additionalInfoList = addAttrBiometricsEmojiIfRequired(card.additionalInfo, isUnderAgeThreshold)
 
             CardDetail(
                 title = card.title,

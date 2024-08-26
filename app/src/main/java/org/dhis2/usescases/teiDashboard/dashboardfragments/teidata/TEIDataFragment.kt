@@ -40,6 +40,7 @@ import org.dhis2.commons.dialogs.imagedetail.ImageDetailActivity
 import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.orgunitselector.OUTreeFragment
 import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
+import org.dhis2.commons.prefs.BasicPreferenceProviderImpl
 import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.sync.OnDismissListener
@@ -48,6 +49,7 @@ import org.dhis2.data.biometrics.BiometricsClient
 import org.dhis2.data.biometrics.BiometricsClientFactory.get
 import org.dhis2.databinding.FragmentTeiDataBinding
 import org.dhis2.form.model.EventMode
+import org.dhis2.usescases.biometrics.isUnderAgeThreshold
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity
 import org.dhis2.usescases.general.FragmentGlobalAbstract
@@ -237,6 +239,18 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                 )
             }
 
+
+            val isUnderAgeThreshold = dashboardModel?.let {
+                if (it is DashboardEnrollmentModel) {
+                    isUnderAgeThreshold(
+                        BasicPreferenceProviderImpl(requireContext()),
+                        it.trackedEntityAttributeValues,
+                        it.currentProgram().uid())
+                } else {
+                    false
+                }
+            } ?: false
+
             TeiDetailDashboard(
                 syncData = syncInfoBar,
                 followUpData = followUpInfoBar,
@@ -252,6 +266,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                     presenter.onAddNewEventOptionSelected(it, null)
                 },
                 teiDashboardBioModel = presenter.getBiometricsModel(),
+                isUnderAgeThreshold = isUnderAgeThreshold
             )
         }
     }
@@ -316,7 +331,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == BIOMETRICS_VERIFY_REQUEST) {
                 onBiometricsAppResponse(resultCode, data)
-            } else if (requestCode == BIOMETRICS_ENROLL_REQUEST){
+            } else if (requestCode == BIOMETRICS_ENROLL_REQUEST) {
                 if (data != null) {
                     val result = get(requireContext()).handleRegisterResponse(resultCode, data)
 
@@ -326,7 +341,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         }
     }
 
-    private fun onBiometricsAppResponse(resultCode: Int,data: Intent?) {
+    private fun onBiometricsAppResponse(resultCode: Int, data: Intent?) {
         if (data == null) return
 
         val result = get(requireContext()).handleVerifyResponse(
@@ -625,7 +640,11 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         biometricsClient.verify(this, guid, orgUnitUid, extras, ageInMonths)
     }
 
-    override fun registerBiometrics(orgUnitUid: String, trackedEntityInstanceUId: String, ageInMonths: Long) {
+    override fun registerBiometrics(
+        orgUnitUid: String,
+        trackedEntityInstanceUId: String,
+        ageInMonths: Long
+    ) {
         val biometricsClient = get(requireContext())
         val extras: HashMap<String, String> = HashMap()
         extras[BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID] = trackedEntityInstanceUId
@@ -635,7 +654,6 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     override fun refreshCard() {
         showDetailCard()
     }
-
 
 
     companion object {
