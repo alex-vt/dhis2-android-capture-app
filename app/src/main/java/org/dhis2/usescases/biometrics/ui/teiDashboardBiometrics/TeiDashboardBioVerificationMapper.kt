@@ -1,12 +1,12 @@
 package org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics
 
 import org.dhis2.R
+import org.dhis2.commons.biometrics.defaultButtonColor
 import org.dhis2.commons.biometrics.getBioIconFailed
 import org.dhis2.commons.biometrics.getBioIconSuccess
 import org.dhis2.commons.biometrics.getBioIconWarning
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.biometrics.VerifyResult
-import org.dhis2.usescases.biometrics.ui.defaultButtonColor
 
 class TeiDashboardBioVerificationMapper(
     val resourceManager: ResourceManager,

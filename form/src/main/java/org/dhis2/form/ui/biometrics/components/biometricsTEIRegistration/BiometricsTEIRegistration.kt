@@ -14,10 +14,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.commons.biometrics.BIOMETRICS_SEARCH_PATTERN
+import org.dhis2.commons.biometrics.declinedButtonColor
+import org.dhis2.commons.biometrics.defaultButtonColor
+import org.dhis2.commons.biometrics.successButtonColor
 import org.dhis2.form.R
-import org.dhis2.form.ui.biometrics.components.declinedButtonColor
-import org.dhis2.form.ui.biometrics.components.defaultButtonColor
-import org.dhis2.form.ui.biometrics.components.successButtonColor
 
 enum class BiometricsTEIState {
     INITIAL,

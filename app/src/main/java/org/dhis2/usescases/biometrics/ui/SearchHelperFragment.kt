@@ -27,7 +27,6 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
@@ -39,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import org.dhis2.R
+import org.dhis2.commons.biometrics.gradientButtonColor
 import org.dhis2.usescases.searchTrackEntity.SearchTEActivity
 import org.dhis2.usescases.searchTrackEntity.SearchTEIViewModel
 import org.dhis2.usescases.searchTrackEntity.SearchTeiViewModelFactory
@@ -112,12 +112,6 @@ fun SearchHelperContent(onAction: (action: SequentialSearchAction) -> Unit = { }
 fun SearchWithBiometricsButton(
     onClick: () -> Unit = { },
 ) {
-    val colorStops = arrayOf(
-        0.0f to Color(0xFF009cb6),
-        0.4f to Color(0xFF00b4d1),
-        0.8f to Color(0xFF009cb6)
-    )
-
     val modifier = Modifier
         .wrapContentWidth()
         .fillMaxWidth()
@@ -131,7 +125,7 @@ fun SearchWithBiometricsButton(
     ) {
         Box(
             modifier = Modifier
-                .background(Brush.horizontalGradient(colorStops = colorStops))
+                .background(gradientButtonColor)
                 .then(modifier),
             contentAlignment = Alignment.Center,
 

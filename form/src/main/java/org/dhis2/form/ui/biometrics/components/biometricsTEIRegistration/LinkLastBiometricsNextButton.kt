@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import org.dhis2.commons.biometrics.defaultButtonColor
 import org.dhis2.form.R
-import org.dhis2.form.ui.biometrics.components.defaultButtonColor
 import org.hisp.dhis.mobile.ui.designsystem.theme.SurfaceColor
 
 @Composable

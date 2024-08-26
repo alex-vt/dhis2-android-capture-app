@@ -1,14 +1,14 @@
 package org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics
 
 import org.dhis2.R
+import org.dhis2.commons.biometrics.declinedButtonColor
+import org.dhis2.commons.biometrics.defaultButtonColor
+import org.dhis2.commons.biometrics.failedButtonColor
 import org.dhis2.commons.biometrics.getBioIconFailed
 import org.dhis2.commons.biometrics.getBioIconSuccess
+import org.dhis2.commons.biometrics.successButtonColor
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.biometrics.RegisterResult
-import org.dhis2.usescases.biometrics.ui.declinedButtonColor
-import org.dhis2.usescases.biometrics.ui.defaultButtonColor
-import org.dhis2.usescases.biometrics.ui.failedButtonColor
-import org.dhis2.usescases.biometrics.ui.successButtonColor
 
 class TeiDashboardBioRegistrationMapper(
     val resourceManager: ResourceManager,
