@@ -3,8 +3,7 @@ package org.dhis2.usescases.biometrics.ui
 import android.graphics.Color.parseColor
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material.Icon
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
@@ -27,7 +26,7 @@ internal fun SequentialNextSearchAction(
 ) {
     when(sequentialSearchAction){
         is SequentialSearchAction.SearchWithBiometrics -> {
-            OutlinedButton(modifier = Modifier.width(270.dp).height(50.dp),
+            OutlinedButton(modifier = Modifier.defaultMinSize(minHeight = 50.dp, minWidth = 270.dp),
                 border = BorderStroke(
                     width = 1.dp,
                     color = Color(0xFF0281cb)
@@ -37,7 +36,7 @@ internal fun SequentialNextSearchAction(
             }
         }
         is SequentialSearchAction.SearchWithAttributes -> {
-            OutlinedButton(modifier = Modifier.width(270.dp).height(50.dp),
+            OutlinedButton(modifier = Modifier.defaultMinSize(minHeight = 50.dp, minWidth = 270.dp),
                 border = BorderStroke(
                     width = 1.dp,
                     color = Color(0xFF0281cb)
@@ -58,7 +57,7 @@ internal fun SequentialNextSearchAction(
                     )
                 },
                 modifier = Modifier.background(Color(parseColor(defaultButtonColor)))
-                    .height(50.dp),
+                    .defaultMinSize(minHeight = 50.dp),
                 onClick = onClick,
             )
         }
