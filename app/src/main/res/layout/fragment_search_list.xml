@@ -23,8 +23,7 @@
                 android:clipToPadding="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_scrollFlags="scroll|enterAlwaysCollapsed"/>
+                app:layout_constraintTop_toTopOf="parent"/>
 
         </com.google.android.material.appbar.AppBarLayout>
 
