@@ -102,7 +102,7 @@ fun ConfirmationListCardKey(
     Text(
         text = modifiedText,
         color = color,
-        style = MaterialTheme.typography.body1,
+        style = MaterialTheme.typography.body2,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier,
         onTextLayout = { textLayoutResult ->
@@ -126,7 +126,7 @@ internal fun ConfirmationListCardValue(
     Text(
         text = text,
         color = color,
-        style = MaterialTheme.typography.body1,
+        style = MaterialTheme.typography.body2,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier,
     )

@@ -510,8 +510,14 @@ class TEICardMapper(
         val attributeList = attributeUIdsToShow.mapNotNull { attributeUIdToShow ->
             searchTEIModel.allAttributeValues.entries.find { it.value.trackedEntityAttribute() == attributeUIdToShow }
         }.map {
+
+            val key = if (it.key.startsWith("Traceable address")) it.key.replace(
+                "(where family Lives)",
+                ""
+            ) else it.key
+
             AdditionalInfoItem(
-                key = "${it.key}:",
+                key = "$key:",
                 value = it.value.value() ?: "",
             )
         }.toMutableList()

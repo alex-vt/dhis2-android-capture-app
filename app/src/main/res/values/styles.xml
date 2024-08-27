@@ -230,4 +230,9 @@
 
     <style name="spinner"/>
 
+
+    <style name="BiometricsConfirmationDialog" parent="android:Theme.DeviceDefault.Dialog.NoActionBar.MinWidth" >
+        <item name="android:windowBackground">@null</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
 </resources>

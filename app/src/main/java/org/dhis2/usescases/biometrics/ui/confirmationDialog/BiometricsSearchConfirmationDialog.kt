@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
@@ -48,6 +49,11 @@ class BiometricsSearchConfirmationDialog(
     private val confirmCallback: () -> Unit,
 ) : DialogFragment() {
 
+    override fun  onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.BiometricsConfirmationDialog)
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.window!!.apply {
@@ -56,6 +62,7 @@ class BiometricsSearchConfirmationDialog(
             setWindowAnimations(R.style.pin_dialog_animation)
             isCancelable = false
         }
+
         return dialog
     }
 
@@ -100,11 +107,11 @@ private fun ConfirmContent(
     cancelAction: () -> Unit,
     confirmAction: () -> Unit
 ) {
-    Surface(color = Color.White) {
+    Surface(color = Color.White, modifier = Modifier.wrapContentSize() ) {
         Column(horizontalAlignment = Alignment.Start, modifier = Modifier.padding(16.dp)) {
             Text(
                 stringResource(R.string.biometrics_confirm_patient_identity),
-                style = MaterialTheme.typography.h6,
+                style = MaterialTheme.typography.subtitle1,
                 fontWeight = FontWeight.Normal,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -138,7 +145,7 @@ private fun ConfirmContent(
                     onClick = cancelAction
                 ) {
                     Text(
-                        stringResource(R.string.cancel).uppercase(),
+                        stringResource(R.string.go_back).uppercase(),
                         color = Color(0xFF0782c8),
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
@@ -166,7 +173,7 @@ private fun TEIContent(item: ListCardUiModel) {
         Column(modifier = Modifier.padding(bottom = 16.dp)) {
             Text(
                 item.title,
-                style = MaterialTheme.typography.h6,
+                style = MaterialTheme.typography.subtitle2,
                 fontWeight = FontWeight.Normal,
             )
             item.subTitle?.let {

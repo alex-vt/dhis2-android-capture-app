@@ -380,6 +380,7 @@ public class SearchRepositoryImpl implements SearchRepository {
             if (attribute.getDisplayInList() && isAcceptedValueType(attribute.getValueType())) {
                 setAttributeValue(searchTei, attribute);
             }
+            addToAllAttributes(searchTei, attribute);
         }
     }
 
@@ -407,11 +408,30 @@ public class SearchRepositoryImpl implements SearchRepository {
                 .build();
 
         searchTei.addAttributeValue(attribute.getDisplayFormName(), attributeValue);
-        searchTei.addToAllAttributes(attribute.getDisplayFormName(), attributeValue);
 
         if (attribute.getValueType() == ValueType.TEXT || attribute.getValueType() == ValueType.LONG_TEXT) {
             searchTei.addTextAttribute(attribute.getDisplayName(), attributeValue);
         }
+    }
+
+    private void addToAllAttributes(SearchTeiModel searchTei, TrackedEntitySearchItemAttribute attribute) {
+        String value = attribute.getValue();
+        String transformedValue;
+        if (value != null) {
+            transformedValue = ValueUtils.transformValue(d2, value, attribute.getValueType(), attribute.getOptionSet());
+        } else {
+            transformedValue = sortingValueSetter.getUnknownLabel();
+        }
+        TrackedEntityAttributeValue attributeValue = TrackedEntityAttributeValue.builder()
+                .created(attribute.getCreated())
+                .lastUpdated(attribute.getLastUpdated())
+                .trackedEntityAttribute(attribute.getAttribute())
+                .trackedEntityInstance(searchTei.getTei().uid())
+                .value(transformedValue)
+                .build();
+
+
+        searchTei.addToAllAttributes(attribute.getDisplayFormName(), attributeValue);
     }
 
     private void setOverdueEvents(@NonNull SearchTeiModel tei, Program selectedProgram) {
