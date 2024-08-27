@@ -36,6 +36,6 @@ internal fun SaveWithoutBiometricsButton(
             ),
 
         ) {
-        Text("Save without biometrics".uppercase(), color = color)
+        Text("Save without biometrics", color = color)
     }
 }

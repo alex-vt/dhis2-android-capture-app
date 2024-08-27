@@ -65,7 +65,7 @@ internal fun RegistrationResult(
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = stringResource(resultText).uppercase(), color = Color.White)
+                Text(text = stringResource(resultText), color = Color.White)
             }
 
         }
@@ -96,7 +96,7 @@ internal fun RegistrationResult(
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = stringResource(R.string.biometrics_retake).uppercase(), color = Color.White)
+                    Text(text = stringResource(R.string.biometrics_retake), color = Color.White)
                 }
 
             }
