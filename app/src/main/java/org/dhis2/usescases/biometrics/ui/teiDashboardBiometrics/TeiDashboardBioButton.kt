@@ -30,7 +30,7 @@ fun TeiDashboardBioButton(
             contentPadding = PaddingValues(),
             onClick = model.onActionClick,
         ) {
-            Text(text = model.text.uppercase(), color = Color.White)
+            Text(text = model.text, color = Color.White)
         }
     }
 }
