@@ -87,14 +87,24 @@ class TEICardMapper(
     }
 
     private fun getTitleFirstLetter(item: SearchTeiModel): String {
-        val firstLetter = item.header?.firstOrNull()
+        // EyeSeeTea customization - shoe first letter of first name and last name
+   /*     val firstLetter = item.header?.firstOrNull()
             ?: item.attributeValues.values.firstOrNull()?.value()?.firstOrNull()
 
         return when (firstLetter) {
             null -> "?"
             '-' -> "?"
             else -> firstLetter.uppercaseChar().toString()
-        }
+        }*/
+        val firsNameValue =
+            item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == firstNameAttrUid }
+                ?.value() ?: "?"
+        val lastNameValue =
+            item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == lastNameAttrUid }
+                ?.value() ?: "?"
+
+        return "${firsNameValue.first().uppercaseChar()}${lastNameValue.first().uppercaseChar()}"
+
     }
 
     private fun getTitle(item: SearchTeiModel): String {
