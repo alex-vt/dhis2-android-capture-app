@@ -7,7 +7,7 @@ data class TeiDashboardBioModel(
 
 data class BioButtonModel(
     val text: String,
-    val backgroundColor: String,
+    val backgroundColor: String?,
     val icon: Int,
     val onActionClick: () -> Unit,
 )

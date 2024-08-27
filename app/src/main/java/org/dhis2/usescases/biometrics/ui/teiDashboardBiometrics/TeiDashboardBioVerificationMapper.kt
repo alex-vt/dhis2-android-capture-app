@@ -1,7 +1,6 @@
 package org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics
 
 import org.dhis2.R
-import org.dhis2.commons.biometrics.defaultButtonColor
 import org.dhis2.commons.biometrics.getBioIconFailed
 import org.dhis2.commons.biometrics.getBioIconSuccess
 import org.dhis2.commons.biometrics.getBioIconWarning
@@ -18,7 +17,7 @@ class TeiDashboardBioVerificationMapper(
         val buttonModel = if (verifyResult == null) {
             BioButtonModel(
                 text = resourceManager.getString(R.string.biometrics_verification_not_done),
-                backgroundColor = defaultButtonColor,
+                backgroundColor = null,
                 icon = resourceManager.context.getBioIconSuccess(),
                 onActionClick = actionCallback
             )
@@ -26,7 +25,7 @@ class TeiDashboardBioVerificationMapper(
             if (verifyResult == VerifyResult.NoMatch) {
                 BioButtonModel(
                     text = resourceManager.context.getString(R.string.retake_biometrics),
-                    backgroundColor = defaultButtonColor,
+                    backgroundColor = null,
                     icon = R.drawable.ic_bio_fingerprint,
                     onActionClick = actionCallback
                 )

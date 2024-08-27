@@ -20,7 +20,7 @@ class TeiDashboardBioRegistrationMapper(
         val statusModel = if (registerResult == RegisterResult.Failure) {
             BioStatus(
                 text = getText(registerResult),
-                backgroundColor = getBackgroundColor(registerResult),
+                backgroundColor = getBackgroundColor(registerResult)?: defaultButtonColor,
                 icon = getIcon(registerResult)
             )
         } else {
@@ -82,11 +82,11 @@ class TeiDashboardBioRegistrationMapper(
 
     private fun getBackgroundColor(
         registerResult: RegisterResult?,
-    ): String {
-        if (registerResult == null) {
-            return defaultButtonColor
+    ): String? {
+        return if (registerResult == null) {
+            null
         } else {
-            return when (registerResult) {
+            when (registerResult) {
                 is RegisterResult.Completed -> successButtonColor
                 is RegisterResult.Failure -> declinedButtonColor
                 is RegisterResult.PossibleDuplicates -> failedButtonColor

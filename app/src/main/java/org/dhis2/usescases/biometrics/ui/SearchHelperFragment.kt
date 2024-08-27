@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -131,7 +130,6 @@ fun SearchWithBiometricsButton(
 
             ) {
             Row() {
-                Spacer(modifier = Modifier.size(ButtonDefaults.IconSize))
                 Text(text = "Search with biometrics", color = Color.White)
             }
         }

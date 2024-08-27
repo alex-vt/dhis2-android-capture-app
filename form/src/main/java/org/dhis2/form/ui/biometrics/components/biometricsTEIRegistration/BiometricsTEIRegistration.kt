@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.commons.biometrics.BIOMETRICS_SEARCH_PATTERN
 import org.dhis2.commons.biometrics.declinedButtonColor
-import org.dhis2.commons.biometrics.defaultButtonColor
 import org.dhis2.commons.biometrics.successButtonColor
 import org.dhis2.form.R
 
@@ -114,7 +113,7 @@ fun RegistrationButton(
                 enabled = enabled,
                 resultText = R.string.biometrics_register_and_save,
                 resultIcon = getIconByState(BiometricsTEIState.INITIAL),
-                resultColor = defaultButtonColor,
+                resultColor = null,
                 showRetake = false
             )
         }
