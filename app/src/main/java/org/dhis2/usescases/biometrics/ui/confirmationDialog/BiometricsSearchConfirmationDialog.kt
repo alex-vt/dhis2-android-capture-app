@@ -11,11 +11,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -36,6 +38,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import org.dhis2.R
 import org.dhis2.bindings.app
+import org.dhis2.commons.biometrics.gradientButtonColor
 import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.ui.model.ListCardUiModel
 import org.dhis2.usescases.searchTrackEntity.ui.mapper.TEICardMapper
@@ -49,7 +52,7 @@ class BiometricsSearchConfirmationDialog(
     private val confirmCallback: () -> Unit,
 ) : DialogFragment() {
 
-    override fun  onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.BiometricsConfirmationDialog)
     }
@@ -107,12 +110,12 @@ private fun ConfirmContent(
     cancelAction: () -> Unit,
     confirmAction: () -> Unit
 ) {
-    Surface(color = Color.White, modifier = Modifier.wrapContentSize() ) {
+    Surface(color = Color.White, modifier = Modifier.wrapContentSize()) {
         Column(horizontalAlignment = Alignment.Start, modifier = Modifier.padding(16.dp)) {
             Text(
                 stringResource(R.string.biometrics_confirm_patient_identity),
                 style = MaterialTheme.typography.subtitle1,
-                fontWeight = FontWeight.Normal,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Box(
@@ -145,7 +148,7 @@ private fun ConfirmContent(
                     onClick = cancelAction
                 ) {
                     Text(
-                        stringResource(R.string.go_back).uppercase(),
+                        stringResource(R.string.go_back),
                         color = Color(0xFF0782c8),
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
@@ -153,11 +156,28 @@ private fun ConfirmContent(
                             )
                     )
                 }
+
+                val modifier = Modifier
+                    .width(100.dp)
+                    .height(36.dp)
+
                 Button(
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF0782c8)),
+                    modifier = modifier,
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
+                    contentPadding = PaddingValues(),
                     onClick = confirmAction
                 ) {
-                    Text(stringResource(R.string.confirm).uppercase(), color = Color.White)
+                    Box(
+                        modifier = Modifier
+                            .background(gradientButtonColor)
+                            .then(modifier),
+                        contentAlignment = Alignment.Center,
+
+                        ) {
+                        Row() {
+                            Text(stringResource(R.string.confirm), color = Color.White)
+                        }
+                    }
                 }
             }
         }
