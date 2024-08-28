@@ -23,7 +23,7 @@ interface EnrollmentView : AbstractActivityContracts.View {
     fun hideProgress()
     fun displayTeiPicture(picturePath: String)
     fun showDateEditionWarning()
-    fun registerBiometrics(orgUnit: String, ageInMonths: Long)
+    fun registerBiometrics(orgUnit: String, ageInMonths: Double)
     fun showPossibleDuplicatesDialog(
         guids: List<String>,
         sessionId: String,

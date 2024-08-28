@@ -1,5 +1,22 @@
 package org.dhis2.usescases.biometrics
 
-import org.junit.jupiter.api.Assertions.*
+import org.joda.time.DateTime
+import org.junit.Assert
+import org.junit.Test
 
-class AgeInMonthsTest
+class AgeInMonthsTest{
+
+    @Test
+    fun `Should return age in months to 6`() {
+        val ageInMonths = calculateAgeInMonths("2021-01-01", DateTime.parse("2021-06-30"))
+
+        Assert.assertTrue( "Age in months should be 6 but is $ageInMonths",ageInMonths == 6.toDouble())
+    }
+
+    @Test
+    fun `Should return age in months to 6,5`() {
+        val ageInMonths = calculateAgeInMonths("2021-01-01", DateTime.parse("2021-07-15"))
+
+        Assert.assertTrue( "Age in months should be 6.5 but is $ageInMonths",ageInMonths == 6.5)
+    }
+}

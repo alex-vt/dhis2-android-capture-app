@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.dhis2.commons.network.NetworkUtils
+import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.data.search.SearchParametersModel
@@ -20,6 +21,8 @@ import org.dhis2.form.ui.intent.FormIntent
 import org.dhis2.form.ui.provider.DisplayNameProvider
 import org.dhis2.maps.geometry.mapper.EventsByProgramStage
 import org.dhis2.maps.usecases.MapStyleConfiguration
+import org.dhis2.usescases.biometrics.repositories.BiometricsParentChildConfigRepository
+import org.dhis2.usescases.biometrics.usecases.GetRelatedTEIUIdsByUid
 import org.dhis2.usescases.searchTrackEntity.listView.SearchResult.SearchResultType
 import org.hisp.dhis.android.core.common.ValueType
 import org.hisp.dhis.android.core.program.Program
@@ -51,6 +54,9 @@ class SearchTEIViewModelTest {
     private val mapStyleConfiguration: MapStyleConfiguration = mock()
     private val resourceManager: ResourceManager = mock()
     private val displayNameProvider: DisplayNameProvider = mock()
+    private val basicPreferenceProvider: BasicPreferenceProvider = mock()
+    private val presenter: SearchTEContractsModule.Presenter = mock()
+    private val biometricsParentChildConfigRepository: BiometricsParentChildConfigRepository = mock()
 
     @ExperimentalCoroutinesApi
     private val testingDispatcher = StandardTestDispatcher()
@@ -67,6 +73,7 @@ class SearchTEIViewModelTest {
         viewModel = SearchTEIViewModel(
             initialProgram,
             initialQuery,
+            presenter,
             repository,
             repositoryKt,
             pageConfigurator,
@@ -88,6 +95,8 @@ class SearchTEIViewModelTest {
             mapStyleConfiguration,
             resourceManager = resourceManager,
             displayNameProvider = displayNameProvider,
+            getRelatedTEIUidsByUid = GetRelatedTEIUIdsByUid(biometricsParentChildConfigRepository),
+            basicPreferenceProvider = basicPreferenceProvider,
         )
         testingDispatcher.scheduler.advanceUntilIdle()
     }

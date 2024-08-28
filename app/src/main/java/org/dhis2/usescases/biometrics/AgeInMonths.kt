@@ -7,8 +7,9 @@ import org.dhis2.form.model.FieldUiModel
 import org.dhis2.usescases.biometrics.entities.DateOfBirthAttributeByProgram
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
 import org.joda.time.DateTime
-import org.joda.time.Months
+import org.joda.time.Days
 import org.joda.time.format.DateTimeFormat
+import timber.log.Timber
 
 fun isUnderAgeThreshold(
     basicPreferenceProvider: BasicPreferenceProvider,
@@ -18,7 +19,7 @@ fun isUnderAgeThreshold(
     val ageInMonths = getAgeInMonthsByAttributes(basicPreferenceProvider, attributeValues, programUid)
     val biometricsParentChildConfig = getBiometricsParentChildConfig(basicPreferenceProvider)
 
-    return ageInMonths <= biometricsParentChildConfig.ageThresholdMonths
+    return ageInMonths <= (biometricsParentChildConfig.ageThresholdMonths + 0.49)
 }
 
 fun containsAgeFilterAndIsUnderAgeThreshold(
@@ -38,8 +39,8 @@ fun containsAgeFilterAndIsUnderAgeThreshold(
         val value = queryData[birthdateFieldKey]
 
         if (value != null){
-            val ageInMonths = calculateAgeInMonths(value)
-            return ageInMonths <= biometricsParentChildConfig.ageThresholdMonths
+            val ageInMonths = calculateAgeInMonths(value, DateTime.now())
+            return ageInMonths <= (biometricsParentChildConfig.ageThresholdMonths + 0.49)
         } else {
             false
         }
@@ -52,7 +53,7 @@ fun getAgeInMonthsByFieldUiModel(
     basicPreferenceProvider: BasicPreferenceProvider,
     fields: List<FieldUiModel>,
     programUid: String
-): Long {
+): Double {
     val biometricsParentChildConfig = getBiometricsParentChildConfig(basicPreferenceProvider)
 
     val birthdayAttribute =
@@ -63,12 +64,12 @@ fun getAgeInMonthsByFieldUiModel(
         val birthdateFieldValue = fields.find { it.uid == birthdayAttribute.attribute }
 
         if (birthdateFieldValue?.value != null && birthdateFieldValue.value != ""){
-            return calculateAgeInMonths(birthdateFieldValue.value!!)
+            return calculateAgeInMonths(birthdateFieldValue.value!!, DateTime.now())
         } else {
-            0
+            0.toDouble()
         }
     } else {
-        0
+        0.toDouble()
     }
 }
 
@@ -76,7 +77,7 @@ fun getAgeInMonthsByAttributes(
     basicPreferenceProvider: BasicPreferenceProvider,
     attributes: List<TrackedEntityAttributeValue>,
     programUid: String
-): Long {
+): Double {
     val biometricsParentChildConfig = getBiometricsParentChildConfig(basicPreferenceProvider)
 
     val birthdayAttribute =
@@ -87,21 +88,23 @@ fun getAgeInMonthsByAttributes(
         val birthdateFieldValue = attributes.find { it.trackedEntityAttribute() == birthdayAttribute.attribute }
 
         if (birthdateFieldValue?.value() != null && birthdateFieldValue.value() != ""){
-            return calculateAgeInMonths(birthdateFieldValue.value()!!)
+            return calculateAgeInMonths(birthdateFieldValue.value()!!, DateTime.now())
         } else {
-            0
+            0.toDouble()
         }
     } else {
-        0
+        0.toDouble()
     }
 }
 
-fun calculateAgeInMonths(value: String): Long {
+fun calculateAgeInMonths(value: String, now:DateTime): Double {
     return try {
         val formatter = DateTimeFormat.forPattern(DateUtils.DATE_FORMAT_EXPRESSION)
         val dateValue = formatter.parseDateTime(value)
-        Months.monthsBetween(dateValue, DateTime.now()).months.toLong()
+        val months = Days.daysBetween(dateValue, now).days.toDouble() / 30
+        Timber.d("Age in months: $months")
+        months
     } catch (e: Exception) {
-        0
+        0.toDouble()
     }
 }

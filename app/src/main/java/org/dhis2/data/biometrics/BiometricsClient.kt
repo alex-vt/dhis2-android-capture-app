@@ -68,7 +68,7 @@ class BiometricsClient(
     private val simHelper = SimHelper(projectId, userId)
     private val defaultModuleId = "NA"
 
-    fun register(activity: Activity, moduleId: String, ageInMonths: Long) {
+    fun register(activity: Activity, moduleId: String, ageInMonths: Double) {
         Timber.d("Biometrics register!")
         Timber.d("moduleId: $moduleId")
         Timber.d("subjectAge: $ageInMonths")
@@ -81,7 +81,7 @@ class BiometricsClient(
         launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_ENROLL_REQUEST)
     }
 
-    fun registerFromFragment(fragment: Fragment, moduleId: String,  extras: Map<String, String>, ageInMonths: Long?) {
+    fun registerFromFragment(fragment: Fragment, moduleId: String,  extras: Map<String, String>, ageInMonths: Double?) {
         Timber.d("Biometrics register!")
         Timber.d("moduleId: $moduleId")
         Timber.d("subjectAge: $ageInMonths")
@@ -115,7 +115,7 @@ class BiometricsClient(
     fun verify(fragment: Fragment,
                guid: String,
                moduleId: String, extras: Map<String, String>,
-               ageInMonths: Long? = null) {
+               ageInMonths: Double? = null) {
 
         if (guid == null) {
             Timber.i("Simprints Verification - Guid is Null - Please check again!")

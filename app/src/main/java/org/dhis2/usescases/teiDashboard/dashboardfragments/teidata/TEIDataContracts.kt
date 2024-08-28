@@ -48,10 +48,10 @@ class TEIDataContracts {
             guid: String,
             orgUnitUid: String,
             trackedEntityInstance: String,
-            ageInMonths: Long
+            ageInMonths: Double
         )
 
         fun refreshCard()
-        fun registerBiometrics(orgUnit: String, trackedEntityInstance: String, ageInMonths: Long)
+        fun registerBiometrics(orgUnit: String, trackedEntityInstance: String, ageInMonths: Double)
     }
 }

@@ -71,7 +71,7 @@ class EventCaptureContract {
         fun getBiometricsAttributeValueInTeiLastUpdated(deUid: String?): Date?
         fun updateBiometricsAttributeValueInTei(biometricsGuid: String?)
         fun getLastBiometricsVerificationDuration(): Int
-        fun getTEIAgeInMonths(): Long
+        fun getTEIAgeInMonths(): Double
     }
 
     interface EventCaptureRepository {
@@ -101,6 +101,6 @@ class EventCaptureContract {
 
         fun updateBiometricsAttributeValueInTei(biometricsGuid: String?)
 
-        fun getAgeInMonths(): Observable<Long>
+        fun getAgeInMonths(): Observable<Double>
     }
 }

@@ -13,6 +13,7 @@ import org.dhis2.commons.bindings.canCreateEventInEnrollment
 import org.dhis2.commons.bindings.enrollment
 import org.dhis2.commons.data.EventViewModel
 import org.dhis2.commons.data.EventViewModelType
+import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.resources.D2ErrorUtils
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.viewmodel.DispatcherProvider
@@ -80,6 +81,9 @@ class TeiDataPresenterTest {
     private val createEventUseCase: CreateEventUseCase = mock()
     private val d2ErrorUtils: D2ErrorUtils = mock()
 
+    private val basicPreferenceProvider: BasicPreferenceProvider = mock()
+    private val resourceManager: ResourceManager = mock()
+
     @Before
     fun setUp() {
         teiDataPresenter = TEIDataPresenter(
@@ -101,6 +105,8 @@ class TeiDataPresenterTest {
             dispatcherProvider,
             createEventUseCase,
             d2ErrorUtils,
+            basicPreferenceProvider,
+            resourceManager
         )
     }
 
