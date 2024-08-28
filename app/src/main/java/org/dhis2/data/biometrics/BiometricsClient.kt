@@ -172,7 +172,7 @@ class BiometricsClient(
                 is IdentifyResult.Completed -> {
                     val guids = identifyResponse.items.map { it.guid }
 
-                    Timber.d("Possible duplicates guids")
+                    Timber.d("Possible duplicates: $guids")
                     RegisterResult.PossibleDuplicates(
                         guids,
                         identifyResponse.sessionId
@@ -184,7 +184,13 @@ class BiometricsClient(
                 }
 
                 is IdentifyResult.UserNotFound -> {
-                    handleRegister()
+                    val guids = listOf<String>()
+
+                    Timber.d("Possible duplicates but IdentifyResult is UserNotFound")
+                    RegisterResult.PossibleDuplicates(
+                        guids,
+                        identifyResponse.sessionId
+                    )
                 }
 
                 is IdentifyResult.Failure -> {
@@ -328,6 +334,16 @@ class BiometricsClient(
         val intent = simHelper.registerLastBiometrics(defaultModuleId, sessionId)
 
         launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_ENROLL_LAST_REQUEST)
+    }
+
+    fun registerLastFromFragment(fragment: Fragment, sessionId: String) {
+        Timber.d("Biometrics confirmIdentify!")
+        Timber.d("moduleId: $defaultModuleId")
+        Timber.d("sessionId: $sessionId")
+
+        val intent = simHelper.registerLastBiometrics(defaultModuleId, sessionId)
+
+        launchSimprintsAppFromFragment(fragment, intent, BIOMETRICS_ENROLL_LAST_REQUEST)
     }
 
     private fun checkBiometricsCompleted(data: Intent) =

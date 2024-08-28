@@ -43,8 +43,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
 
     private lateinit var adapter: BiometricsDuplicatesDialogAdapter
 
-    var isDialogShown = false
-        private set
+    private var isDialogShown = false
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -119,7 +118,6 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
                     binding.duplicatesEmptyContainer.visibility = View.VISIBLE
                 } else {
                     binding.duplicatesEmptyContainer.visibility = View.GONE
-
                 }
             }
         }

@@ -329,7 +329,10 @@ class EnrollmentPresenterImpl(
         val teiTypeUid = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
             ?.trackedEntityType()!!
 
-        if (guids.size == 1 && guids[0] == biometricsUiModel!!.value) {
+        if (guids.isEmpty()){
+            view.registerLast(sessionId)
+        }
+        else if (guids.size == 1 && guids[0] == biometricsUiModel!!.value) {
             view.registerLast(sessionId)
         } else {
             val finalGuids = guids.filter { it != biometricsUiModel!!.value }
