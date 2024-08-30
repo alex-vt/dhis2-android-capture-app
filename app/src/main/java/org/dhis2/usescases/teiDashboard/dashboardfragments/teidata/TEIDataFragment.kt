@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -49,6 +50,7 @@ import org.dhis2.data.biometrics.BiometricsClient
 import org.dhis2.data.biometrics.BiometricsClientFactory.get
 import org.dhis2.databinding.FragmentTeiDataBinding
 import org.dhis2.form.model.EventMode
+import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialog
 import org.dhis2.usescases.biometrics.isUnderAgeThreshold
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity
@@ -649,6 +651,50 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         val extras: HashMap<String, String> = HashMap()
         extras[BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID] = trackedEntityInstanceUId
         biometricsClient.registerFromFragment(this, orgUnitUid, extras, ageInMonths)
+    }
+
+    override fun showBiometricsAgeGroupNotSupported() {
+        Toast.makeText(
+            context, getString(R.string.age_group_not_supported),
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    override fun registerLast(sessionId: String) {
+        get(requireContext()).registerLastFromFragment(this, sessionId)
+    }
+
+
+    override fun showPossibleDuplicatesDialog(
+        guids: List<String>, sessionId: String, programUid: String,
+        trackedEntityTypeUid: String,
+        biometricsAttributeUid: String
+    ) {
+        val dialog = BiometricsDuplicatesDialog.newInstance(
+            guids, sessionId, programUid,
+            trackedEntityTypeUid,
+            biometricsAttributeUid
+        )
+
+        dialog.setOnOpenTeiDashboardListener { teiUid: String, program: String, enrollmentUid: String ->
+            startActivity(
+                TeiDashboardMobileActivity.intent(
+                    requireContext(),
+                    teiUid,
+                    program,
+                    enrollmentUid
+                )
+            )
+        }
+
+        dialog.setOnEnrollNewListener { biometricsSessionId ->
+            get(requireContext()).registerLastFromFragment(this, biometricsSessionId)
+        }
+
+        dialog.show(
+            parentFragmentManager,
+            BiometricsDuplicatesDialog.TAG
+        )
     }
 
     override fun refreshCard() {
