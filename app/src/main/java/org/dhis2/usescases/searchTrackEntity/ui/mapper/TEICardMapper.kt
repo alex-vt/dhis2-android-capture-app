@@ -50,7 +50,7 @@ class TEICardMapper(
 
     fun map(
         searchTEIModel: SearchTeiModel,
-        onSyncIconClick: () -> Unit,
+        onSyncIconClick: (() -> Unit)? = null,
         onCardClick: () -> Unit,
         onImageClick: (String) -> Unit,
     ): ListCardUiModel {
@@ -59,7 +59,12 @@ class TEICardMapper(
             title = getTitle(searchTEIModel),
             lastUpdated = searchTEIModel.tei.lastUpdated().toDateSpan(context),
             additionalInfo = getAdditionalInfoList(searchTEIModel),
-            actionButton = { ProvideSyncButton(searchTEIModel, onSyncIconClick) },
+            actionButton = {
+                if (onSyncIconClick != null) {
+                    ProvideSyncButton(searchTEIModel, onSyncIconClick)
+                }
+
+            },
             expandLabelText = resourceManager.getString(R.string.show_more),
             shrinkLabelText = resourceManager.getString(R.string.show_less),
             onCardCLick = onCardClick,
@@ -88,14 +93,14 @@ class TEICardMapper(
 
     private fun getTitleFirstLetter(item: SearchTeiModel): String {
         // EyeSeeTea customization - shoe first letter of first name and last name
-   /*     val firstLetter = item.header?.firstOrNull()
-            ?: item.attributeValues.values.firstOrNull()?.value()?.firstOrNull()
+        /*     val firstLetter = item.header?.firstOrNull()
+                 ?: item.attributeValues.values.firstOrNull()?.value()?.firstOrNull()
 
-        return when (firstLetter) {
-            null -> "?"
-            '-' -> "?"
-            else -> firstLetter.uppercaseChar().toString()
-        }*/
+             return when (firstLetter) {
+                 null -> "?"
+                 '-' -> "?"
+                 else -> firstLetter.uppercaseChar().toString()
+             }*/
         val firsNameValue =
             item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == firstNameAttrUid }
                 ?.value() ?: "?"
