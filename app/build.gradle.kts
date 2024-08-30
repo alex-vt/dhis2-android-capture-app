@@ -189,21 +189,21 @@ android {
             applicationId = "com.eyeseetea.widp"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = "2.9.1-widp-fork-1"
+            versionName = "3.0.0-widp-fork-1"
         }
 
         create("psi") {
             applicationId = "org.dhis2.psi"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = "2.9.1-psi-fork-2"
+            versionName = "3.0.0-psi-fork-2"
         }
 
         create("simprints") {
             applicationId = "org.simprints.dhis2"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = "2.9.1-simprints-fork-2"
+            versionName = "3.0.0-simprints-fork-2"
         }
     }
 
