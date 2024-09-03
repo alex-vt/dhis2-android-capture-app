@@ -418,7 +418,6 @@ fun NoMoreResults(message: String = stringResource(R.string.string_no_more_resul
             fontSize = 14.sp,
             color = Color.Black.copy(alpha = 0.38f),
             style = LocalTextStyle.current.copy(
-                lineHeight = 10.sp,
                 fontFamily = FontFamily(Font(R.font.rubik_regular)),
             ),
         )
