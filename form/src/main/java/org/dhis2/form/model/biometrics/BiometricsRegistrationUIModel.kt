@@ -4,8 +4,8 @@ interface BiometricsRegistrationUIModel {
     fun onBiometricsClick()
 }
 
-interface BiometricsTEIRegistrationUIModel: BiometricsRegistrationUIModel {
-    fun onSaveWithoutBiometrics()
+interface BiometricsTEIRegistrationUIModel : BiometricsRegistrationUIModel {
+    fun onSaveTEI(removeBiometrics: Boolean)
 
     fun registerLastAndSave(sessionId: String)
 }

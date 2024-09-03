@@ -13,7 +13,7 @@ internal fun ProvideBiometricsAttribute(
         ageUnderThreshold = fieldUiModel.ageUnderThreshold,
         enabled = fieldUiModel.editable,
         onBiometricsClick = fieldUiModel::onBiometricsClick,
-        onSaveWithoutBiometrics = fieldUiModel::onSaveWithoutBiometrics,
+        onSave = fieldUiModel::onSaveTEI,
         registerLastAndSave = fieldUiModel::registerLastAndSave
     )
 }

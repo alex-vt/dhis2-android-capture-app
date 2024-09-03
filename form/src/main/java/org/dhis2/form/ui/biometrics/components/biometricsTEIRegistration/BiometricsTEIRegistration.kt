@@ -30,7 +30,7 @@ fun BiometricsTEIRegistration(
     ageUnderThreshold: Boolean,
     enabled: Boolean,
     onBiometricsClick: () -> Unit,
-    onSaveWithoutBiometrics: () -> Unit,
+    onSave: (removeBiometrics:Boolean) -> Unit,
     registerLastAndSave: (sessionId: String) -> Unit
 ) {
     var linkLastBiometrics by remember { mutableStateOf(true) }
@@ -90,7 +90,7 @@ fun BiometricsTEIRegistration(
 
             SaveWithoutBiometricsButton(
                 enabled = enabled,
-                onClick = onSaveWithoutBiometrics
+                onClick = { onSave(true) }
             )
         }
     }
@@ -141,7 +141,7 @@ fun PreviewBiometricsTEIRegistrationInitialAfterSearch() {
         enabled = true,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
+        onSave = {},
         registerLastAndSave = { }
     )
 }
@@ -155,7 +155,7 @@ fun PreviewBiometricsTEIRegistrationInitialDisabled() {
         enabled = false,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
+        onSave = {},
         registerLastAndSave = { }
     )
 }
@@ -169,7 +169,7 @@ fun PreviewBiometricsTEIRegistrationInitialAfterSearchDisabled() {
         enabled = false,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
+        onSave = {},
         registerLastAndSave = { }
     )
 }
@@ -183,7 +183,7 @@ fun PreviewBiometricsTEIRegistrationInitial() {
         enabled = true,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
+        onSave = {},
         registerLastAndSave = { }
     )
 }
@@ -196,7 +196,7 @@ fun PreviewBiometricsTEIRegistrationSuccess() {
         enabled = true,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
+        onSave = {},
         registerLastAndSave = { }
     )
 }
@@ -209,7 +209,7 @@ fun PreviewBiometricsTEIRegistrationFailure() {
         enabled = true,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
+        onSave = {},
         registerLastAndSave = { },
     )
 }

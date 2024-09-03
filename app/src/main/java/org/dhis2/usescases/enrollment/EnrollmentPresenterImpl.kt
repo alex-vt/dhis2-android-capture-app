@@ -367,8 +367,11 @@ class EnrollmentPresenterImpl(
                 pendingSave = true
             }
 
-            biometricsUiModel?.setSaveWithoutBiometrics {
-                saveBiometricValue(null)
+            biometricsUiModel?.setSaveTEI { removeBiometrics ->
+                if (removeBiometrics){
+                    saveBiometricValue(null)
+                }
+
                 view.performSaveClick()
             }
 
