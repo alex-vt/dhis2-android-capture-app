@@ -648,11 +648,7 @@ class TEIDataPresenter(
                 TeiDashboardBioVerificationMapper(resourceManager).map(
                     lastVerificationResult
                 ) {
-                    if (lastVerificationResult == null) {
-                        verifyBiometrics()
-                    } else {
-                        registerBiometrics()
-                    }
+                    verifyBiometrics()
                 }
             }
         } else {

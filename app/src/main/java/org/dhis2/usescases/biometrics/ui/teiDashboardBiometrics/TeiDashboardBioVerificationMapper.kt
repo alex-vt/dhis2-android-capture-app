@@ -24,7 +24,7 @@ class TeiDashboardBioVerificationMapper(
         } else {
             if (verifyResult == VerifyResult.NoMatch) {
                 BioButtonModel(
-                    text = resourceManager.context.getString(R.string.retake_biometrics),
+                    text = resourceManager.context.getString(R.string.reverify_biometrics),
                     backgroundColor = null,
                     icon = R.drawable.ic_bio_fingerprint,
                     onActionClick = actionCallback
