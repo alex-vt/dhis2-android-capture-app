@@ -31,7 +31,6 @@ internal fun RegistrationResult(
     onBiometricsClick: (() -> Unit),
     enabled: Boolean,
     resultText: Int,
-    resultIcon: Int?,
     resultColor: String?,
     showRetake: Boolean,
 ) {
@@ -69,14 +68,6 @@ internal fun RegistrationResult(
 
                 ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    resultIcon?.let {
-                        Icon(
-                            painter = painterResource(resultIcon),
-                            contentDescription = stringResource(resultText),
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = stringResource(resultText), color = Color.White)
                 }

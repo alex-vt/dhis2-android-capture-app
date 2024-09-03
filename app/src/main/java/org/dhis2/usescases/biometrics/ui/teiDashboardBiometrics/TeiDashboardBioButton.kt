@@ -47,9 +47,6 @@ fun TeiDashboardBioButton(
                 ){
                 Text(text = model.text, color = Color.White)
             }
-
-
-
         }
     }
 }

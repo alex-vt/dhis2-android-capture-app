@@ -107,13 +107,11 @@ fun FieldProvider(
 
     if (fieldUiModel is BiometricsAttributeUiModelImpl) {
         ProvideBiometricsAttribute(
-            fieldUiModel = fieldUiModel,
-            resources
+            fieldUiModel = fieldUiModel
         )
     } else if (fieldUiModel is BiometricsDataElementUiModelImpl) {
         ProvideBiometricsDataElement(
-            fieldUiModel = fieldUiModel,
-            resources
+            fieldUiModel = fieldUiModel
         )
     } else {
         when {

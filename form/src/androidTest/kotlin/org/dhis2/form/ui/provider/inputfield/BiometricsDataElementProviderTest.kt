@@ -1,12 +1,9 @@
 package org.dhis2.form.ui.provider.inputfield
 
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
-import org.dhis2.commons.resources.ColorUtils
-import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.form.model.biometrics.BiometricsDataElementStatus
 import org.dhis2.form.model.biometrics.BiometricsDataElementUiModelImpl
 import org.junit.Rule
@@ -24,8 +21,7 @@ class BiometricsDataElementProviderTest {
 
         composeTestRule.setContent {
             ProvideBiometricsDataElement(
-                fieldUiModel = model,
-                resources = ResourceManager(LocalContext.current, ColorUtils())
+                fieldUiModel = model
             )
 
         }
@@ -43,8 +39,7 @@ class BiometricsDataElementProviderTest {
 
         composeTestRule.setContent {
             ProvideBiometricsDataElement(
-                fieldUiModel = model,
-                resources = ResourceManager(LocalContext.current, ColorUtils())
+                fieldUiModel = model
             )
 
         }
@@ -62,8 +57,7 @@ class BiometricsDataElementProviderTest {
 
         composeTestRule.setContent {
             ProvideBiometricsDataElement(
-                fieldUiModel = model,
-                resources = ResourceManager(LocalContext.current, ColorUtils())
+                fieldUiModel = model
             )
 
         }

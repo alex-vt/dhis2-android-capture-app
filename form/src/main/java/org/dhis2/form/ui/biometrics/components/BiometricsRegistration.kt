@@ -10,8 +10,7 @@ import org.dhis2.form.ui.biometrics.components.biometricsTEIRegistration.Registr
 @Composable
 internal fun BiometricsRegistration(
     value: String?,
-    onBiometricsClick: () -> Unit,
-    getIconByState: (BiometricsTEIState) -> Int?
+    onBiometricsClick: () -> Unit
 ) {
     val biometricsState = remember(value) {
         if (!value.isNullOrEmpty()) {
@@ -28,6 +27,5 @@ internal fun BiometricsRegistration(
     RegistrationButton(
         biometricsState=  biometricsState,
         enabled = true,
-        onBiometricsClick = onBiometricsClick,
-        getIconByState = getIconByState)
+        onBiometricsClick = onBiometricsClick)
 }

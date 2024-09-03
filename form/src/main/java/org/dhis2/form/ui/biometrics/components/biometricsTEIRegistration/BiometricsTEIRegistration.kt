@@ -31,8 +31,7 @@ fun BiometricsTEIRegistration(
     enabled: Boolean,
     onBiometricsClick: () -> Unit,
     onSaveWithoutBiometrics: () -> Unit,
-    registerLastAndSave: (sessionId: String) -> Unit,
-    getIconByState: (BiometricsTEIState) -> Int?
+    registerLastAndSave: (sessionId: String) -> Unit
 ) {
     var linkLastBiometrics by remember { mutableStateOf(true) }
 
@@ -85,8 +84,7 @@ fun BiometricsTEIRegistration(
                 RegistrationButton(
                     biometricsState = biometricsState,
                     enabled = enabled,
-                    onBiometricsClick = onBiometricsClick,
-                    getIconByState = getIconByState
+                    onBiometricsClick = onBiometricsClick
                 )
             }
 
@@ -102,8 +100,7 @@ fun BiometricsTEIRegistration(
 fun RegistrationButton(
     biometricsState: BiometricsTEIState,
     enabled: Boolean,
-    onBiometricsClick: () -> Unit,
-    getIconByState: (BiometricsTEIState) -> Int?
+    onBiometricsClick: () -> Unit
 ) {
 
     when (biometricsState) {
@@ -112,7 +109,6 @@ fun RegistrationButton(
                 onBiometricsClick = onBiometricsClick,
                 enabled = enabled,
                 resultText = R.string.biometrics_register_and_save,
-                resultIcon = getIconByState(BiometricsTEIState.INITIAL),
                 resultColor = null,
                 showRetake = false
             )
@@ -123,7 +119,6 @@ fun RegistrationButton(
                 onBiometricsClick = onBiometricsClick,
                 enabled = enabled,
                 resultText = R.string.biometrics_completed,
-                resultIcon = getIconByState(BiometricsTEIState.SUCCESS),
                 resultColor = successButtonColor,
                 showRetake = false
             )
@@ -131,8 +126,7 @@ fun RegistrationButton(
         BiometricsTEIState.FAILURE -> {
             BiometricsStatusFlag(
                 text = stringResource(id = R.string.biometrics_declined),
-                backgroundColor = declinedButtonColor,
-                icon = getIconByState(BiometricsTEIState.FAILURE) ?: R.drawable.ic_bio_face_failed
+                backgroundColor = declinedButtonColor
             )
         }
     }
@@ -148,8 +142,7 @@ fun PreviewBiometricsTEIRegistrationInitialAfterSearch() {
         ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
-        registerLastAndSave = { },
-        getIconByState = { null }
+        registerLastAndSave = { }
     )
 }
 
@@ -163,8 +156,7 @@ fun PreviewBiometricsTEIRegistrationInitialDisabled() {
         ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
-        registerLastAndSave = { },
-        getIconByState = { null }
+        registerLastAndSave = { }
     )
 }
 
@@ -178,8 +170,7 @@ fun PreviewBiometricsTEIRegistrationInitialAfterSearchDisabled() {
         ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
-        registerLastAndSave = { },
-        getIconByState = { null }
+        registerLastAndSave = { }
     )
 }
 
@@ -193,8 +184,7 @@ fun PreviewBiometricsTEIRegistrationInitial() {
         ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
-        registerLastAndSave = { },
-        getIconByState = { null }
+        registerLastAndSave = { }
     )
 }
 
@@ -207,8 +197,7 @@ fun PreviewBiometricsTEIRegistrationSuccess() {
         ageUnderThreshold = false,
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
-        registerLastAndSave = { },
-        getIconByState = { R.drawable.ic_bio_face_success }
+        registerLastAndSave = { }
     )
 }
 
@@ -222,7 +211,6 @@ fun PreviewBiometricsTEIRegistrationFailure() {
         onBiometricsClick = { },
         onSaveWithoutBiometrics = {},
         registerLastAndSave = { },
-        getIconByState = { R.drawable.ic_bio_face_failed }
     )
 }
 

@@ -15,18 +15,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.dhis2.form.R
 
 //TODO: Evaluate move this to a common module
 // is a copy of TeiDashboardBioStatus
 @Composable
 fun BiometricsStatusFlag(
     text: String,
-    backgroundColor: String,
-    icon: Int
+    backgroundColor: String
 ) {
 
     Row(
@@ -41,12 +38,6 @@ fun BiometricsStatusFlag(
                 .padding(start = 16.dp)
 
         ) {
-            Icon(
-                painter = painterResource(icon),
-                contentDescription = text,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(24.dp).padding(end = 4.dp)
-            )
             Text(
                 text.uppercase(),
                 color = Color.White,
@@ -70,8 +61,7 @@ fun BiometricsStatusFlag(
 fun BiometricsStatusFlagPreview() {
     BiometricsStatusFlag(
         text = "Biometrics",
-        backgroundColor = "#4d4d4d",
-        icon = R.drawable.ic_bio_face_success
+        backgroundColor = "#4d4d4d"
     )
 }
 
