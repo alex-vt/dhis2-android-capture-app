@@ -10,7 +10,6 @@ import kotlinx.coroutines.runBlocking
 import org.dhis2.bindings.profilePicturePath
 import org.dhis2.commons.bindings.trackedEntityTypeForTei
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
-import org.dhis2.commons.biometrics.BIOMETRICS_SEARCH_PATTERN
 import org.dhis2.commons.biometrics.BiometricsPreference
 import org.dhis2.commons.data.TeiAttributesInfo
 import org.dhis2.commons.matomo.Actions.Companion.CREATE_TEI
@@ -379,12 +378,6 @@ class EnrollmentPresenterImpl(
                 pendingSave = true
                 view.registerLast(sessionId)
             }
-
-            val isVisible =
-                biometricsUiModel != null && !biometricsUiModel!!.value.isNullOrBlank() && (!biometricsUiModel!!.value!!.startsWith(
-                    BIOMETRICS_SEARCH_PATTERN
-                ))
-            view.setSaveButtonVisible(visible = isVisible)
 
            if (biometricsUiModel?.value?.startsWith(BIOMETRICS_FAILURE_PATTERN) == true) {
                 resetBiometricsFailureAfterTime()
