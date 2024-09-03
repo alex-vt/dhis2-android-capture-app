@@ -14,7 +14,8 @@ import androidx.compose.ui.unit.dp
 import org.dhis2.commons.biometrics.defaultButtonColor
 
 @Composable
-internal fun SaveWithoutBiometricsButton(
+internal fun SaveButton(
+    text:String,
     enabled: Boolean,
     onClick: (() -> Unit),
 ) {
@@ -36,6 +37,6 @@ internal fun SaveWithoutBiometricsButton(
             ),
 
         ) {
-        Text("Save without biometrics", color = color)
+        Text(text, color = color)
     }
 }

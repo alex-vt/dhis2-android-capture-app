@@ -88,10 +88,19 @@ fun BiometricsTEIRegistration(
                 )
             }
 
-            SaveWithoutBiometricsButton(
-                enabled = enabled,
-                onClick = { onSave(true) }
-            )
+            if (biometricsState == BiometricsTEIState.SUCCESS) {
+                SaveButton(
+                    text = stringResource(R.string.biometrics_update_personal_details),
+                    enabled = enabled,
+                    onClick = { onSave(false) }
+                )
+            }else {
+                SaveButton(
+                    text = stringResource(R.string.biometrics_save_without_biometrics),
+                    enabled = enabled,
+                    onClick = { onSave(true) }
+                )
+            }
         }
     }
 }
@@ -113,14 +122,10 @@ fun RegistrationButton(
                 showRetake = false
             )
         }
-
         BiometricsTEIState.SUCCESS -> {
-            RegistrationResult(
-                onBiometricsClick = onBiometricsClick,
-                enabled = enabled,
-                resultText = R.string.biometrics_completed,
-                resultColor = successButtonColor,
-                showRetake = false
+            BiometricsStatusFlag(
+                text = stringResource(id = R.string.biometrics_completed),
+                backgroundColor = successButtonColor
             )
         }
         BiometricsTEIState.FAILURE -> {
