@@ -19,7 +19,7 @@ fun isUnderAgeThreshold(
     val ageInMonths = getAgeInMonthsByAttributes(basicPreferenceProvider, attributeValues, programUid)
     val biometricsParentChildConfig = getBiometricsParentChildConfig(basicPreferenceProvider)
 
-    return ageInMonths <= (biometricsParentChildConfig.ageThresholdMonths + 0.49)
+    return ageInMonths < (biometricsParentChildConfig.ageThresholdMonths)
 }
 
 fun containsAgeFilterAndIsUnderAgeThreshold(
@@ -40,7 +40,7 @@ fun containsAgeFilterAndIsUnderAgeThreshold(
 
         if (value != null){
             val ageInMonths = calculateAgeInMonths(value, DateTime.now())
-            return ageInMonths <= (biometricsParentChildConfig.ageThresholdMonths + 0.49)
+            return ageInMonths < (biometricsParentChildConfig.ageThresholdMonths)
         } else {
             false
         }
