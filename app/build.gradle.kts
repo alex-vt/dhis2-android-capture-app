@@ -190,14 +190,14 @@ android {
             applicationId = "ocba.com.dhis2.uat"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = "2.9.1-ocbauat-fork-1"
+            versionName = "2.9.1.1-ocbauat-fork-1"
         }
 
         create("ocba") {
             applicationId = "ocba.com.dhis2"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = "2.9.1-ocba-fork-1"
+            versionName = "2.9.1.1-ocba-fork-1"
         }
     }
 
