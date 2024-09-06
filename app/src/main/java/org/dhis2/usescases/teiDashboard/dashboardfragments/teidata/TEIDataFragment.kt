@@ -29,6 +29,7 @@ import io.reactivex.functions.Consumer
 import org.dhis2.R
 import org.dhis2.bindings.app
 import org.dhis2.commons.Constants
+import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
 import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_REQUEST
 import org.dhis2.commons.biometrics.BIOMETRICS_VERIFY_REQUEST
 import org.dhis2.commons.data.EventCreationType
@@ -331,13 +332,23 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == BIOMETRICS_VERIFY_REQUEST) {
-                onBiometricsAppResponse(resultCode, data)
-            } else if (requestCode == BIOMETRICS_ENROLL_REQUEST) {
-                if (data != null) {
-                    val result = get(requireContext()).handleRegisterResponse(resultCode, data)
+            when(requestCode) {
+                BIOMETRICS_VERIFY_REQUEST -> {
+                    onBiometricsAppResponse(resultCode, data)
+                }
+                BIOMETRICS_ENROLL_REQUEST -> {
+                    if (data != null) {
+                        val result = get(requireContext()).handleRegisterResponse(resultCode, data)
 
-                    presenter.handleRegisterResponse(result)
+                        presenter.handleRegisterResponse(result)
+                    }
+                }
+                BIOMETRICS_ENROLL_LAST_REQUEST -> {
+                    if (data != null) {
+                        val result = get(requireContext()).handleRegisterResponse(resultCode, data)
+
+                        presenter.handleRegisterResponse(result)
+                    }
                 }
             }
         }
