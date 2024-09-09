@@ -1,7 +1,6 @@
 package org.dhis2.usescases.teiDashboard.dashboardfragments.teidata
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -248,7 +247,8 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                     isUnderAgeThreshold(
                         BasicPreferenceProviderImpl(requireContext()),
                         it.trackedEntityAttributeValues,
-                        it.currentProgram().uid())
+                        it.currentProgram().uid()
+                    )
                 } else {
                     false
                 }
@@ -331,24 +331,25 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     @SuppressLint("CheckResult")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            when(requestCode) {
-                BIOMETRICS_VERIFY_REQUEST -> {
-                    onBiometricsAppResponse(resultCode, data)
-                }
-                BIOMETRICS_ENROLL_REQUEST -> {
-                    if (data != null) {
-                        val result = get(requireContext()).handleRegisterResponse(resultCode, data)
 
-                        presenter.handleRegisterResponse(result)
-                    }
-                }
-                BIOMETRICS_ENROLL_LAST_REQUEST -> {
-                    if (data != null) {
-                        val result = get(requireContext()).handleRegisterResponse(resultCode, data)
+        when (requestCode) {
+            BIOMETRICS_VERIFY_REQUEST -> {
+                onBiometricsAppResponse(resultCode, data)
+            }
 
-                        presenter.handleRegisterResponse(result)
-                    }
+            BIOMETRICS_ENROLL_REQUEST -> {
+                if (data != null) {
+                    val result = get(requireContext()).handleRegisterResponse(resultCode, data)
+
+                    presenter.handleRegisterResponse(result)
+                }
+            }
+
+            BIOMETRICS_ENROLL_LAST_REQUEST -> {
+                if (data != null) {
+                    val result = get(requireContext()).handleRegisterResponse(resultCode, data)
+
+                    presenter.handleRegisterResponse(result)
                 }
             }
         }

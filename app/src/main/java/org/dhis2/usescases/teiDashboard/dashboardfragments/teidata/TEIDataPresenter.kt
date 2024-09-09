@@ -568,12 +568,25 @@ class TEIDataPresenter(
     }
 
     fun handleVerifyResponse(result: VerifyResult) {
-        lastVerificationResult = result
+        when(result){
+            VerifyResult.Match -> {
+                lastVerificationResult = result
 
-        val biometricsValue = dashboardModel?.getBiometricValue()
+                val biometricsValue = dashboardModel?.getBiometricValue()
 
-        if (biometricsValue != null && result == VerifyResult.Match) {
-            teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
+                if (biometricsValue != null && result == VerifyResult.Match) {
+                    teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
+                }
+            }
+            VerifyResult.NoMatch -> {
+                lastVerificationResult = result
+            }
+            VerifyResult.Failure -> {
+                lastVerificationResult = result
+            }
+            VerifyResult.AgeGroupNotSupported -> {
+                view.showBiometricsAgeGroupNotSupported()
+            }
         }
     }
 
