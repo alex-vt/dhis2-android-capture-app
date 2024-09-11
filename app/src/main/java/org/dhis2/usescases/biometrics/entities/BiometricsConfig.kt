@@ -9,4 +9,5 @@ data class BiometricsConfig(
     val lastVerificationDuration: Int?,
     val lastDeclinedEnrolDuration: Int?,
     val program: String?,
+    val orgUnitLevelAsModuleId: Int?
 )

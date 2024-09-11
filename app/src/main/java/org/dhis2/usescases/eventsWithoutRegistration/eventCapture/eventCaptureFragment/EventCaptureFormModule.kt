@@ -3,6 +3,7 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureF
 import dagger.Module
 import dagger.Provides
 import org.dhis2.commons.di.dagger.PerFragment
+import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.domain.ReOpenEventUseCase
@@ -23,6 +24,7 @@ class EventCaptureFormModule(
         resourceManager: ResourceManager,
         reOpenEventUseCase: ReOpenEventUseCase,
         eventDispatchers: EventDispatchers,
+        basicPreferenceProvider: BasicPreferenceProvider
     ): EventCaptureFormPresenter {
         return EventCaptureFormPresenter(
             view,
@@ -32,6 +34,7 @@ class EventCaptureFormModule(
             resourceManager,
             reOpenEventUseCase,
             eventDispatchers,
+            basicPreferenceProvider
         )
     }
 

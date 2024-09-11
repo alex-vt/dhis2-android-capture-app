@@ -79,7 +79,8 @@ val defaultConfig = BiometricsConfig(
     lastVerificationDuration = 5,
     program = null,
     userId = "Admin",
-    lastDeclinedEnrolDuration = null
+    lastDeclinedEnrolDuration = null,
+    orgUnitLevelAsModuleId = 0
 )
 
 val configs = listOf(
@@ -92,7 +93,8 @@ val configs = listOf(
         lastVerificationDuration = 5,
         program = null,
         userId = "Admin",
-        lastDeclinedEnrolDuration = null
+        lastDeclinedEnrolDuration = null,
+        orgUnitLevelAsModuleId = 0
     ),
     BiometricsConfig(
         orgUnitGroup = null,
@@ -102,7 +104,8 @@ val configs = listOf(
         lastVerificationDuration = 5,
         program = "DM9n1bUw8W8",
         userId = "Admin",
-        lastDeclinedEnrolDuration = null
+        lastDeclinedEnrolDuration = null,
+        orgUnitLevelAsModuleId = 0
     ),
     BiometricsConfig(
         orgUnitGroup = "aAcGSF3p97c",
@@ -112,6 +115,7 @@ val configs = listOf(
         lastVerificationDuration = 5,
         program = null,
         userId = "Admin",
-        lastDeclinedEnrolDuration = null
+        lastDeclinedEnrolDuration = null,
+        orgUnitLevelAsModuleId = 0
     )
 )

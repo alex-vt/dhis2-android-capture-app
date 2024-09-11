@@ -3,6 +3,7 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureF
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.dhis2.R
+import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.data.dhislogic.AUTH_ALL
@@ -18,6 +19,7 @@ import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.biometrics.BiometricsDataElementStatus
 import org.dhis2.form.model.biometrics.BiometricsDataElementUiModelImpl
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
+import org.dhis2.usescases.biometrics.getOrgUnitAsModuleId
 import org.dhis2.usescases.biometrics.isLastVerificationValid
 import org.dhis2.usescases.eventsWithoutRegistration.EventIdlingResourceSingleton
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureContract
@@ -37,6 +39,7 @@ class EventCaptureFormPresenter(
     private val resourceManager: ResourceManager,
     private val reOpenEventUseCase: ReOpenEventUseCase,
     private val dispatcherProvider: DispatcherProvider,
+    private val basicPreferenceProvider: BasicPreferenceProvider,
 ) {
 
     private var biometricsVerificationStatus: Int = -1
@@ -105,7 +108,9 @@ class EventCaptureFormPresenter(
                     override fun onRetryClick() {
                         val ageInMonths = activityPresenter.getTEIAgeInMonths()
 
-                        view.verifyBiometrics(biometricsGuid, teiOrgUnit, trackedEntityInstanceId, ageInMonths)
+                        val orgUnitAsModuleId = getOrgUnitAsModuleId(teiOrgUnit ?: "", d2, basicPreferenceProvider)
+
+                        view.verifyBiometrics(biometricsGuid, orgUnitAsModuleId, trackedEntityInstanceId, ageInMonths)
                     }
                 }
             )
@@ -115,7 +120,9 @@ class EventCaptureFormPresenter(
                     override fun onClick() {
                         val ageInMonths = activityPresenter.getTEIAgeInMonths()
 
-                        view.registerBiometrics(teiOrgUnit, trackedEntityInstanceId, ageInMonths)
+                        val orgUnitAsModuleId = getOrgUnitAsModuleId(teiOrgUnit?:"", d2, basicPreferenceProvider)
+
+                        view.registerBiometrics(orgUnitAsModuleId, trackedEntityInstanceId, ageInMonths)
                     }
                 }
             )
@@ -163,9 +170,11 @@ class EventCaptureFormPresenter(
             ) {
                 val ageInMonths = activityPresenter.getTEIAgeInMonths()
 
+                val orgUnitAsModuleId = getOrgUnitAsModuleId(this.teiOrgUnit ?: "", d2, basicPreferenceProvider)
+
                 view.verifyBiometrics(
                     this.biometricsGuid,
-                    this.teiOrgUnit,
+                    orgUnitAsModuleId,
                     this.trackedEntityInstanceId,
                     ageInMonths
                 )

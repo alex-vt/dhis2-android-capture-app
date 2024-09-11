@@ -29,6 +29,7 @@ import org.dhis2.form.model.RowAction
 import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.usescases.biometrics.getAgeInMonthsByFieldUiModel
+import org.dhis2.usescases.biometrics.getOrgUnitAsModuleId
 import org.dhis2.usescases.biometrics.isUnderAgeThreshold
 import org.dhis2.usescases.teiDashboard.TeiAttributesProvider
 import org.dhis2.utils.analytics.AnalyticsHelper
@@ -362,7 +363,9 @@ class EnrollmentPresenterImpl(
                 val ageInMonths =
                     getAgeInMonthsByFieldUiModel(basicPreferenceProvider, fields, program)
 
-                view.registerBiometrics(orgUnit, ageInMonths)
+                val orgUnitAsModuleId = getOrgUnitAsModuleId(orgUnit, d2, basicPreferenceProvider)
+
+                view.registerBiometrics(orgUnitAsModuleId, ageInMonths)
                 pendingSave = true
             }
 

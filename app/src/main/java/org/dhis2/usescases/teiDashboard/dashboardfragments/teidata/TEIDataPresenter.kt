@@ -38,6 +38,7 @@ import org.dhis2.form.model.EventMode
 import org.dhis2.mobileProgramRules.RuleEngineHelper
 import org.dhis2.usescases.biometrics.biometricAttributeId
 import org.dhis2.usescases.biometrics.getAgeInMonthsByAttributes
+import org.dhis2.usescases.biometrics.getOrgUnitAsModuleId
 import org.dhis2.usescases.biometrics.isLastVerificationValid
 import org.dhis2.usescases.biometrics.isUnderAgeThreshold
 import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioModel
@@ -532,7 +533,7 @@ class TEIDataPresenter(
         view.openEventCapture(intent)
     }
 
-    fun verifyBiometrics() {
+    private fun verifyBiometrics() {
         if (dashboardModel != null) {
             val biometricValue = dashboardModel!!.getBiometricValue() ?: return
             val orgUnit = orgUnitUid ?: return
@@ -543,15 +544,17 @@ class TEIDataPresenter(
                 dashboardModel!!.currentProgram().uid()
             )
 
+            val orgUnitAsModuleId = getOrgUnitAsModuleId(orgUnit, d2, basicPreferenceProvider)
+
             view.launchBiometricsVerification(
                 biometricValue,
-                orgUnit, dashboardModel!!.trackedEntityInstance.uid(),
+                orgUnitAsModuleId, dashboardModel!!.trackedEntityInstance.uid(),
                 ageInMonths
             )
         }
     }
 
-    fun registerBiometrics() {
+    private fun registerBiometrics() {
         if (dashboardModel != null) {
             val orgUnit = orgUnitUid ?: return
 
@@ -561,8 +564,10 @@ class TEIDataPresenter(
                 dashboardModel!!.currentProgram().uid()
             )
 
+            val orgUnitAsModuleId = getOrgUnitAsModuleId(orgUnit, d2, basicPreferenceProvider)
+
             view.registerBiometrics(
-                orgUnit, dashboardModel!!.trackedEntityInstance.uid(), ageInMonths
+                orgUnitAsModuleId, dashboardModel!!.trackedEntityInstance.uid(), ageInMonths
             )
         }
     }
