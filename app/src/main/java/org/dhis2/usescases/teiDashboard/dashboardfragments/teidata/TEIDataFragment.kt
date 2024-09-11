@@ -646,7 +646,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         guid: String,
         orgUnitUid: String,
         trackedEntityInstanceId: String,
-        ageInMonths: Double,
+        ageInMonths: Long,
     ) {
         val biometricsClient = get(requireContext())
         val extras: HashMap<String, String> = HashMap()
@@ -657,7 +657,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     override fun registerBiometrics(
         orgUnitUid: String,
         trackedEntityInstanceUId: String,
-        ageInMonths: Double
+        ageInMonths: Long
     ) {
         val biometricsClient = get(requireContext())
         val extras: HashMap<String, String> = HashMap()

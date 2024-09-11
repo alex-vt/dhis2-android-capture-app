@@ -442,7 +442,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
         dialog.show()
     }
 
-    override fun registerBiometrics(orgUnit: String, ageInMonths: Double) {
+    override fun registerBiometrics(orgUnit: String, ageInMonths: Long) {
         BiometricsClientFactory.get(this).register(this, orgUnit, ageInMonths)
     }
 

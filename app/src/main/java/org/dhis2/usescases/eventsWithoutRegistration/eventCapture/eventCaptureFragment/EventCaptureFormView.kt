@@ -14,12 +14,12 @@ interface EventCaptureFormView {
         biometricsGuid: String?,
         teiOrgUnit: String?,
         trackedEntityInstanceId: String?,
-        ageInMonths: Double
+        ageInMonths: Long
     )
 
     fun registerBiometrics(
         teiOrgUnit: String?,
         trackedEntityInstanceId: String?,
-        ageInMonths: Double
+        ageInMonths: Long
     )
 }

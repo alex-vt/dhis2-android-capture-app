@@ -53,7 +53,7 @@ fun getAgeInMonthsByFieldUiModel(
     basicPreferenceProvider: BasicPreferenceProvider,
     fields: List<FieldUiModel>,
     programUid: String
-): Double {
+): Long {
     val biometricsParentChildConfig = getBiometricsParentChildConfig(basicPreferenceProvider)
 
     val birthdayAttribute =
@@ -66,10 +66,10 @@ fun getAgeInMonthsByFieldUiModel(
         if (birthdateFieldValue?.value != null && birthdateFieldValue.value != ""){
             return calculateAgeInMonths(birthdateFieldValue.value!!, DateTime.now())
         } else {
-            0.toDouble()
+            0
         }
     } else {
-        0.toDouble()
+        0
     }
 }
 
@@ -77,7 +77,7 @@ fun getAgeInMonthsByAttributes(
     basicPreferenceProvider: BasicPreferenceProvider,
     attributes: List<TrackedEntityAttributeValue>,
     programUid: String
-): Double {
+): Long {
     val biometricsParentChildConfig = getBiometricsParentChildConfig(basicPreferenceProvider)
 
     val birthdayAttribute =
@@ -90,21 +90,24 @@ fun getAgeInMonthsByAttributes(
         if (birthdateFieldValue?.value() != null && birthdateFieldValue.value() != ""){
             return calculateAgeInMonths(birthdateFieldValue.value()!!, DateTime.now())
         } else {
-            0.toDouble()
+            0
         }
     } else {
-        0.toDouble()
+        0
     }
 }
 
-fun calculateAgeInMonths(value: String, now:DateTime): Double {
+fun calculateAgeInMonths(value: String, now:DateTime): Long {
     return try {
         val formatter = DateTimeFormat.forPattern(DateUtils.DATE_FORMAT_EXPRESSION)
         val dateValue = formatter.parseDateTime(value)
         val months = Days.daysBetween(dateValue, now).days.toDouble() / 30
-        Timber.d("Age in months: $months")
-        months
+
+        val ageInMonths = months.toLong()
+
+        Timber.d("Age in months: $ageInMonths")
+        ageInMonths
     } catch (e: Exception) {
-        0.toDouble()
+        0
     }
 }

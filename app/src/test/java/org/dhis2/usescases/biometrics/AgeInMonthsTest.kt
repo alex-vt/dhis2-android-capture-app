@@ -10,13 +10,7 @@ class AgeInMonthsTest{
     fun `Should return age in months to 6`() {
         val ageInMonths = calculateAgeInMonths("2021-01-01", DateTime.parse("2021-06-30"))
 
-        Assert.assertTrue( "Age in months should be 6 but is $ageInMonths",ageInMonths == 6.toDouble())
+        Assert.assertTrue( "Age in months should be 6 but is $ageInMonths",ageInMonths == 6.toLong())
     }
 
-    @Test
-    fun `Should return age in months to 6,5`() {
-        val ageInMonths = calculateAgeInMonths("2021-01-01", DateTime.parse("2021-07-15"))
-
-        Assert.assertTrue( "Age in months should be 6.5 but is $ageInMonths",ageInMonths == 6.5)
-    }
 }

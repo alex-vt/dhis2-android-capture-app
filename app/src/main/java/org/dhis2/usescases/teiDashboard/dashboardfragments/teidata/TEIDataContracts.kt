@@ -48,11 +48,11 @@ class TEIDataContracts {
             guid: String,
             orgUnitUid: String,
             trackedEntityInstance: String,
-            ageInMonths: Double
+            ageInMonths: Long
         )
 
         fun refreshCard()
-        fun registerBiometrics(orgUnit: String, trackedEntityInstance: String, ageInMonths: Double)
+        fun registerBiometrics(orgUnit: String, trackedEntityInstance: String, ageInMonths: Long)
         fun showBiometricsAgeGroupNotSupported()
         fun registerLast(sessionId: String)
         fun showPossibleDuplicatesDialog( guids: List<String>, sessionId: String, programUid: String,
