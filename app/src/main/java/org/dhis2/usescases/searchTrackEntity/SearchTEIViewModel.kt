@@ -502,7 +502,7 @@ class SearchTEIViewModel(
             }
 
             val queryDataContainsAgeUnderThreadsHold =
-                containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider,queryData, initialProgramUid ?: "")
+                containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider,queryData)
 
             val nextAction = if (previousSearch == null && !queryDataContainsAgeUnderThreadsHold ) {
                 SequentialSearchAction.SearchWithBiometrics

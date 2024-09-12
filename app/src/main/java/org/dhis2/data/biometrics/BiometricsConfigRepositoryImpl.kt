@@ -70,6 +70,10 @@ class BiometricsConfigRepositoryImpl(
     }
 
     override fun saveSelectedConfig(config: BiometricsConfig) {
+        preferenceProvider.setValue(BiometricsPreference.ORG_UNIT_GROUP, config.orgUnitGroup)
+
+        preferenceProvider.setValue(BiometricsPreference.PROGRAM, config.program)
+
         preferenceProvider.setValue(BiometricsPreference.PROJECT_ID, config.projectId)
 
         preferenceProvider.setValue(BiometricsPreference.USER_ID, config.userId)
@@ -103,12 +107,12 @@ class BiometricsConfigRepositoryImpl(
 
         preferenceProvider.setValue(
             BiometricsPreference.AGE_THRESHOLD_MONTHS,
-            config.ageThresholdMonths ?: 0
+            config.ageThresholdMonths
         )
 
         preferenceProvider.setValue(
             BiometricsPreference.DATE_OF_BIRTH_ATTRIBUTE,
-            config.dateOfBirthAttribute ?: ""
+            config.dateOfBirthAttribute
         )
 
         Timber.d("downloadBiometricsConfig!")

@@ -285,7 +285,7 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
     public Observable<Long> getAgeInMonths() {
         TrackedEntityInstance tei = getTeiByEvent(getCurrentEvent());
 
-        Long ageInMonths = getAgeInMonthsByAttributes(basicPreferenceProvider, tei.trackedEntityAttributeValues(), getCurrentEvent().program());
+        Long ageInMonths = getAgeInMonthsByAttributes(basicPreferenceProvider, tei.trackedEntityAttributeValues());
         return Observable.just(ageInMonths);
     }
 }

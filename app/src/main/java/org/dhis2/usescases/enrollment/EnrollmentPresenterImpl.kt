@@ -358,10 +358,8 @@ class EnrollmentPresenterImpl(
                 val orgUnit = enrollmentObjectRepository.get().blockingGet()
                     ?.organisationUnit()!!
 
-                val program = programRepository.blockingGet()?.uid() ?: ""
-
                 val ageInMonths =
-                    getAgeInMonthsByFieldUiModel(basicPreferenceProvider, fields, program)
+                    getAgeInMonthsByFieldUiModel(basicPreferenceProvider, fields)
 
                 val orgUnitAsModuleId = getOrgUnitAsModuleId(orgUnit, d2, basicPreferenceProvider)
 
@@ -432,7 +430,7 @@ class EnrollmentPresenterImpl(
                 )
 
                 val isUnderAgeThreshold =
-                    isUnderAgeThreshold(basicPreferenceProvider, teiAttrValues, program)
+                    isUnderAgeThreshold(basicPreferenceProvider, teiAttrValues)
 
                 biometricsUiModel
                     .setValue(parentBiometricsValue?.value() ?: biometricsUiModel.value)

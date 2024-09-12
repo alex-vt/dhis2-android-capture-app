@@ -10,6 +10,6 @@ data class BiometricsConfig(
     val lastDeclinedEnrolDuration: Int?,
     val program: String?,
     val orgUnitLevelAsModuleId: Int?,
-    val ageThresholdMonths: String?,
-    val dateOfBirthAttribute: String?
+    val ageThresholdMonths: Int,
+    val dateOfBirthAttribute: String
 )

@@ -25,7 +25,7 @@ fun getParentTeiUid(
             existBiometricsAttributeValue(biometricsAttribute, attributeValues)
 
         val isUnderAgeThreshold =
-            isUnderAgeThreshold(basicPreferenceProvider, attributeValues, programUid)
+            isUnderAgeThreshold(basicPreferenceProvider, attributeValues)
 
         val searchParentBiometricsIsRequired = !existBiometricsValue && isUnderAgeThreshold
 
