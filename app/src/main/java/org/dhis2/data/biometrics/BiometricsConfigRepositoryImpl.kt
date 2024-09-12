@@ -101,6 +101,16 @@ class BiometricsConfigRepositoryImpl(
             orgUnitLevelAsModuleId
         )
 
+        preferenceProvider.setValue(
+            BiometricsPreference.AGE_THRESHOLD_MONTHS,
+            config.ageThresholdMonths ?: 0
+        )
+
+        preferenceProvider.setValue(
+            BiometricsPreference.DATE_OF_BIRTH_ATTRIBUTE,
+            config.dateOfBirthAttribute ?: ""
+        )
+
         Timber.d("downloadBiometricsConfig!")
         Timber.d("orgUnitGroup: ${config.orgUnitGroup}")
         Timber.d("program: ${config.program}")
@@ -111,7 +121,8 @@ class BiometricsConfigRepositoryImpl(
         Timber.d("lastVerificationDuration: ${config.lastVerificationDuration}")
         Timber.d("lastDeclinedEnrolDuration: ${config.lastDeclinedEnrolDuration}")
         Timber.d("orgUnitLevelAsModuleId: $orgUnitLevelAsModuleId")
-
+        Timber.d("ageThresholdMonths: ${config.ageThresholdMonths}")
+        Timber.d("dateOfBirthAttribute: ${config.dateOfBirthAttribute}")
     }
 
     private fun getOrgUnitLevelAsModuleId(config: BiometricsConfig): Int {
