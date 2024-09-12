@@ -125,7 +125,10 @@ class EventCaptureFormPresenter(
     fun onUPGSelected(upg: UPGItem) {
         savingSelectedUPG = true
 
-        upgUidUIModel?.onSave(upg.guid)
+        if (upg.guid.isNotBlank()){
+            upgUidUIModel?.onSave(upg.guid)
+        }
+
         upgNameUIModel?.onSave(upg.name)
 
         savingSelectedUPG = false
