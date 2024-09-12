@@ -21,6 +21,8 @@ import org.dhis2.utils.validationrules.ValidationRuleResult
 import org.hisp.dhis.android.core.validation.engine.ValidationResult.ValidationResultStatus
 import java.util.Locale
 
+private const val TEAM_REQUEST_DATASET = "seT5Zh1Egnj"
+
 class DataSetTablePresenter(
     private val view: DataSetTableContract.View,
     private val tableRepository: DataSetTableRepositoryImpl,
@@ -120,7 +122,16 @@ class DataSetTablePresenter(
                 view.showValidationRuleDialog()
             }
         } else if (!isComplete()) {
-            view.showSuccessValidationDialog()
+            // Eyeseetea customization - Create Team change request
+            // view.showSuccessValidationDialog()
+
+            val dataset = tableRepository.getDataSet().blockingGet()
+
+            if (dataset?.uid() == TEAM_REQUEST_DATASET) {
+                view.showTeamChangeRequestDialog()
+            } else {
+                view.showSuccessValidationDialog()
+            }
         } else {
             view.saveAndFinish()
         }
@@ -213,5 +224,23 @@ class DataSetTablePresenter(
         } else {
             view.finishInputEdition()
         }
+    }
+
+    // Eyeseetea customization - Create Team change request
+
+    private var onCreateTeamChangeRequestListener: (() -> Unit)? = null
+    fun createTeamChangeRequest() {
+        //Create change request
+        onCreateTeamChangeRequestListener?.invoke()
+
+        view.showSuccessValidationDialog()
+    }
+
+    fun cancelChangeRequest() {
+        view.showSuccessValidationDialog()
+    }
+
+    fun setCreateTeamChangeRequestListener(listener: () -> Unit) {
+        onCreateTeamChangeRequestListener = listener
     }
 }

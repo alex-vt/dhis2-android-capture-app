@@ -1035,4 +1035,11 @@ class DataValueRepository(
     fun getDataSetInfo(): Triple<String, String, String> {
         return Triple(periodId, orgUnitUid, attributeOptionComboUid)
     }
+
+    fun getParentOrgUnit(): String {
+        val orgUnit = d2.organisationUnitModule().organisationUnits().uid(orgUnitUid).blockingGet()
+        val path = orgUnit!!.path()!!.split("/")
+
+        return path[path.size - 2]
+    }
 }

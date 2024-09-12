@@ -85,6 +85,10 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
         activity = context as DataSetTableActivity
         presenter = activity.presenter
 
+        presenter.setCreateTeamChangeRequestListener {
+            presenterFragment.createTeamChangeRequest()
+        }
+
         activity.dataSetTableComponent?.plus(
             DataValueModule(
                 arguments?.getString(DATA_SET_UID)!!,
@@ -461,13 +465,23 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
         cell: TableCell,
         orgUnits: List<OrganisationUnit>,
         updateCellValue: (TableCell) -> Unit,
+        singleSelection:Boolean?,
     ) {
         OUTreeFragment.Builder()
             .showAsDialog()
-            .singleSelection()
-            .withPreselectedOrgUnits(cell.value?.let { listOf(it) } ?: emptyList())
+            //EyeSeeTea customizations - multiple SDS org unit selection
+            //..singleSelection()
+            //.withPreselectedOrgUnits(cell.value?.let { listOf(it) } ?: emptyList())
+            .let {
+                if (singleSelection == true){
+                    it.singleSelection()
+                } else {
+                    it
+                }
+            }
+            .withPreselectedOrgUnits(cell.value?.let { it.split(",") } ?: emptyList())
             .onSelection { selectedOrgUnits ->
-                val updatedCellValue = cell.copy(value = selectedOrgUnits[0].uid())
+                val updatedCellValue = if (singleSelection == true) cell.copy(value = selectedOrgUnits[0].uid()) else cell.copy(value = selectedOrgUnits.map { it.uid() }.joinToString(","))
                 updateCellValue(updatedCellValue)
                 presenterFragment.onSaveValueChange(updatedCellValue)
             }
