@@ -31,13 +31,14 @@ import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.data.biometrics.RegisterResult
 import org.dhis2.data.biometrics.VerifyResult
-import org.dhis2.data.biometrics.utils.isUnderAgeThreshold
 import org.dhis2.form.data.FormValueStore
 import org.dhis2.form.data.OptionsRepository
 import org.dhis2.form.data.RulesUtilsProviderImpl
 import org.dhis2.form.model.EventMode
 import org.dhis2.mobileProgramRules.RuleEngineHelper
+import org.dhis2.usescases.biometrics.getAgeInMonthsByAttributes
 import org.dhis2.usescases.biometrics.isLastVerificationValid
+import org.dhis2.usescases.biometrics.isUnderAgeThreshold
 import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioModel
 import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioRegistrationMapper
 import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioVerificationMapper
@@ -525,9 +526,16 @@ class TEIDataPresenter(
             val biometricValue = dashboardModel!!.getBiometricValue() ?: return
             val orgUnit = orgUnitUid ?: return
 
+            val ageInMonths = getAgeInMonthsByAttributes(
+                basicPreferenceProvider,
+                dashboardModel!!.trackedEntityAttributeValues,
+                dashboardModel!!.currentProgram().uid()
+            )
+
             view.launchBiometricsVerification(
                 biometricValue,
-                orgUnit, dashboardModel!!.trackedEntityInstance.uid()
+                orgUnit, dashboardModel!!.trackedEntityInstance.uid(),
+                ageInMonths
             )
         }
     }
@@ -536,8 +544,14 @@ class TEIDataPresenter(
         if (dashboardModel != null) {
             val orgUnit = orgUnitUid ?: return
 
+            val ageInMonths = getAgeInMonthsByAttributes(
+                basicPreferenceProvider,
+                dashboardModel!!.trackedEntityAttributeValues,
+                dashboardModel!!.currentProgram().uid()
+            )
+
             view.registerBiometrics(
-                orgUnit, dashboardModel!!.trackedEntityInstance.uid()
+                orgUnit, dashboardModel!!.trackedEntityInstance.uid(), ageInMonths
             )
         }
     }
@@ -595,7 +609,8 @@ class TEIDataPresenter(
         val teiAttrValues = dashboardModel?.trackedEntityAttributeValues ?: listOf()
         val program = dashboardModel?.currentProgram()?.uid() ?: ""
 
-        val isUnderAgeThreshold = isUnderAgeThreshold(basicPreferenceProvider,teiAttrValues,program)
+        val isUnderAgeThreshold =
+            isUnderAgeThreshold(basicPreferenceProvider, teiAttrValues, program)
 
         return if (dashboardModel?.isBiometricsEnabled() == true && !isUnderAgeThreshold) {
             val bioValue = dashboardModel!!.getBiometricValue()

@@ -21,7 +21,8 @@ sealed class SequentialSearch(
         override val previousSearch: SequentialSearch?,
         override val nextAction: SequentialSearchAction?,
         val simprintsItems: List<SimprintsItem>,
-        val sessionId: String
+        val sessionId: String,
+        val isAgeNotSupported: Boolean,
     ) : SequentialSearch(previousSearch, nextAction)
 
     data class AttributeSearch(

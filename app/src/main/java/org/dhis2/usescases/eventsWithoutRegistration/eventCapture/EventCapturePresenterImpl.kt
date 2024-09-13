@@ -323,4 +323,8 @@ class EventCapturePresenterImpl(
     override fun getLastBiometricsVerificationDuration(): Int {
         return preferences.getInt(BiometricsPreference.LAST_VERIFICATION_DURATION, 0)
     }
+
+    override fun getTEIAgeInMonths(): Long {
+        return eventCaptureRepository.getAgeInMonths().blockingFirst()
+    }
 }

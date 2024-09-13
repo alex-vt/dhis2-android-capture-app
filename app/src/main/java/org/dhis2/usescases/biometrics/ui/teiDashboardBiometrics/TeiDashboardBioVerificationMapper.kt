@@ -15,7 +15,7 @@ class TeiDashboardBioVerificationMapper(
         verifyResult: VerifyResult?,
         actionCallback: () -> Unit,
     ): TeiDashboardBioModel {
-        val buttonModel = if (verifyResult == null){
+        val buttonModel = if (verifyResult == null) {
             BioButtonModel(
                 text = resourceManager.getString(R.string.biometrics_verification_not_done),
                 backgroundColor = defaultButtonColor,
@@ -28,7 +28,8 @@ class TeiDashboardBioVerificationMapper(
                     text = resourceManager.context.getString(R.string.retake_biometrics),
                     backgroundColor = defaultButtonColor,
                     icon = R.drawable.ic_bio_fingerprint,
-                    onActionClick = actionCallback)
+                    onActionClick = actionCallback
+                )
             } else {
                 null
             }
@@ -58,6 +59,8 @@ class TeiDashboardBioVerificationMapper(
 
             is VerifyResult.Failure ->
                 resourceManager.getString(R.string.verification_declined)
+
+            is VerifyResult.AgeGroupNotSupported -> resourceManager.getString(R.string.age_group_not_supported)
         }
     }
 
@@ -68,6 +71,7 @@ class TeiDashboardBioVerificationMapper(
             is VerifyResult.Match -> resourceManager.context.getBioIconSuccess()
             is VerifyResult.NoMatch -> resourceManager.context.getBioIconFailed()
             is VerifyResult.Failure -> resourceManager.context.getBioIconWarning()
+            is VerifyResult.AgeGroupNotSupported -> resourceManager.context.getBioIconFailed()
         }
     }
 
@@ -78,6 +82,7 @@ class TeiDashboardBioVerificationMapper(
             is VerifyResult.Match -> "#34835d"
             is VerifyResult.NoMatch -> "#e30613"
             is VerifyResult.Failure -> "#a6a5a4"
+            is VerifyResult.AgeGroupNotSupported -> "#a6a5a4"
         }
     }
 }

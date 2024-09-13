@@ -47,10 +47,11 @@ class TEIDataContracts {
         fun launchBiometricsVerification(
             guid: String,
             orgUnitUid: String,
-            trackedEntityInstance: String
+            trackedEntityInstance: String,
+            ageInMonths: Long
         )
 
         fun refreshCard()
-        fun registerBiometrics(orgUnit: String, uid: String)
+        fun registerBiometrics(orgUnit: String, trackedEntityInstance: String, ageInMonths: Long)
     }
 }

@@ -4,6 +4,7 @@ import static org.dhis2.data.biometrics.utils.GetBiometricsTrackedEntityAttribut
 import static org.dhis2.data.biometrics.utils.GetTeiByUidKt.getTeiByUid;
 import static org.dhis2.data.biometrics.utils.GetTrackedEntityAttributeValueByAttributeKt.getTrackedEntityAttributeValueByAttribute;
 import static org.dhis2.data.biometrics.utils.UpdateBiometricsAttributeValueKt.updateBiometricsAttributeValue;
+import static org.dhis2.usescases.biometrics.AgeInMonthsKt.getAgeInMonthsByAttributes;
 import static org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureRepositoryFunctionsKt.getProgramStageName;
 
 import org.dhis2.commons.prefs.BasicPreferenceProvider;
@@ -232,13 +233,13 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
     public Date getBiometricsAttributeValueInTeiLastUpdated() {
         Date lastUpdated = null;
 
-        TrackedEntityInstance tei =  getTeiByEvent(getCurrentEvent());
+        TrackedEntityInstance tei = getTeiByEvent(getCurrentEvent());
 
         String parentTeiUid = GetParentTeiKt.getParentTeiUid(
-                d2, basicPreferenceProvider,tei.trackedEntityAttributeValues(),
-                getCurrentEvent().program(),tei.uid());
+                d2, basicPreferenceProvider, tei.trackedEntityAttributeValues(),
+                getCurrentEvent().program(), tei.uid());
 
-        if (parentTeiUid != null){
+        if (parentTeiUid != null) {
             tei = getTeiByUid(d2, parentTeiUid);
         }
 
@@ -247,7 +248,7 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
         TrackedEntityAttributeValue attValue =
                 getTrackedEntityAttributeValueByAttribute(attributeUid, tei.trackedEntityAttributeValues());
 
-        if (attValue != null){
+        if (attValue != null) {
             lastUpdated = attValue.lastUpdated();
         }
 
@@ -261,10 +262,10 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
         Event currentEvent = getCurrentEvent();
 
         String parentTeiUid = GetParentTeiKt.getParentTeiUid(
-                d2, basicPreferenceProvider,tei.trackedEntityAttributeValues(),
-                currentEvent.program(),tei.uid());
+                d2, basicPreferenceProvider, tei.trackedEntityAttributeValues(),
+                currentEvent.program(), tei.uid());
 
-        updateBiometricsAttributeValue(d2,tei.uid(), biometricsGuid, parentTeiUid);
+        updateBiometricsAttributeValue(d2, tei.uid(), biometricsGuid, parentTeiUid);
     }
 
     private TrackedEntityInstance getTeiByEvent(Event currentEvent) {
@@ -275,9 +276,17 @@ public class EventCaptureRepositoryImpl implements EventCaptureContract.EventCap
                     .uid(enrollmentUid).blockingGet();
 
             return getTeiByUid(d2, enrollment.trackedEntityInstance());
-        }else {
+        } else {
             return null;
         }
+    }
+
+    @Override
+    public Observable<Long> getAgeInMonths() {
+        TrackedEntityInstance tei = getTeiByEvent(getCurrentEvent());
+
+        Long ageInMonths = getAgeInMonthsByAttributes(basicPreferenceProvider, tei.trackedEntityAttributeValues(), getCurrentEvent().program());
+        return Observable.just(ageInMonths);
     }
 }
 

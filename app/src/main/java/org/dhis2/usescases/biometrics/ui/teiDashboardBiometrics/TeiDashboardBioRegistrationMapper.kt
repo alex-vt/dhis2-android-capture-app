@@ -42,6 +42,8 @@ class TeiDashboardBioRegistrationMapper(
 
                 is RegisterResult.PossibleDuplicates ->
                     resourceManager.getString(R.string.biometrics_declined)
+
+                is RegisterResult.AgeGroupNotSupported -> resourceManager.getString(R.string.age_group_not_supported)
             }
         }
     }
@@ -56,10 +58,9 @@ class TeiDashboardBioRegistrationMapper(
                 is RegisterResult.Completed -> resourceManager.context.getBioIconSuccess()
                 is RegisterResult.Failure -> resourceManager.context.getBioIconFailed()
                 is RegisterResult.PossibleDuplicates -> resourceManager.context.getBioIconFailed()
+                is RegisterResult.AgeGroupNotSupported -> resourceManager.context.getBioIconFailed()
             }
         }
-
-
     }
 
     private fun getBackgroundColor(
@@ -72,6 +73,7 @@ class TeiDashboardBioRegistrationMapper(
                 is RegisterResult.Completed -> successButtonColor
                 is RegisterResult.Failure -> failedButtonColor
                 is RegisterResult.PossibleDuplicates -> failedButtonColor
+                is RegisterResult.AgeGroupNotSupported -> failedButtonColor
             }
         }
     }

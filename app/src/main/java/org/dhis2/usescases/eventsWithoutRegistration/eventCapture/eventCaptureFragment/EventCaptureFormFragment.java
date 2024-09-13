@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -210,10 +211,8 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode) {
             case BIOMETRICS_VERIFY_REQUEST: {
-                if (resultCode == RESULT_OK) {
                     VerifyResult result = BiometricsClientFactory.INSTANCE.get(
-                            this.getContext()).handleVerifyResponse(data);
-
+                            this.getContext()).handleVerifyResponse(requestCode, data);
 
                     if (result instanceof VerifyResult.Match) {
                         presenter.refreshBiometricsStatus(1, true, null);
@@ -221,16 +220,17 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                         presenter.refreshBiometricsStatus(0, true,null);
                     } else if (result instanceof VerifyResult.Failure) {
                         presenter.refreshBiometricsStatus(0, true,null);
+                    } else if (result instanceof VerifyResult.AgeGroupNotSupported) {
+                        Toast.makeText(getContext(), R.string.age_group_not_supported,
+                                Toast.LENGTH_SHORT).show();
                     }
-                }
+
                 break;
             }
             case BIOMETRICS_ENROLL_REQUEST: {
                 if (data != null) {
                     RegisterResult result = BiometricsClientFactory.INSTANCE.get(
-                            this.getContext()).handleRegisterResponse(data);
-
-
+                            this.getContext()).handleRegisterResponse(requestCode, data);
                     if (result instanceof RegisterResult.Completed) {
                         presenter.refreshBiometricsStatus(1, true,((RegisterResult.Completed) result).getGuid());
                     } else if (result instanceof RegisterResult.Failure) {
@@ -240,7 +240,11 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
                                 result.guids,
                                 result.sessionId
                         )*/
+                    } else if (result instanceof RegisterResult.AgeGroupNotSupported) {
+                        Toast.makeText(getContext(), R.string.age_group_not_supported,
+                                Toast.LENGTH_SHORT).show();
                     }
+
                 }
             }
 
@@ -299,18 +303,18 @@ public class EventCaptureFormFragment extends FragmentGlobalAbstract implements 
     }
 
     @Override
-    public void verifyBiometrics(@Nullable String biometricsGuid, @Nullable String teiOrgUnit, @Nullable String trackedEntityInstanceId) {
+    public void verifyBiometrics(@Nullable String biometricsGuid, @Nullable String teiOrgUnit, @Nullable String trackedEntityInstanceId, long ageInMonths) {
         HashMap extras = new HashMap<>();
         extras.put(BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID, trackedEntityInstanceId);
 
-        BiometricsClientFactory.INSTANCE.get(this.getContext()).verify(this, biometricsGuid, teiOrgUnit, extras);
+        BiometricsClientFactory.INSTANCE.get(this.getContext()).verify(this, biometricsGuid, teiOrgUnit, extras, ageInMonths);
     }
 
     @Override
-    public void registerBiometrics(@Nullable String teiOrgUnit, @Nullable String trackedEntityInstanceId) {
+    public void registerBiometrics(@Nullable String teiOrgUnit, @Nullable String trackedEntityInstanceId, long ageInMonths) {
         HashMap extras = new HashMap<>();
         extras.put(BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID, trackedEntityInstanceId);
 
-        BiometricsClientFactory.INSTANCE.get(this.getContext()).registerFromFragment(this, teiOrgUnit, extras);
+        BiometricsClientFactory.INSTANCE.get(this.getContext()).registerFromFragment(this, teiOrgUnit, extras , ageInMonths);
     }
 }

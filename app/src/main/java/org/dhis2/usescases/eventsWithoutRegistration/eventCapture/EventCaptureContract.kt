@@ -71,6 +71,7 @@ class EventCaptureContract {
         fun getBiometricsAttributeValueInTeiLastUpdated(deUid: String?): Date?
         fun updateBiometricsAttributeValueInTei(biometricsGuid: String?)
         fun getLastBiometricsVerificationDuration(): Int
+        fun getTEIAgeInMonths(): Long
     }
 
     interface EventCaptureRepository {
@@ -97,6 +98,9 @@ class EventCaptureContract {
 
         // EyeSeeTea customizations
         fun getBiometricsAttributeValueInTeiLastUpdated(): Date?
+
         fun updateBiometricsAttributeValueInTei(biometricsGuid: String?)
+
+        fun getAgeInMonths(): Observable<Long>
     }
 }

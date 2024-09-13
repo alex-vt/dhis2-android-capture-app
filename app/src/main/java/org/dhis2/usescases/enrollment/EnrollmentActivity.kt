@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.databinding.DataBindingUtil
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -19,9 +20,9 @@ import org.dhis2.commons.data.TeiAttributesInfo
 import org.dhis2.commons.dialogs.imagedetail.ImageDetailActivity
 import org.dhis2.commons.featureconfig.data.FeatureConfigRepository
 import org.dhis2.commons.featureconfig.model.Feature
+import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.biometrics.BiometricsClientFactory
 import org.dhis2.data.biometrics.RegisterResult
-import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.databinding.EnrollmentActivityBinding
 import org.dhis2.form.data.GeometryController
 import org.dhis2.form.data.GeometryParserImpl
@@ -200,7 +201,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                 BIOMETRICS_ENROLL_REQUEST -> {
                     if (data != null) {
                         when (val result = BiometricsClientFactory.get(this).handleRegisterResponse(
-                            data
+                            resultCode, data
                         )) {
                             is RegisterResult.Completed -> {
                                 presenter.onBiometricsCompleted(result.guid)
@@ -216,25 +217,37 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                                     result.sessionId
                                 )
                             }
+
+                            is RegisterResult.AgeGroupNotSupported -> {
+                                Toast.makeText(
+                                    context, getString(R.string.age_group_not_supported),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     }
                 }
 
                 BIOMETRICS_ENROLL_LAST_REQUEST -> {
-                    if (resultCode == RESULT_OK) {
-                        if (data != null) {
-                            when (val result =
-                                BiometricsClientFactory.get(this).handleRegisterResponse(data)) {
-                                is RegisterResult.Completed -> {
-                                    presenter.onBiometricsCompleted(result.guid)
-                                }
-
-                                else -> {
-                                    presenter.onBiometricsFailure()
-                                }
+                    if (data != null) {
+                        when (val result =
+                            BiometricsClientFactory.get(this)
+                                .handleRegisterResponse(resultCode, data)) {
+                            is RegisterResult.Completed -> {
+                                presenter.onBiometricsCompleted(result.guid)
+                            }
+                            is RegisterResult.AgeGroupNotSupported -> {
+                                Toast.makeText(
+                                    context, getString(R.string.age_group_not_supported),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            else -> {
+                                presenter.onBiometricsFailure()
                             }
                         }
                     }
+
                 }
 
                 RQ_EVENT -> openDashboard(presenter.getEnrollment()!!.uid()!!)
@@ -429,8 +442,8 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
         dialog.show()
     }
 
-    override fun registerBiometrics(orgUnit: String) {
-        BiometricsClientFactory.get(this).register(this, orgUnit)
+    override fun registerBiometrics(orgUnit: String, ageInMonths: Long) {
+        BiometricsClientFactory.get(this).register(this, orgUnit, ageInMonths)
     }
 
     override fun showPossibleDuplicatesDialog(

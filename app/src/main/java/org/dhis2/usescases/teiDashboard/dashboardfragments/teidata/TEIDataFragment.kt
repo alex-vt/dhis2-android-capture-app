@@ -315,10 +315,10 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == BIOMETRICS_VERIFY_REQUEST) {
-                onBiometricsAppResponse(data)
+                onBiometricsAppResponse(resultCode, data)
             } else if (requestCode == BIOMETRICS_ENROLL_REQUEST){
                 if (data != null) {
-                    val result = get(requireContext()).handleRegisterResponse(data)
+                    val result = get(requireContext()).handleRegisterResponse(resultCode, data)
 
                     presenter.handleRegisterResponse(result)
                 }
@@ -326,11 +326,11 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         }
     }
 
-    private fun onBiometricsAppResponse(data: Intent?) {
+    private fun onBiometricsAppResponse(resultCode: Int,data: Intent?) {
         if (data == null) return
 
         val result = get(requireContext()).handleVerifyResponse(
-            data
+            resultCode, data
         )
         presenter.handleVerifyResponse(result)
     }
@@ -616,19 +616,20 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
     override fun launchBiometricsVerification(
         guid: String,
         orgUnitUid: String,
-        trackedEntityInstanceId: String
+        trackedEntityInstanceId: String,
+        ageInMonths: Long,
     ) {
         val biometricsClient = get(requireContext())
         val extras: HashMap<String, String> = HashMap()
         extras[BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID] = trackedEntityInstanceId
-        biometricsClient.verify(this, guid, orgUnitUid, extras)
+        biometricsClient.verify(this, guid, orgUnitUid, extras, ageInMonths)
     }
 
-    override fun registerBiometrics(orgUnitUid: String, trackedEntityInstanceUId: String) {
+    override fun registerBiometrics(orgUnitUid: String, trackedEntityInstanceUId: String, ageInMonths: Long) {
         val biometricsClient = get(requireContext())
         val extras: HashMap<String, String> = HashMap()
         extras[BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID] = trackedEntityInstanceUId
-        biometricsClient.registerFromFragment(this, orgUnitUid, extras)
+        biometricsClient.registerFromFragment(this, orgUnitUid, extras, ageInMonths)
     }
 
     override fun refreshCard() {

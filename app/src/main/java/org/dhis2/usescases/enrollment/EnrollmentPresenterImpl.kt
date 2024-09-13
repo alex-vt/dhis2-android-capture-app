@@ -21,12 +21,13 @@ import org.dhis2.data.biometrics.utils.getBiometricsTrackedEntityAttribute
 import org.dhis2.data.biometrics.utils.getParentBiometricsAttributeValueIfRequired
 import org.dhis2.data.biometrics.utils.getTeiByUid
 import org.dhis2.data.biometrics.utils.getTrackedEntityAttributeValueByAttribute
-import org.dhis2.data.biometrics.utils.isUnderAgeThreshold
 import org.dhis2.form.data.EnrollmentRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
 import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
+import org.dhis2.usescases.biometrics.getAgeInMonthsByFieldUiModel
+import org.dhis2.usescases.biometrics.isUnderAgeThreshold
 import org.dhis2.usescases.teiDashboard.TeiAttributesProvider
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.dhis2.utils.analytics.DELETE_AND_BACK
@@ -345,7 +346,11 @@ class EnrollmentPresenterImpl(
                 val orgUnit = enrollmentObjectRepository.get().blockingGet()
                     ?.organisationUnit()!!
 
-                view.registerBiometrics(orgUnit)
+                val program = programRepository.blockingGet()?.uid() ?: ""
+
+                val ageInMonths = getAgeInMonthsByFieldUiModel(basicPreferenceProvider,fields, program)
+
+                view.registerBiometrics(orgUnit, ageInMonths)
                 pendingSave = true
             }
 
@@ -369,7 +374,7 @@ class EnrollmentPresenterImpl(
 
     fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
         val allMandatoryFieldsHasValue =
-            fields.count { it.mandatory && (it.value == null || it.value!!.isEmpty())} == 0
+            fields.count { it.mandatory && (it.value == null || it.value!!.isEmpty()) } == 0
 
         return fields.map {
             if (it is BiometricsAttributeUiModelImpl) {
