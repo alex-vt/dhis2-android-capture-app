@@ -12,6 +12,8 @@ import com.simprints.libsimprints.Identification
 import com.simprints.libsimprints.RefusalForm
 import com.simprints.libsimprints.Registration
 import com.simprints.libsimprints.SimHelper
+import com.simprints.libsimprints.Tier
+import com.simprints.libsimprints.Verification
 import org.dhis2.R
 import org.dhis2.commons.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
 import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
@@ -170,7 +172,7 @@ class BiometricsClient(
                 is IdentifyResult.Completed -> {
                     val guids = identifyResponse.items.map { it.guid }
 
-                    Timber.d("Possible duplicates guids")
+                    Timber.d("Possible duplicates: $guids")
                     RegisterResult.PossibleDuplicates(
                         guids,
                         identifyResponse.sessionId
@@ -182,7 +184,13 @@ class BiometricsClient(
                 }
 
                 is IdentifyResult.UserNotFound -> {
-                    handleRegister()
+                    val guids = listOf<String>()
+
+                    Timber.d("Possible duplicates but IdentifyResult is UserNotFound")
+                    RegisterResult.PossibleDuplicates(
+                        guids,
+                        identifyResponse.sessionId
+                    )
                 }
 
                 is IdentifyResult.Failure -> {
@@ -265,35 +273,8 @@ class BiometricsClient(
         val biometricsCompleted = checkBiometricsCompleted(data)
 
         return if (biometricsCompleted) {
-            val verificationJudgementBySimprints = getVerificationJudgementBySimprints(data)
+             getVerificationJudgementBySimprints(data) ?:getVerificationJudgementByDhis2(data)
 
-            if (verificationJudgementBySimprints) {
-                VerifyResult.Match
-            } else {
-                VerifyResult.NoMatch
-            }
-
-            // Old Judgement by confidenceScoreFilter
-            // test with old project id
- /*           val verification: Verification? =
-                data.getParcelableExtra(Constants.SIMPRINTS_VERIFICATION)
-
-            if (verification != null) {
-                when (verification.tier) {
-                    Tier.TIER_1, Tier.TIER_2, Tier.TIER_3, Tier.TIER_4 -> {
-                        if (verification.confidence >= confidenceScoreFilter) {
-                            VerifyResult.Match
-                        } else {
-                            Timber.w("Verify returns data but no match with confidence score filter")
-                            VerifyResult.NoMatch
-                        }
-                    }
-
-                    Tier.TIER_5 -> VerifyResult.NoMatch
-                }
-            } else {
-                VerifyResult.Failure
-            }*/
         } else {
             VerifyResult.Failure
         }
@@ -355,13 +336,56 @@ class BiometricsClient(
         launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_ENROLL_LAST_REQUEST)
     }
 
+    fun registerLastFromFragment(fragment: Fragment, sessionId: String) {
+        Timber.d("Biometrics confirmIdentify!")
+        Timber.d("moduleId: $defaultModuleId")
+        Timber.d("sessionId: $sessionId")
+
+        val intent = simHelper.registerLastBiometrics(defaultModuleId, sessionId)
+
+        launchSimprintsAppFromFragment(fragment, intent, BIOMETRICS_ENROLL_LAST_REQUEST)
+    }
+
     private fun checkBiometricsCompleted(data: Intent) =
         data.getBooleanExtra(Constants.SIMPRINTS_BIOMETRICS_COMPLETE_CHECK, false)
 
-    private fun getVerificationJudgementBySimprints(data: Intent) =
-        // extract the verification judgement
-        data.getBooleanExtra(Constants.SIMPRINTS_VERIFICATION_SUCCESS, false)
+    private fun getVerificationJudgementBySimprints(data: Intent): VerifyResult? {
+        val existVerificationJudgement = data.extras?.containsKey(Constants.SIMPRINTS_VERIFICATION_SUCCESS)
 
+        if (existVerificationJudgement == true) {
+            val verificationSuccess = data.getBooleanExtra(Constants.SIMPRINTS_VERIFICATION_SUCCESS, false)
+
+            if (verificationSuccess) {
+                return VerifyResult.Match
+            } else {
+                return VerifyResult.NoMatch
+            }
+        } else {
+            return null
+        }
+    }
+
+    private fun getVerificationJudgementByDhis2(data: Intent): VerifyResult {
+        val verification: Verification? =
+            data.getParcelableExtra(Constants.SIMPRINTS_VERIFICATION)
+
+        return if (verification != null) {
+            when (verification.tier) {
+                Tier.TIER_1, Tier.TIER_2, Tier.TIER_3, Tier.TIER_4 -> {
+                    if (verification.confidence >= confidenceScoreFilter) {
+                        VerifyResult.Match
+                    } else {
+                        Timber.w("Verify returns data but no match with confidence score filter")
+                        VerifyResult.NoMatch
+                    }
+                }
+
+                Tier.TIER_5 -> VerifyResult.NoMatch
+            }
+        } else {
+            VerifyResult.Failure
+        }
+    }
 
     private fun launchSimprintsAppFromActivity(
         activity: Activity,

@@ -27,6 +27,7 @@ import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.data.biometrics.BiometricsClient
 import org.dhis2.data.biometrics.BiometricsClientFactory.get
 import org.dhis2.databinding.DialogBiometricsDuplicatesBinding
+import org.dhis2.usescases.searchTrackEntity.ui.mapper.TEICardMapper
 import org.dhis2.utils.LastSelection
 import org.hisp.dhis.android.core.arch.call.D2Progress
 import javax.inject.Inject
@@ -41,10 +42,17 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
     @Inject
     lateinit var presenter: BiometricsDuplicatesDialogPresenter
 
+    @Inject
+    lateinit var teiCardMapper: TEICardMapper
+
     private lateinit var adapter: BiometricsDuplicatesDialogAdapter
 
-    var isDialogShown = false
-        private set
+    private var isDialogShown = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.BiometricsConfirmationDialog)
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -82,8 +90,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
         binding.cancelButton.setOnClickListener { this.dismiss() }
 
         this.adapter =
-            BiometricsDuplicatesDialogAdapter(activity?.supportFragmentManager, ColorUtils()) { searchTeiModel ->
-
+            BiometricsDuplicatesDialogAdapter(teiCardMapper, ColorUtils()) { searchTeiModel ->
                 presenter.onTEIClick(
                     searchTeiModel.tei.uid(),
                     searchTeiModel.selectedEnrollment.uid(),
@@ -119,7 +126,6 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
                     binding.duplicatesEmptyContainer.visibility = View.VISIBLE
                 } else {
                     binding.duplicatesEmptyContainer.visibility = View.GONE
-
                 }
             }
         }

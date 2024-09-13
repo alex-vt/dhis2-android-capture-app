@@ -22,10 +22,12 @@ import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.toDateSpan
 import org.dhis2.commons.date.toOverdueOrScheduledUiText
 import org.dhis2.commons.date.toUi
+import org.dhis2.commons.prefs.BasicPreferenceProviderImpl
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.ui.model.ListCardUiModel
 import org.dhis2.form.extensions.isNotBiometricText
 import org.dhis2.usescases.biometrics.addAttrBiometricsEmojiIfRequired
+import org.dhis2.usescases.biometrics.isUnderAgeThreshold
 import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.enrollment.Enrollment
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
@@ -48,7 +50,7 @@ class TEICardMapper(
 
     fun map(
         searchTEIModel: SearchTeiModel,
-        onSyncIconClick: () -> Unit,
+        onSyncIconClick: (() -> Unit)? = null,
         onCardClick: () -> Unit,
         onImageClick: (String) -> Unit,
     ): ListCardUiModel {
@@ -57,7 +59,12 @@ class TEICardMapper(
             title = getTitle(searchTEIModel),
             lastUpdated = searchTEIModel.tei.lastUpdated().toDateSpan(context),
             additionalInfo = getAdditionalInfoList(searchTEIModel),
-            actionButton = { ProvideSyncButton(searchTEIModel, onSyncIconClick) },
+            actionButton = {
+                if (onSyncIconClick != null) {
+                    ProvideSyncButton(searchTEIModel, onSyncIconClick)
+                }
+
+            },
             expandLabelText = resourceManager.getString(R.string.show_more),
             shrinkLabelText = resourceManager.getString(R.string.show_less),
             onCardCLick = onCardClick,
@@ -85,14 +92,24 @@ class TEICardMapper(
     }
 
     private fun getTitleFirstLetter(item: SearchTeiModel): String {
-        val firstLetter = item.header?.firstOrNull()
-            ?: item.attributeValues.values.firstOrNull()?.value()?.firstOrNull()
+        // EyeSeeTea customization - shoe first letter of first name and last name
+        /*     val firstLetter = item.header?.firstOrNull()
+                 ?: item.attributeValues.values.firstOrNull()?.value()?.firstOrNull()
 
-        return when (firstLetter) {
-            null -> "?"
-            '-' -> "?"
-            else -> firstLetter.uppercaseChar().toString()
-        }
+             return when (firstLetter) {
+                 null -> "?"
+                 '-' -> "?"
+                 else -> firstLetter.uppercaseChar().toString()
+             }*/
+        val firsNameValue =
+            item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == firstNameAttrUid }
+                ?.value() ?: "?"
+        val lastNameValue =
+            item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == lastNameAttrUid }
+                ?.value() ?: "?"
+
+        return "${firsNameValue.first().uppercaseChar()}${lastNameValue.first().uppercaseChar()}"
+
     }
 
     private fun getTitle(item: SearchTeiModel): String {
@@ -123,8 +140,15 @@ class TEICardMapper(
         //attributeList.removeIf { it.value.isEmpty() || it.value == "-" }
         attributeList.removeIf { it.key!!.isNotBiometricText() && (it.value.isEmpty() || it.value == "-") }
 
+        val isUnderAgeThreshold = isUnderAgeThreshold(
+            BasicPreferenceProviderImpl(context),
+            searchTEIModel.allAttributeValues.values.toList(),
+            searchTEIModel.selectedEnrollment.program() ?: ""
+        )
+
         // EyeSeeTea customization
-        val finalAttributeList = addAttrBiometricsEmojiIfRequired(attributeList).toMutableList()
+        val finalAttributeList =
+            addAttrBiometricsEmojiIfRequired(attributeList, isUnderAgeThreshold).toMutableList()
 
         return finalAttributeList.also { list ->
             if (searchTEIModel.displayOrgUnit) {
@@ -491,13 +515,25 @@ class TEICardMapper(
         val attributeList = attributeUIdsToShow.mapNotNull { attributeUIdToShow ->
             searchTEIModel.allAttributeValues.entries.find { it.value.trackedEntityAttribute() == attributeUIdToShow }
         }.map {
+
+            val key = if (it.key.startsWith("Traceable address")) it.key.replace(
+                "(where family Lives)",
+                ""
+            ) else it.key
+
             AdditionalInfoItem(
-                key = "${it.key}:",
+                key = "$key:",
                 value = it.value.value() ?: "",
             )
         }.toMutableList()
 
-        return addAttrBiometricsEmojiIfRequired(attributeList).toMutableList()
+        val isUnderAgeThreshold = isUnderAgeThreshold(
+            BasicPreferenceProviderImpl(context),
+            searchTEIModel.allAttributeValues.values.toList(),
+            searchTEIModel.selectedEnrollment.program() ?: ""
+        )
+
+        return addAttrBiometricsEmojiIfRequired(attributeList, isUnderAgeThreshold).toMutableList()
     }
 
 }

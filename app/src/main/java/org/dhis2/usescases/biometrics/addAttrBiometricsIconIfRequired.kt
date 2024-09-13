@@ -27,7 +27,7 @@ fun addAttrBiometricsIconIfRequired(additionalInfo: List<AdditionalInfoItem>): L
     } else additionalInfo
 }
 
-fun addAttrBiometricsEmojiIfRequired(additionalInfo: List<AdditionalInfoItem>): List<AdditionalInfoItem> {
+fun addAttrBiometricsEmojiIfRequired(additionalInfo: List<AdditionalInfoItem>, isUnderAgeThreshold:Boolean): List<AdditionalInfoItem> {
     return if (BIOMETRICS_ENABLED) additionalInfo.map {
         val key = it.key ?: ""
 
@@ -35,7 +35,13 @@ fun addAttrBiometricsEmojiIfRequired(additionalInfo: List<AdditionalInfoItem>): 
             if (it.value.isNotBlank() && it.value != "-") {
                 it.copy(value = "✔\uFE0F", isConstantItem = true)
             } else {
-                it.copy(value = "❌", isConstantItem = true)
+                if (isUnderAgeThreshold){
+                    it.copy(value = "Not Applicable", isConstantItem = true)
+                } else {
+                    it.copy(value = "❌", isConstantItem = true)
+                }
+
+
             }
         } else {
             it

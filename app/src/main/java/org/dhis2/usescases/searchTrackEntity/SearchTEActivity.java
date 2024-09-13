@@ -506,7 +506,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                                 Collections.singletonList(new SimprintsItem(BIOMETRICS_USER_NOT_FOUND, 0)),
                                 ((IdentifyResult.UserNotFound) result).getSessionId(), false);
                     } else if (result instanceof IdentifyResult.Failure) {
-                        showBiometricsErrorDialog();
+                        Toast.makeText(getContext(), R.string.biometrics_failed,
+                                Toast.LENGTH_SHORT).show();
                     }  else if (result instanceof IdentifyResult.AgeGroupNotSupported) {
                         Toast.makeText(getContext(), R.string.age_group_not_supported,
                                 Toast.LENGTH_SHORT).show();
@@ -524,29 +525,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private void showBiometricsErrorDialog() {
-        String title = getString(R.string.biometrics_error_dialog_title);
-        String desc = getString(R.string.biometrics_error_dialog_desc);
-        String posButton = getString(R.string.biometrics_try_again);
-        String negButton = getString(R.string.cancel);
-        DialogClickListener dialogClickListener = new DialogClickListener() {
-            @Override
-            public void onPositive() {
-                searchByBiometrics();
-            }
-
-            @Override
-            public void onNegative() {
-                if (null != biometricsErrorDialog) {
-                    biometricsErrorDialog.dismiss();
-                }
-            }
-        };
-        biometricsErrorDialog = new CustomDialog(getContext(), title, desc, posButton, negButton, 0,
-                dialogClickListener);
-        biometricsErrorDialog.show();
     }
 
     private void configureBottomNavigation() {

@@ -41,6 +41,7 @@ import org.dhis2.usescases.searchTrackEntity.SearchRepository
 import org.dhis2.usescases.searchTrackEntity.SearchRepositoryImpl
 import org.dhis2.usescases.searchTrackEntity.SearchRepositoryImplKt
 import org.dhis2.usescases.searchTrackEntity.SearchRepositoryKt
+import org.dhis2.usescases.searchTrackEntity.ui.mapper.TEICardMapper
 import org.dhis2.utils.DateUtils
 import org.hisp.dhis.android.core.D2
 
@@ -163,5 +164,13 @@ class BiometricsDuplicatesDialogModule(private val context: Context, private val
         schedulerProvider: SchedulerProvider
     ): BiometricsDuplicatesDialogPresenter {
         return BiometricsDuplicatesDialogPresenter(d2, searchRepository, searchRepositoryKt, schedulerProvider)
+    }
+
+    @Provides
+    fun provideListCardMapper(
+        context: Context,
+        resourceManager: ResourceManager
+    ): TEICardMapper {
+        return TEICardMapper(context, resourceManager)
     }
 }

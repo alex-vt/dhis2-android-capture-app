@@ -164,15 +164,15 @@ data class BiometricsAttributeUiModelImpl(
     // because we need listen in enrollmentPresenterImpl to register biometrics
 
     private var biometricListener: (() -> Unit)? = null
-    private var saveWithoutBiometricsListener: (() -> Unit)? = null
+    private var saveTEIListener: ((removeBiometrics:Boolean) -> Unit)? = null
     private var registerLastAndSave: ((String) -> Unit)? = null
 
     override fun onBiometricsClick() {
         biometricListener?.invoke()
     }
 
-    override fun onSaveWithoutBiometrics() {
-        saveWithoutBiometricsListener?.invoke()
+    override fun onSaveTEI(removeBiometrics:Boolean) {
+        saveTEIListener?.invoke(removeBiometrics)
     }
 
     override fun registerLastAndSave(sessionId: String) {
@@ -183,8 +183,8 @@ data class BiometricsAttributeUiModelImpl(
         this.biometricListener = listener
     }
 
-    fun setSaveWithoutBiometrics(listener: () -> Unit) {
-        this.saveWithoutBiometricsListener = listener
+    fun setSaveTEI(listener: (removeBiometrics:Boolean) -> Unit) {
+        this.saveTEIListener = listener
     }
 
     fun setRegisterLastAndSave(listener: (String) -> Unit) {

@@ -3,6 +3,7 @@ package org.dhis2.usescases.enrollment
 import io.reactivex.Single
 import io.reactivex.processors.PublishProcessor
 import org.dhis2.commons.matomo.MatomoAnalyticsController
+import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.schedulers.TrampolineSchedulerProvider
 import org.dhis2.form.data.EnrollmentRepository
@@ -49,6 +50,7 @@ class EnrollmentPresenterImplTest {
     private val matomoAnalyticsController: MatomoAnalyticsController = mock()
     private val eventCollectionRepository: EventCollectionRepository = mock()
     private val teiAttributesProvider: TeiAttributesProvider = mock()
+    private val basicPreferenceProvider: BasicPreferenceProvider = mock()
 
     @Before
     fun setUp() {
@@ -65,6 +67,7 @@ class EnrollmentPresenterImplTest {
             matomoAnalyticsController,
             eventCollectionRepository,
             teiAttributesProvider,
+            basicPreferenceProvider
         )
     }
 

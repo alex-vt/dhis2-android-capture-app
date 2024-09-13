@@ -2,6 +2,7 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.reactivex.Flowable
+import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.viewmodel.DispatcherProvider
@@ -47,6 +48,7 @@ class EventIntegrationTest {
     private val resourceManager: ResourceManager = mock()
     private val reOpenUseCase: ReOpenEventUseCase = mock()
     private val dispatcherProvider: DispatcherProvider = mock()
+    private val basicPreferenceProvider: BasicPreferenceProvider = mock()
 
     private val resourceProvider: EventCaptureResourcesProvider = mock {
         on { provideNotSavedText() } doReturn "not_saved"
@@ -79,6 +81,7 @@ class EventIntegrationTest {
         resourceManager = resourceManager,
         reOpenEventUseCase = reOpenUseCase,
         dispatcherProvider = dispatcherProvider,
+        basicPreferenceProvider = basicPreferenceProvider
     )
 
     @Test

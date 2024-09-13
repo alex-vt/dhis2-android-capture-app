@@ -8,8 +8,11 @@ import org.dhis2.commons.bindings.dataSetInstanceSummaries
 import org.dhis2.commons.bindings.isStockProgram
 import org.dhis2.commons.bindings.programs
 import org.dhis2.commons.bindings.stockUseCase
+import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
+import org.dhis2.commons.biometrics.BIOMETRICS_SEARCH_PATTERN
 import org.dhis2.commons.featureconfig.data.FeatureConfigRepository
 import org.dhis2.commons.prefs.Preference.Companion.PIN
+import org.dhis2.usescases.biometrics.biometricAttributeId
 import org.dhis2.usescases.main.program.toAppConfig
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.category.CategoryCombo
@@ -17,12 +20,32 @@ import org.hisp.dhis.android.core.category.CategoryOptionCombo
 import org.hisp.dhis.android.core.program.ProgramType
 import org.hisp.dhis.android.core.systeminfo.SystemInfo
 import org.hisp.dhis.android.core.user.User
+import timber.log.Timber
 
 class HomeRepositoryImpl(
     private val d2: D2,
     private val charts: Charts?,
     private val featureConfig: FeatureConfigRepository,
 ) : HomeRepository {
+
+    init {
+        //fix saved invalid biometrics guid
+        val teiAttributeValues =
+            d2.trackedEntityModule().trackedEntityAttributeValues().byTrackedEntityAttribute().eq(
+                biometricAttributeId
+            ).blockingGet()
+
+        val corruptedBiometricsValues = teiAttributeValues.filter {
+            it.value()?.startsWith(BIOMETRICS_SEARCH_PATTERN) == true ||
+                    it.value()?.startsWith(BIOMETRICS_FAILURE_PATTERN) == true
+        }
+
+        corruptedBiometricsValues.forEach {
+            Timber.d("Deleting invalid biometrics value for TEI: ${it.trackedEntityInstance()} with value: ${it.value()}")
+            deleteBiometricsAttributeValue(it.trackedEntityInstance() ?:"", it.trackedEntityAttribute()?:"")
+        }
+    }
+
     override fun user(): Single<User?> {
         return d2.userModule().user().get()
     }
@@ -101,5 +124,12 @@ class HomeRepositoryImpl(
 
             else -> null
         }
+    }
+
+    fun deleteBiometricsAttributeValue(teiUid: String, biometricUid: String) {
+        val valueRepository = d2.trackedEntityModule().trackedEntityAttributeValues()
+            .value(biometricUid, teiUid)
+
+        valueRepository.blockingDelete()
     }
 }

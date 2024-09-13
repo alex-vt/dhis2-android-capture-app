@@ -56,7 +56,7 @@ internal fun BiometricsVerification(
             verticalAlignment = Alignment.CenterVertically,
         ){
             Text(
-                text = "Biometrics Verification",
+                text = "Biometrics verification",
                 style = MaterialTheme.typography.body1,
                 color = Color.DarkGray
 
@@ -79,7 +79,7 @@ internal fun BiometricsVerification(
             Spacer(modifier = Modifier.width(16.dp))
 
             Button(
-                text = stringResource(R.string.biometrics_retake).uppercase(),
+                text = stringResource(R.string.biometrics_retake),
                 style = ButtonStyle.TEXT_LIGHT,
                 icon = {
                     Icon(

@@ -1,18 +1,14 @@
 package org.dhis2.data.biometrics.utils
 
-import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.data.biometrics.getBiometricsParentChildConfig
 import org.dhis2.usescases.biometrics.entities.BiometricsParentChildConfig
-import org.dhis2.usescases.biometrics.entities.DateOfBirthAttributeByProgram
+import org.dhis2.usescases.biometrics.isUnderAgeThreshold
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.relationship.Relationship
 import org.hisp.dhis.android.core.relationship.RelationshipItem
 import org.hisp.dhis.android.core.relationship.RelationshipItemTrackedEntityInstance
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue
-import org.joda.time.DateTime
-import org.joda.time.Months
-import org.joda.time.format.DateTimeFormat
 
 fun getParentTeiUid(
     d2: D2,
@@ -29,7 +25,7 @@ fun getParentTeiUid(
             existBiometricsAttributeValue(biometricsAttribute, attributeValues)
 
         val isUnderAgeThreshold =
-            isUnderAgeThreshold(biometricsParentChildConfig, attributeValues, programUid)
+            isUnderAgeThreshold(basicPreferenceProvider, attributeValues, programUid)
 
         val searchParentBiometricsIsRequired = !existBiometricsValue && isUnderAgeThreshold
 
@@ -48,33 +44,6 @@ private fun existBiometricsAttributeValue(
         getTrackedEntityAttributeValueByAttribute(biometricsAttribute, attributeValues)
 
     return attValueOptional != null
-}
-
-private fun isUnderAgeThreshold(
-    biometricsParentChildConfig: BiometricsParentChildConfig,
-    attributeValues: List<TrackedEntityAttributeValue>,
-    programUid: String
-): Boolean {
-
-    val birthdayAttribute =
-        biometricsParentChildConfig.dateOfBirthAttributeByProgram
-            .find { (program): DateOfBirthAttributeByProgram -> program == programUid }
-
-    return if (birthdayAttribute != null) {
-        val birthdateAttValue =
-            getTrackedEntityAttributeValueByAttribute(birthdayAttribute.attribute, attributeValues)
-
-        if (birthdateAttValue?.value() != null && birthdateAttValue.value() != ""){
-            val formatter = DateTimeFormat.forPattern(DateUtils.DATE_FORMAT_EXPRESSION)
-            val dateValue = formatter.parseDateTime(birthdateAttValue?.value())
-            val moths = Months.monthsBetween(dateValue, DateTime.now()).months
-            moths <= biometricsParentChildConfig.ageThresholdMonths
-        } else {
-            false
-        }
-    } else {
-        false
-    }
 }
 
 private fun getRelatedTei(

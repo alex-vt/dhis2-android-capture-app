@@ -1,13 +1,14 @@
 package org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics
 
 import org.dhis2.R
+import org.dhis2.commons.biometrics.declinedButtonColor
+import org.dhis2.commons.biometrics.defaultButtonColor
+import org.dhis2.commons.biometrics.failedButtonColor
 import org.dhis2.commons.biometrics.getBioIconFailed
 import org.dhis2.commons.biometrics.getBioIconSuccess
+import org.dhis2.commons.biometrics.successButtonColor
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.biometrics.RegisterResult
-import org.dhis2.usescases.biometrics.ui.defaultButtonColor
-import org.dhis2.usescases.biometrics.ui.failedButtonColor
-import org.dhis2.usescases.biometrics.ui.successButtonColor
 
 class TeiDashboardBioRegistrationMapper(
     val resourceManager: ResourceManager,
@@ -16,14 +17,30 @@ class TeiDashboardBioRegistrationMapper(
         registerResult: RegisterResult?,
         actionCallback: () -> Unit,
     ): TeiDashboardBioModel {
-        return TeiDashboardBioModel(
-            verificationStatusModel = null,
-            buttonModel = BioButtonModel(
+        val statusModel = if (registerResult == RegisterResult.Failure) {
+            BioStatus(
+                text = getText(registerResult),
+                backgroundColor = getBackgroundColor(registerResult)?: defaultButtonColor,
+                icon = getIcon(registerResult)
+            )
+        } else {
+            null
+        }
+
+        val buttonModel = if (registerResult != RegisterResult.Failure) {
+            BioButtonModel(
                 text = getText(registerResult),
                 backgroundColor = getBackgroundColor(registerResult),
                 icon = getIcon(registerResult),
                 onActionClick = actionCallback
             )
+        } else {
+            null
+        }
+
+        return TeiDashboardBioModel(
+            statusModel = statusModel,
+            buttonModel = buttonModel
         )
     }
 
@@ -65,13 +82,13 @@ class TeiDashboardBioRegistrationMapper(
 
     private fun getBackgroundColor(
         registerResult: RegisterResult?,
-    ): String {
-        if (registerResult == null) {
-            return defaultButtonColor
+    ): String? {
+        return if (registerResult == null) {
+            null
         } else {
-            return when (registerResult) {
+            when (registerResult) {
                 is RegisterResult.Completed -> successButtonColor
-                is RegisterResult.Failure -> failedButtonColor
+                is RegisterResult.Failure -> declinedButtonColor
                 is RegisterResult.PossibleDuplicates -> failedButtonColor
                 is RegisterResult.AgeGroupNotSupported -> failedButtonColor
             }

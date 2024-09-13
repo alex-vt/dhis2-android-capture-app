@@ -25,6 +25,7 @@ class BiometricsConfigRepositoryImpl(
             if (response.isSuccessful && configOptions != null) {
                 preferenceProvider.saveAsJson(BiometricsPreference.CONFIGURATIONS, configOptions)
                 Timber.d("BiometricsConfig synced!")
+                Timber.d("BiometricsConfig: $configOptions")
 
                 val userOrgUnitGroups =
                     d2.organisationUnitModule().organisationUnits()
@@ -36,7 +37,10 @@ class BiometricsConfigRepositoryImpl(
                             else listOf()
                         }.distinct()
 
-                preferenceProvider.saveAsJson(BiometricsPreference.USER_ORG_UNIT_GROUPS, userOrgUnitGroups)
+                preferenceProvider.saveAsJson(
+                    BiometricsPreference.USER_ORG_UNIT_GROUPS,
+                    userOrgUnitGroups
+                )
             } else {
                 Timber.e(response.errorBody()?.string())
             }
@@ -85,6 +89,17 @@ class BiometricsConfigRepositoryImpl(
             BiometricsPreference.LAST_VERIFICATION_DURATION,
             config.lastVerificationDuration ?: 0
         )
+        preferenceProvider.setValue(
+            BiometricsPreference.LAST_DECLINED_ENROL_DURATION,
+            config.lastDeclinedEnrolDuration ?: 0
+        )
+
+        val orgUnitLevelAsModuleId = getOrgUnitLevelAsModuleId(config)
+
+        preferenceProvider.setValue(
+            BiometricsPreference.ORG_UNIT_LEVEL_AS_MODULE_ID,
+            orgUnitLevelAsModuleId
+        )
 
         Timber.d("downloadBiometricsConfig!")
         Timber.d("orgUnitGroup: ${config.orgUnitGroup}")
@@ -94,5 +109,17 @@ class BiometricsConfigRepositoryImpl(
         Timber.d("confidenceScoreFilter: ${config.confidenceScoreFilter}")
         Timber.d("icon: $icon")
         Timber.d("lastVerificationDuration: ${config.lastVerificationDuration}")
+        Timber.d("lastDeclinedEnrolDuration: ${config.lastDeclinedEnrolDuration}")
+        Timber.d("orgUnitLevelAsModuleId: $orgUnitLevelAsModuleId")
+
+    }
+
+    private fun getOrgUnitLevelAsModuleId(config: BiometricsConfig): Int {
+        return if (config.orgUnitLevelAsModuleId == null || config.orgUnitLevelAsModuleId > 0) {
+            Timber.d("Invalid orgUnitLevelAsModuleId assigned, using default value 0")
+            0
+        } else {
+            config.orgUnitLevelAsModuleId
+        }
     }
 }

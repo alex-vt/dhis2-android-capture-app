@@ -36,7 +36,9 @@ import org.dhis2.form.data.OptionsRepository
 import org.dhis2.form.data.RulesUtilsProviderImpl
 import org.dhis2.form.model.EventMode
 import org.dhis2.mobileProgramRules.RuleEngineHelper
+import org.dhis2.usescases.biometrics.biometricAttributeId
 import org.dhis2.usescases.biometrics.getAgeInMonthsByAttributes
+import org.dhis2.usescases.biometrics.getOrgUnitAsModuleId
 import org.dhis2.usescases.biometrics.isLastVerificationValid
 import org.dhis2.usescases.biometrics.isUnderAgeThreshold
 import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioModel
@@ -66,7 +68,9 @@ import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.program.ProgramStage
 import org.hisp.dhis.rules.models.RuleEffect
 import timber.log.Timber
+import java.util.Timer
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.schedule
 
 class TEIDataPresenter(
     private val view: TEIDataContracts.View,
@@ -107,6 +111,12 @@ class TEIDataPresenter(
 
     private var lastVerificationResult: VerifyResult? = null
     private var lastRegisterResult: RegisterResult? = null
+    private val lastBiometricsVerificationDuration = basicPreferenceProvider.getInt(
+        BiometricsPreference.LAST_VERIFICATION_DURATION, 0
+    )
+    private val lastDeclinedEnrolDuration = basicPreferenceProvider.getInt(
+        BiometricsPreference.LAST_DECLINED_ENROL_DURATION, 0
+    )
 
     fun init() {
         programUid?.let {
@@ -156,6 +166,10 @@ class TEIDataPresenter(
                     ),
             )
 
+            fetchDashboardModel()
+
+            getEventsWithoutCatCombo()
+
             compositeDisposable.add(
                 Observable.interval(0, 2, TimeUnit.SECONDS)
                     .subscribeOn(schedulerProvider.io())
@@ -164,10 +178,6 @@ class TEIDataPresenter(
                         { refreshVerificationStatus() }
                     ) { t: Throwable? -> Timber.e(t) })
 
-
-            fetchDashboardModel()
-
-            getEventsWithoutCatCombo()
         } ?: run {
             _shouldDisplayEventCreationButton.value = false
         }
@@ -186,6 +196,8 @@ class TEIDataPresenter(
                             dashboardModel = model
                             programUid = model.currentProgram().uid()
                             orgUnitUid = model.orgUnits[0].uid()
+
+                            refreshVerificationStatus()
                         }
                     },
                     Timber.Forest::e,
@@ -521,7 +533,7 @@ class TEIDataPresenter(
         view.openEventCapture(intent)
     }
 
-    fun verifyBiometrics() {
+    private fun verifyBiometrics() {
         if (dashboardModel != null) {
             val biometricValue = dashboardModel!!.getBiometricValue() ?: return
             val orgUnit = orgUnitUid ?: return
@@ -532,15 +544,17 @@ class TEIDataPresenter(
                 dashboardModel!!.currentProgram().uid()
             )
 
+            val orgUnitAsModuleId = getOrgUnitAsModuleId(orgUnit, d2, basicPreferenceProvider)
+
             view.launchBiometricsVerification(
                 biometricValue,
-                orgUnit, dashboardModel!!.trackedEntityInstance.uid(),
+                orgUnitAsModuleId, dashboardModel!!.trackedEntityInstance.uid(),
                 ageInMonths
             )
         }
     }
 
-    fun registerBiometrics() {
+    private fun registerBiometrics() {
         if (dashboardModel != null) {
             val orgUnit = orgUnitUid ?: return
 
@@ -550,46 +564,73 @@ class TEIDataPresenter(
                 dashboardModel!!.currentProgram().uid()
             )
 
+            val orgUnitAsModuleId = getOrgUnitAsModuleId(orgUnit, d2, basicPreferenceProvider)
+
             view.registerBiometrics(
-                orgUnit, dashboardModel!!.trackedEntityInstance.uid(), ageInMonths
+                orgUnitAsModuleId, dashboardModel!!.trackedEntityInstance.uid(), ageInMonths
             )
         }
     }
 
     fun handleVerifyResponse(result: VerifyResult) {
-        lastVerificationResult = result
+        when(result){
+            VerifyResult.Match -> {
+                lastVerificationResult = result
 
-        val biometricsValue = dashboardModel?.getBiometricValue()
+                val biometricsValue = dashboardModel?.getBiometricValue()
 
-        if (biometricsValue != null && result == VerifyResult.Match) {
-            teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
+                if (biometricsValue != null && result == VerifyResult.Match) {
+                    teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
+                }
+            }
+            VerifyResult.NoMatch -> {
+                lastVerificationResult = result
+            }
+            VerifyResult.Failure -> {
+                lastVerificationResult = result
+            }
+            VerifyResult.AgeGroupNotSupported -> {
+                view.showBiometricsAgeGroupNotSupported()
+            }
         }
     }
 
     fun handleRegisterResponse(result: RegisterResult) {
         lastRegisterResult = result
 
-        if (result is RegisterResult.Completed) {
-            val biometricsValue = result.guid
-
-            teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
-
-            lastRegisterResult = null
-            lastVerificationResult = VerifyResult.Match
+        when(result){
+            is RegisterResult.Completed -> {
+                val biometricsValue = result.guid
+                teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
+                lastRegisterResult = null
+                lastVerificationResult = VerifyResult.Match
+            }
+            is RegisterResult.Failure -> {
+                if (lastDeclinedEnrolDuration > 0) {
+                    val lastDeclinedEnrolDurationInMillis = TimeUnit.MINUTES.toMillis(lastDeclinedEnrolDuration.toLong())
+                    Timer().schedule(lastDeclinedEnrolDurationInMillis) {
+                        lastRegisterResult = null
+                    }
+                }
+            }
+            is RegisterResult.AgeGroupNotSupported -> {
+               view.showBiometricsAgeGroupNotSupported()
+            }
+            is RegisterResult.PossibleDuplicates -> {
+                onBiometricsPossibleDuplicates(result.guids, result.sessionId)
+            }
         }
     }
 
     private fun refreshVerificationStatus() {
-        if (lastVerificationResult == null && dashboardModel != null && dashboardModel!!.isBiometricsEnabled()) {
+        if ((lastVerificationResult == null || lastVerificationResult == VerifyResult.Match) && dashboardModel != null && dashboardModel!!.isBiometricsEnabled()) {
             val values =
                 dashboardRepository.getTEIAttributeValues(programUid, teiUid).blockingSingle()
 
             val value =
                 values.firstOrNull { it.trackedEntityAttribute() == dashboardModel!!.getBiometricsAttributeUid() }
 
-            val lastBiometricsVerificationDuration = basicPreferenceProvider.getInt(
-                BiometricsPreference.LAST_VERIFICATION_DURATION, 0
-            )
+
             if (!isLastVerificationValid(
                     value?.lastUpdated(),
                     lastBiometricsVerificationDuration,
@@ -625,11 +666,7 @@ class TEIDataPresenter(
                 TeiDashboardBioVerificationMapper(resourceManager).map(
                     lastVerificationResult
                 ) {
-                    if (lastVerificationResult == null) {
-                        verifyBiometrics()
-                    } else {
-                        registerBiometrics()
-                    }
+                    verifyBiometrics()
                 }
             }
         } else {
@@ -637,5 +674,39 @@ class TEIDataPresenter(
         }
     }
 
+
+    fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
+        lastRegisterResult = null
+
+        val program = programUid ?: ""
+        val biometricsAttUid = biometricAttributeId
+        val teiUid = getEnrollment()!!.trackedEntityInstance() ?:""
+
+        val teiTypeUid = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
+            ?.trackedEntityType()!!
+
+        val values =
+            dashboardRepository.getTEIAttributeValues(programUid, teiUid).blockingSingle()
+
+        val biometricsValue  =
+            values.firstOrNull { it.trackedEntityAttribute() == dashboardModel!!.getBiometricsAttributeUid() }
+
+        if (guids.isEmpty()){
+            view.registerLast(sessionId)
+        }
+        else if (guids.size == 1 && guids[0] == biometricsValue?.value()) {
+            view.registerLast(sessionId)
+        } else {
+            val finalGuids = guids.filter { it != biometricsValue?.value() }
+
+            view.showPossibleDuplicatesDialog(
+                finalGuids,
+                sessionId,
+                program,
+                teiTypeUid,
+                biometricsAttUid
+            )
+        }
+    }
 
 }

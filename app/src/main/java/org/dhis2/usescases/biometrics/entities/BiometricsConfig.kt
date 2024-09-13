@@ -7,5 +7,7 @@ data class BiometricsConfig(
     val confidenceScoreFilter: Int?,
     val icon: String?,
     val lastVerificationDuration: Int?,
+    val lastDeclinedEnrolDuration: Int?,
     val program: String?,
+    val orgUnitLevelAsModuleId: Int?
 )

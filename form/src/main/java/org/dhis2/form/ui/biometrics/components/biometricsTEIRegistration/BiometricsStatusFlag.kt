@@ -1,4 +1,4 @@
-package org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics
+package org.dhis2.form.ui.biometrics.components.biometricsTEIRegistration
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,29 +17,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.dhis2.R
 
 //TODO: Evaluate move this to a common module
-// is a copy of BiometricsStatusFlag
+// is a copy of TeiDashboardBioStatus
 @Composable
-fun TeiDashboardBioStatus(
-    model: BioStatus
+fun BiometricsStatusFlag(
+    text: String,
+    backgroundColor: String
 ) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = 16.dp)
+        modifier = Modifier.padding(start = 0.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(Color(android.graphics.Color.parseColor(model.backgroundColor)))
+            modifier = Modifier.background(Color(android.graphics.Color.parseColor(backgroundColor)))
                 .height(40.dp)
                 .padding(start = 16.dp)
 
         ) {
             Text(
-                model.text.uppercase(),
+                text.uppercase(),
                 color = Color.White,
                 modifier = Modifier.padding(end = 42.dp)
             )
@@ -58,13 +58,10 @@ fun TeiDashboardBioStatus(
 
 @Preview
 @Composable
-fun TeiDashboardBioStatusPreview() {
-    TeiDashboardBioStatus(
-        model = BioStatus(
-            text = "Biometrics",
-            backgroundColor = "#4d4d4d",
-            icon = R.drawable.ic_bio_face_success
-        )
+fun BiometricsStatusFlagPreview() {
+    BiometricsStatusFlag(
+        text = "Biometrics",
+        backgroundColor = "#4d4d4d"
     )
 }
 

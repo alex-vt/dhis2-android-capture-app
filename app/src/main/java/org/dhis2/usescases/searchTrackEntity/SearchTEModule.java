@@ -326,7 +326,8 @@ public class SearchTEModule {
             ResourceManager resourceManager,
             DisplayNameProvider displayNameProvider,
             FilterRepository filterRepository,
-            GetRelatedTEIUIdsByUid getRelatedTEIUidsByUid) {
+            GetRelatedTEIUIdsByUid getRelatedTEIUidsByUid,
+            BasicPreferenceProvider basicPreferenceProvider) {
         return new SearchTeiViewModelFactory(
                 presenter,
                 searchRepository,
@@ -340,7 +341,8 @@ public class SearchTEModule {
                 new MapStyleConfiguration(d2),
                 resourceManager,
                 displayNameProvider,
-                getRelatedTEIUidsByUid
+                getRelatedTEIUidsByUid,
+                basicPreferenceProvider
         );
     }
 

@@ -9,14 +9,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
 import org.dhis2.commons.biometrics.BIOMETRICS_SEARCH_PATTERN
+import org.dhis2.commons.biometrics.declinedButtonColor
+import org.dhis2.commons.biometrics.successButtonColor
 import org.dhis2.form.R
-import org.dhis2.form.ui.biometrics.components.defaultButtonColor
-import org.dhis2.form.ui.biometrics.components.failedButtonColor
-import org.dhis2.form.ui.biometrics.components.successButtonColor
 
 enum class BiometricsTEIState {
     INITIAL,
@@ -30,9 +30,8 @@ fun BiometricsTEIRegistration(
     ageUnderThreshold: Boolean,
     enabled: Boolean,
     onBiometricsClick: () -> Unit,
-    onSaveWithoutBiometrics: () -> Unit,
-    registerLastAndSave: (sessionId: String) -> Unit,
-    getIconByState: (BiometricsTEIState) -> Int?
+    onSave: (removeBiometrics:Boolean) -> Unit,
+    registerLastAndSave: (sessionId: String) -> Unit
 ) {
     var linkLastBiometrics by remember { mutableStateOf(true) }
 
@@ -85,15 +84,23 @@ fun BiometricsTEIRegistration(
                 RegistrationButton(
                     biometricsState = biometricsState,
                     enabled = enabled,
-                    onBiometricsClick = onBiometricsClick,
-                    getIconByState = getIconByState
+                    onBiometricsClick = onBiometricsClick
                 )
             }
 
-            SaveWithoutBiometricsButton(
-                enabled = enabled,
-                onClick = onSaveWithoutBiometrics
-            )
+            if (biometricsState == BiometricsTEIState.SUCCESS) {
+                SaveButton(
+                    text = stringResource(R.string.biometrics_update_personal_details),
+                    enabled = enabled,
+                    onClick = { onSave(false) }
+                )
+            }else {
+                SaveButton(
+                    text = stringResource(R.string.biometrics_save_without_biometrics),
+                    enabled = enabled,
+                    onClick = { onSave(true) }
+                )
+            }
         }
     }
 }
@@ -102,8 +109,7 @@ fun BiometricsTEIRegistration(
 fun RegistrationButton(
     biometricsState: BiometricsTEIState,
     enabled: Boolean,
-    onBiometricsClick: () -> Unit,
-    getIconByState: (BiometricsTEIState) -> Int?
+    onBiometricsClick: () -> Unit
 ) {
 
     when (biometricsState) {
@@ -112,31 +118,20 @@ fun RegistrationButton(
                 onBiometricsClick = onBiometricsClick,
                 enabled = enabled,
                 resultText = R.string.biometrics_register_and_save,
-                resultIcon = getIconByState(BiometricsTEIState.INITIAL),
-                resultColor = defaultButtonColor,
+                resultColor = null,
                 showRetake = false
             )
         }
-
         BiometricsTEIState.SUCCESS -> {
-            RegistrationResult(
-                onBiometricsClick = onBiometricsClick,
-                enabled = enabled,
-                resultText = R.string.biometrics_completed,
-                resultIcon = getIconByState(BiometricsTEIState.SUCCESS),
-                resultColor = successButtonColor,
-                showRetake = false
+            BiometricsStatusFlag(
+                text = stringResource(id = R.string.biometrics_completed),
+                backgroundColor = successButtonColor
             )
         }
-
         BiometricsTEIState.FAILURE -> {
-            RegistrationResult(
-                onBiometricsClick = onBiometricsClick,
-                enabled = enabled,
-                resultText = R.string.biometrics_declined,
-                resultIcon = getIconByState(BiometricsTEIState.FAILURE),
-                resultColor = failedButtonColor,
-                showRetake = true
+            BiometricsStatusFlag(
+                text = stringResource(id = R.string.biometrics_declined),
+                backgroundColor = declinedButtonColor
             )
         }
     }
@@ -151,9 +146,8 @@ fun PreviewBiometricsTEIRegistrationInitialAfterSearch() {
         enabled = true,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
-        registerLastAndSave = { },
-        getIconByState = { null }
+        onSave = {},
+        registerLastAndSave = { }
     )
 }
 
@@ -166,9 +160,8 @@ fun PreviewBiometricsTEIRegistrationInitialDisabled() {
         enabled = false,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
-        registerLastAndSave = { },
-        getIconByState = { null }
+        onSave = {},
+        registerLastAndSave = { }
     )
 }
 
@@ -181,9 +174,8 @@ fun PreviewBiometricsTEIRegistrationInitialAfterSearchDisabled() {
         enabled = false,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
-        registerLastAndSave = { },
-        getIconByState = { null }
+        onSave = {},
+        registerLastAndSave = { }
     )
 }
 
@@ -196,9 +188,8 @@ fun PreviewBiometricsTEIRegistrationInitial() {
         enabled = true,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
-        registerLastAndSave = { },
-        getIconByState = { null }
+        onSave = {},
+        registerLastAndSave = { }
     )
 }
 
@@ -210,9 +201,8 @@ fun PreviewBiometricsTEIRegistrationSuccess() {
         enabled = true,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
-        registerLastAndSave = { },
-        getIconByState = { R.drawable.ic_bio_face_success }
+        onSave = {},
+        registerLastAndSave = { }
     )
 }
 
@@ -224,9 +214,8 @@ fun PreviewBiometricsTEIRegistrationFailure() {
         enabled = true,
         ageUnderThreshold = false,
         onBiometricsClick = { },
-        onSaveWithoutBiometrics = {},
+        onSave = {},
         registerLastAndSave = { },
-        getIconByState = { R.drawable.ic_bio_face_failed }
     )
 }
 

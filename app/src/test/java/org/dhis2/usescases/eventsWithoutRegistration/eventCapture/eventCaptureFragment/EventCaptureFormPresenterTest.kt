@@ -2,6 +2,7 @@ package org.dhis2.usescases.eventsWithoutRegistration.eventCapture.eventCaptureF
 
 import io.reactivex.Single
 import org.dhis2.R
+import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.form.data.FieldsWithErrorResult
@@ -36,6 +37,8 @@ class EventCaptureFormPresenterTest {
     private val reOpenUseCase: ReOpenEventUseCase = mock()
     private val dispatcherProvider: DispatcherProvider = mock()
 
+    private val basicPreferenceProvider: BasicPreferenceProvider = mock()
+
     @Before
     fun setUp() {
         presenter = EventCaptureFormPresenter(
@@ -46,6 +49,7 @@ class EventCaptureFormPresenterTest {
             resourceManager = resourceManager,
             reOpenEventUseCase = reOpenUseCase,
             dispatcherProvider = dispatcherProvider,
+            basicPreferenceProvider
         )
     }
 

@@ -6,7 +6,6 @@ import org.dhis2.commons.biometrics.getBioIconSuccess
 import org.dhis2.commons.biometrics.getBioIconWarning
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.biometrics.VerifyResult
-import org.dhis2.usescases.biometrics.ui.defaultButtonColor
 
 class TeiDashboardBioVerificationMapper(
     val resourceManager: ResourceManager,
@@ -18,15 +17,15 @@ class TeiDashboardBioVerificationMapper(
         val buttonModel = if (verifyResult == null) {
             BioButtonModel(
                 text = resourceManager.getString(R.string.biometrics_verification_not_done),
-                backgroundColor = defaultButtonColor,
+                backgroundColor = null,
                 icon = resourceManager.context.getBioIconSuccess(),
                 onActionClick = actionCallback
             )
         } else {
             if (verifyResult == VerifyResult.NoMatch) {
                 BioButtonModel(
-                    text = resourceManager.context.getString(R.string.retake_biometrics),
-                    backgroundColor = defaultButtonColor,
+                    text = resourceManager.context.getString(R.string.reverify_biometrics),
+                    backgroundColor = null,
                     icon = R.drawable.ic_bio_fingerprint,
                     onActionClick = actionCallback
                 )
@@ -36,8 +35,8 @@ class TeiDashboardBioVerificationMapper(
         }
 
         return TeiDashboardBioModel(
-            verificationStatusModel = verifyResult?.let {
-                BioVerificationStatus(
+            statusModel = verifyResult?.let {
+                BioStatus(
                     text = getText(verifyResult),
                     backgroundColor = getBackgroundColor(verifyResult),
                     icon = getIcon(verifyResult)

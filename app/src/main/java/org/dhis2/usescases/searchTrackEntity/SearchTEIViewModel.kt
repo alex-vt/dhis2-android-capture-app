@@ -23,6 +23,7 @@ import org.dhis2.commons.date.DateUtils
 import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.idlingresource.SearchIdlingResourceSingleton
 import org.dhis2.commons.network.NetworkUtils
+import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.data.search.SearchParametersModel
@@ -32,6 +33,7 @@ import org.dhis2.form.ui.provider.DisplayNameProvider
 import org.dhis2.maps.layer.basemaps.BaseMapStyle
 import org.dhis2.maps.usecases.MapStyleConfiguration
 import org.dhis2.usescases.biometrics.biometricAttributeId
+import org.dhis2.usescases.biometrics.containsAgeFilterAndIsUnderAgeThreshold
 import org.dhis2.usescases.biometrics.ui.SequentialSearch
 import org.dhis2.usescases.biometrics.ui.SequentialSearchAction
 import org.dhis2.usescases.biometrics.usecases.GetRelatedTEIUIdsByUid
@@ -61,6 +63,7 @@ class SearchTEIViewModel(
     private val resourceManager: ResourceManager,
     private val displayNameProvider: DisplayNameProvider,
     private val getRelatedTEIUidsByUid: GetRelatedTEIUIdsByUid,
+    private val basicPreferenceProvider: BasicPreferenceProvider
 ) : ViewModel() {
 
     private val _pageConfiguration = MutableLiveData<NavigationPageConfigurator>()
@@ -498,7 +501,10 @@ class SearchTEIViewModel(
                 null -> null
             }
 
-            val nextAction = if (previousSearch == null) {
+            val queryDataContainsAgeUnderThreadsHold =
+                containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider,queryData, initialProgramUid ?: "")
+
+            val nextAction = if (previousSearch == null && !queryDataContainsAgeUnderThreadsHold ) {
                 SequentialSearchAction.SearchWithBiometrics
             } else {
                 SequentialSearchAction.RegisterNew
@@ -731,7 +737,9 @@ class SearchTEIViewModel(
                 listOf(SearchResult(SearchResult.SearchResultType.NO_MORE_RESULTS))
 
             else ->
-                listOf(SearchResult(SearchResult.SearchResultType.NO_RESULTS))
+                //EyeSeTea customization - never show icon folder no results
+                //listOf(SearchResult(SearchResult.SearchResultType.NO_RESULTS))
+                listOf()
         }
 
         val sequentialSearchMessage = getSearchResultSequentialSearchMessage(hasProgramResults)
