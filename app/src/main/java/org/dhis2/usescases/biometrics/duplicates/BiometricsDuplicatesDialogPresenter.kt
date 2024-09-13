@@ -90,7 +90,8 @@ class BiometricsDuplicatesDialogPresenter(
         isOnline: Boolean
     ) {
         val tei = d2.trackedEntityModule().trackedEntityInstances()
-            .withTrackedEntityAttributeValues().uid(teiUid).blockingGet()
+            .withTrackedEntityAttributeValues().uid(teiUid).blockingGet()?:return
+
         val guid: String = getBiometricsValueFromTEI(tei) ?: ""
         view.sendBiometricsConfirmIdentity(
             biometricsSessionId,
@@ -135,7 +136,7 @@ class BiometricsDuplicatesDialogPresenter(
                         } else {
                             val trackedEntityType = d2.trackedEntityModule().trackedEntityTypes()
                                 .uid(trackedEntityTypeUid).blockingGet()
-                            view.couldNotDownload(trackedEntityType.displayName()!!)
+                            view.couldNotDownload(trackedEntityType?.displayName()!!)
                         }
                     })
         )

@@ -17,10 +17,11 @@ import androidx.lifecycle.Observer
 import androidx.paging.PagedList
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.functions.Consumer
-import org.dhis2.Bindings.app
 import org.dhis2.R
+import org.dhis2.bindings.app
 import org.dhis2.commons.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
 import org.dhis2.commons.data.SearchTeiModel
+import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.data.biometrics.BiometricsClient
 import org.dhis2.data.biometrics.BiometricsClientFactory.get
 import org.dhis2.databinding.DialogBiometricsDuplicatesBinding
@@ -79,7 +80,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
         binding.cancelButton.setOnClickListener { this.dismiss() }
 
         this.adapter =
-            BiometricsDuplicatesDialogAdapter(activity?.supportFragmentManager) { searchTeiModel ->
+            BiometricsDuplicatesDialogAdapter(activity?.supportFragmentManager, ColorUtils()) { searchTeiModel ->
 
                 presenter.onTEIClick(
                     searchTeiModel.tei.uid(),

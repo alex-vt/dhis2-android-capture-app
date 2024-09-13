@@ -1,16 +1,16 @@
 package org.dhis2.utils.session
 
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import org.dhis2.commons.prefs.Preference
 import org.dhis2.commons.prefs.PreferenceProvider
 import org.hisp.dhis.android.core.D2
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class PinPresenterTest {
 
@@ -35,13 +35,13 @@ class PinPresenterTest {
         whenever(d2.dataStoreModule()) doReturn mock()
         whenever(d2.dataStoreModule().localDataStore()) doReturn mock()
         whenever(
-            d2.dataStoreModule().localDataStore().value(Preference.PIN)
+            d2.dataStoreModule().localDataStore().value(Preference.PIN),
         )doReturn mock()
         whenever(
-            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet()
+            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet(),
         ) doReturn mock()
         whenever(
-            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet().value()
+            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet()?.value(),
         ) doReturn testPin
 
         presenter.unlockSession(
@@ -49,7 +49,7 @@ class PinPresenterTest {
             attempts = 0,
             onError = onError,
             onPinCorrect = onPinCorrect,
-            onTwoManyAttempts = onTwoManyAttempts
+            onTwoManyAttempts = onTwoManyAttempts,
         )
 
         verify(preferenceProvider, times(1)).setValue(Preference.SESSION_LOCKED, true)
@@ -64,13 +64,13 @@ class PinPresenterTest {
         whenever(d2.dataStoreModule()) doReturn mock()
         whenever(d2.dataStoreModule().localDataStore()) doReturn mock()
         whenever(
-            d2.dataStoreModule().localDataStore().value(Preference.PIN)
+            d2.dataStoreModule().localDataStore().value(Preference.PIN),
         )doReturn mock()
         whenever(
-            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet()
+            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet(),
         ) doReturn mock()
         whenever(
-            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet().value()
+            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet()?.value(),
         ) doReturn testPin
 
         presenter.unlockSession(
@@ -78,7 +78,7 @@ class PinPresenterTest {
             attempts = 0,
             onError = onError,
             onPinCorrect = onPinCorrect,
-            onTwoManyAttempts = onTwoManyAttempts
+            onTwoManyAttempts = onTwoManyAttempts,
         )
 
         verify(onError).invoke()
@@ -92,13 +92,13 @@ class PinPresenterTest {
         whenever(d2.dataStoreModule()) doReturn mock()
         whenever(d2.dataStoreModule().localDataStore()) doReturn mock()
         whenever(
-            d2.dataStoreModule().localDataStore().value(Preference.PIN)
+            d2.dataStoreModule().localDataStore().value(Preference.PIN),
         )doReturn mock()
         whenever(
-            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet()
+            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet(),
         ) doReturn mock()
         whenever(
-            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet().value()
+            d2.dataStoreModule().localDataStore().value(Preference.PIN).blockingGet()?.value(),
         ) doReturn testPin
 
         presenter.unlockSession(
@@ -106,7 +106,7 @@ class PinPresenterTest {
             attempts = 3,
             onError = onError,
             onPinCorrect = onPinCorrect,
-            onTwoManyAttempts = onTwoManyAttempts
+            onTwoManyAttempts = onTwoManyAttempts,
         )
 
         verify(onTwoManyAttempts).invoke()

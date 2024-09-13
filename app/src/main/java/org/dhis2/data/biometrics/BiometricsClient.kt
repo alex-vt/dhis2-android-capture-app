@@ -3,30 +3,42 @@ package org.dhis2.data.biometrics
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.os.Build
+import android.os.Parcelable
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.simprints.libsimprints.*
+import com.simprints.libsimprints.Constants
+import com.simprints.libsimprints.Identification
+import com.simprints.libsimprints.RefusalForm
+import com.simprints.libsimprints.Registration
+import com.simprints.libsimprints.SimHelper
+import com.simprints.libsimprints.Tier
+import com.simprints.libsimprints.Verification
 import org.dhis2.R
-import org.dhis2.commons.biometrics.*
+import org.dhis2.commons.biometrics.BIOMETRICS_CONFIRM_IDENTITY_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_LAST_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_IDENTIFY_REQUEST
+import org.dhis2.commons.biometrics.BIOMETRICS_VERIFY_REQUEST
 import timber.log.Timber
 
 sealed class RegisterResult {
     data class Completed(val guid: String) : RegisterResult()
     data class PossibleDuplicates(val guids: List<String>, val sessionId: String) : RegisterResult()
-    object Failure : RegisterResult()
+    data object Failure : RegisterResult()
 }
 
 sealed class IdentifyResult {
     data class Completed(val guids: List<String>, val sessionId: String) : IdentifyResult()
-    object BiometricsDeclined : IdentifyResult()
+    data object BiometricsDeclined : IdentifyResult()
     data class UserNotFound(val sessionId: String) : IdentifyResult()
-    object Failure : IdentifyResult()
+    data object Failure : IdentifyResult()
 }
 
 sealed class VerifyResult {
-    object Match : VerifyResult()
-    object NoMatch : VerifyResult()
-    object Failure : VerifyResult()
+    data object Match : VerifyResult()
+    data object NoMatch : VerifyResult()
+    data object Failure : VerifyResult()
 }
 
 
@@ -158,9 +170,10 @@ class BiometricsClient(
         val biometricsCompleted = checkBiometricsCompleted(data)
 
         if (biometricsCompleted) {
-            val identifications: ArrayList<Identification>? = data.getParcelableArrayListExtra(
-                Constants.SIMPRINTS_IDENTIFICATIONS
-            )
+            val identifications =
+                data.extractParcelableArrayExtra<Identification>(Constants.SIMPRINTS_IDENTIFICATIONS)
+                    ?: data.extractParcelableArrayListExtra<Identification>(Constants.SIMPRINTS_IDENTIFICATIONS)
+
             val refusalForm: RefusalForm? =
                 data.getParcelableExtra(Constants.SIMPRINTS_REFUSAL_FORM)
 
@@ -306,4 +319,25 @@ class BiometricsClient(
     companion object {
         const val SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID = "trackedEntityInstanceId"
     }
+}
+
+inline fun <reified T : Parcelable> Intent.extractParcelableArrayListExtra(
+    key: String,
+): List<T>? = when {
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ->
+        getParcelableArrayListExtra(key, T::class.java)
+
+    else ->
+        @Suppress("DEPRECATION") getParcelableArrayListExtra(key)
+}
+
+inline fun <reified T : Parcelable> Intent.extractParcelableArrayExtra(
+    key: String,
+): List<out T>? = when {
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ->
+        getParcelableArrayExtra(key, T::class.java)?.asList()
+
+    else ->
+        @Suppress("DEPRECATION") getParcelableArrayExtra(key)?.mapNotNull { it as? T }
+            ?.toTypedArray()?.asList()
 }

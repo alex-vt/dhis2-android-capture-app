@@ -2,9 +2,9 @@ package org.dhis2.commons.reporting
 
 import io.sentry.Breadcrumb
 import io.sentry.Sentry
-import javax.inject.Inject
 import org.hisp.dhis.android.core.D2Manager
 import timber.log.Timber
+import javax.inject.Inject
 
 const val DATA_STORE_CRASH_PERMISSION_KEY = "analytics_permission"
 
@@ -20,10 +20,11 @@ class CrashReportControllerImpl @Inject constructor() : CrashReportController {
         }
     }
 
-    override fun trackServer(server: String?) {
+    override fun trackServer(server: String?, serverDhisVersion: String?) {
         if (isCrashReportPermissionGranted()) {
             Sentry.configureScope { scope ->
                 scope.setTag(SERVER_NAME, server ?: "")
+                scope.setTag(SERVER_VERSION, serverDhisVersion ?: "")
             }
         }
     }
@@ -52,14 +53,15 @@ class CrashReportControllerImpl @Inject constructor() : CrashReportController {
 
     companion object {
         const val SERVER_NAME = "server_name"
+        const val SERVER_VERSION = "server_version"
     }
 
     private fun isCrashReportPermissionGranted(): Boolean {
         return (
             D2Manager.isD2Instantiated() &&
                 D2Manager.getD2().dataStoreModule().localDataStore()
-                .value(DATA_STORE_CRASH_PERMISSION_KEY).blockingGet()?.value()
-                ?.toBoolean() == true
+                    .value(DATA_STORE_CRASH_PERMISSION_KEY).blockingGet()?.value()
+                    ?.toBoolean() == true
             ).also { granted ->
             if (!granted) {
                 Timber.d("Tracking is disabled")

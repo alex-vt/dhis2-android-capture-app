@@ -8,6 +8,7 @@ import org.dhis2.R;
 import org.dhis2.commons.data.EntryMode;
 import org.dhis2.commons.di.dagger.PerActivity;
 import org.dhis2.commons.network.NetworkUtils;
+import org.dhis2.commons.prefs.BasicPreferenceProvider;
 import org.dhis2.commons.prefs.PreferenceProvider;
 import org.dhis2.commons.reporting.CrashReportController;
 import org.dhis2.commons.reporting.CrashReportControllerImpl;
@@ -19,8 +20,10 @@ import org.dhis2.data.forms.FormRepository;
 import org.dhis2.data.forms.dataentry.RuleEngineRepository;
 import org.dhis2.data.forms.dataentry.SearchTEIRepository;
 import org.dhis2.data.forms.dataentry.SearchTEIRepositoryImpl;
+import org.dhis2.form.data.FileController;
 import org.dhis2.form.data.FormValueStore;
 import org.dhis2.form.data.RulesRepository;
+import org.dhis2.form.data.UniqueAttributeController;
 import org.dhis2.form.model.RowAction;
 import org.dhis2.form.ui.FieldViewModelFactory;
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.domain.ConfigureEventCompletionDialog;
@@ -67,8 +70,10 @@ public class EventCaptureModule {
 
     @Provides
     @PerActivity
-    EventCaptureContract.EventCaptureRepository provideRepository(D2 d2) {
-        return new EventCaptureRepositoryImpl(eventUid, d2);
+    EventCaptureContract.EventCaptureRepository provideRepository(
+            D2 d2,
+            BasicPreferenceProvider basicPreferenceProvider) {
+        return new EventCaptureRepositoryImpl(eventUid, d2, basicPreferenceProvider);
     }
 
     @Provides
@@ -96,7 +101,9 @@ public class EventCaptureModule {
             @NonNull D2 d2,
             CrashReportController crashReportController,
             NetworkUtils networkUtils,
-            ResourceManager resourceManager
+            ResourceManager resourceManager,
+            FileController fileController,
+            UniqueAttributeController uniqueAttributeController
     ) {
         return new FormValueStore(
                 d2,
@@ -105,7 +112,9 @@ public class EventCaptureModule {
                 null,
                 crashReportController,
                 networkUtils,
-                resourceManager
+                resourceManager,
+                fileController,
+                uniqueAttributeController
         );
     }
 

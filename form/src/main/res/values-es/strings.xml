@@ -97,6 +97,5 @@
     <string name="enrollment_coordinates">Coordenadas de admisión </string>
     <string name="no_reserved_values">No quedan valores reservados. Contacte con el administrador del sistema.</string>
     <string name="enrollmment_date">Fecha de inscripción</string>
-    <string name="incident_date">Fecha del incidente</string>
-
-</resources>
+    <string name="incident_date">Fecha del incidente</string>ç
+    </resources>

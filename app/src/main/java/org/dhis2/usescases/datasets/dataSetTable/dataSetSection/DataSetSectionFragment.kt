@@ -22,14 +22,8 @@ import androidx.compose.ui.unit.dp
 import com.google.android.material.composethemeadapter.MdcTheme
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import javax.inject.Inject
-import kotlin.math.roundToInt
-import org.dhis2.Bindings.toDate
 import org.dhis2.R
+import org.dhis2.bindings.toDate
 import org.dhis2.commons.Constants.ACCESS_DATA
 import org.dhis2.commons.Constants.DATA_SET_SECTION
 import org.dhis2.commons.Constants.DATA_SET_UID
@@ -37,13 +31,14 @@ import org.dhis2.commons.dialogs.DialogClickListener
 import org.dhis2.commons.dialogs.calendarpicker.CalendarPicker
 import org.dhis2.commons.dialogs.calendarpicker.OnDatePickerListener
 import org.dhis2.commons.orgunitselector.OUTreeFragment
+import org.dhis2.composetable.actions.TableResizeActions
 import org.dhis2.composetable.model.TableCell
 import org.dhis2.composetable.ui.DataSetTableScreen
-import org.dhis2.composetable.ui.MAX_CELL_WIDTH_SPACE
 import org.dhis2.composetable.ui.TableColors
 import org.dhis2.composetable.ui.TableConfiguration
 import org.dhis2.composetable.ui.TableDimensions
 import org.dhis2.composetable.ui.TableTheme
+import org.dhis2.composetable.ui.semantics.MAX_CELL_WIDTH_SPACE
 import org.dhis2.data.forms.dataentry.tablefields.age.AgeView
 import org.dhis2.data.forms.dataentry.tablefields.coordinate.CoordinatesView
 import org.dhis2.data.forms.dataentry.tablefields.radiobutton.YesNoView
@@ -60,6 +55,12 @@ import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.common.ValueTypeRenderingType
 import org.hisp.dhis.android.core.dataelement.DataElement
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import javax.inject.Inject
+import kotlin.math.roundToInt
 
 const val ARG_ORG_UNIT = "ARG_ORG_UNIT"
 const val ARG_PERIOD_ID = "ARG_PERIOD_ID"
@@ -92,15 +93,15 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
                 arguments?.getString(ARG_PERIOD_ID)!!,
                 arguments?.getString(ARG_ATTR_OPT_COMB)!!,
                 this,
-                activity
-            )
+                activity,
+            ),
         )?.inject(this)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -135,71 +136,79 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
                                             width.dp.roundToPx()
                                         }
                                     }
-                                } ?: emptyMap()
-                            )
+                                } ?: emptyMap(),
+                            ),
                         )
+                    }
+
+                    val tableResizeActions = object : TableResizeActions {
+                        override fun onTableWidthChanged(width: Int) {
+                            val tableEndExtraScroll = with(localDensity) {
+                                dimensions.tableEndExtraScroll.toPx().toInt()
+                            }
+                            dimensions = dimensions.copy(
+                                totalWidth = width - tableEndExtraScroll,
+                            )
+                        }
+
+                        override fun onRowHeaderResize(tableId: String, newValue: Float) {
+                            with(localDensity) {
+                                dimensions = dimensions.updateHeaderWidth(tableId, newValue)
+                                val widthDpValue =
+                                    dimensions.getRowHeaderWidth(tableId).toDp().value
+                                presenterFragment.saveWidth(tableId, widthDpValue)
+                            }
+                        }
+
+                        override fun onColumnHeaderResize(
+                            tableId: String,
+                            column: Int,
+                            newValue: Float,
+                        ) {
+                            with(localDensity) {
+                                dimensions =
+                                    dimensions.updateColumnWidth(tableId, column, newValue)
+                                val widthDpValue =
+                                    dimensions.getColumnWidth(tableId, column).toDp().value
+                                presenterFragment.saveColumnWidth(tableId, column, widthDpValue)
+                            }
+                        }
+
+                        override fun onTableDimensionResize(tableId: String, newValue: Float) {
+                            with(localDensity) {
+                                dimensions = dimensions.updateAllWidthBy(tableId, newValue)
+                                val widthDpValue =
+                                    dimensions.getExtraWidths(tableId).toDp().value
+                                presenterFragment.saveTableWidth(tableId, widthDpValue)
+                            }
+                        }
+
+                        override fun onTableDimensionReset(tableId: String) {
+                            dimensions = dimensions.resetWidth(tableId)
+                            presenterFragment.resetTableDimensions(tableId)
+                        }
                     }
 
                     TableTheme(
                         tableColors = TableColors(
                             primary = MaterialTheme.colors.primary,
-                            primaryLight = MaterialTheme.colors.primary.copy(alpha = 0.2f)
+                            primaryLight = MaterialTheme.colors.primary.copy(alpha = 0.2f),
+                            disabledSelectedBackground = MaterialTheme.colors.primary.copy(
+                                alpha = 0.5f,
+                            ),
                         ),
                         tableDimensions = dimensions,
                         tableConfiguration = TableConfiguration(),
-                        tableValidator = presenterFragment
+                        tableValidator = presenterFragment,
+                        tableResizeActions = tableResizeActions,
                     ) {
                         val screenState by presenterFragment.currentState().collectAsState()
-                        val tableEndExtraScroll = with(LocalDensity.current) {
-                            TableTheme.dimensions.tableEndExtraScroll.toPx().toInt()
-                        }
 
                         DataSetTableScreen(
                             tableScreenState = screenState,
-                            onCellClick = { _, cell, updateCellValue ->
-                                presenterFragment.onCellClick(
-                                    cell = cell,
-                                    updateCellValue = updateCellValue
-                                )
-                            },
-                            onEdition = { isEditing ->
-                                presenter.editingCellValue(isEditing)
-                            },
+                            onCellClick = presenterFragment::onCellClick,
+                            onEdition = presenter::editingCellValue,
                             onSaveValue = presenterFragment::onSaveValueChange,
-                            onTableWidthChanged = { width ->
-                                dimensions = dimensions.copy(
-                                    totalWidth = width - tableEndExtraScroll
-                                )
-                            },
-                            onRowHeaderResize = { tableId, newValue ->
-                                with(localDensity) {
-                                    dimensions = dimensions.updateHeaderWidth(tableId, newValue)
-                                    val widthDpValue =
-                                        dimensions.rowHeaderWidths[tableId]!!.toDp().value
-                                    presenterFragment.saveWidth(tableId, widthDpValue)
-                                }
-                            },
-                            onColumnHeaderResize = { tableId, column, newValue ->
-                                with(localDensity) {
-                                    dimensions =
-                                        dimensions.updateColumnWidth(tableId, column, newValue)
-                                    val widthDpValue =
-                                        dimensions.columnWidth[tableId]!![column]!!.toDp().value
-                                    presenterFragment.saveColumnWidth(tableId, column, widthDpValue)
-                                }
-                            },
-                            onTableDimensionResize = { tableId, newValue ->
-                                with(localDensity) {
-                                    dimensions = dimensions.updateAllWidthBy(tableId, newValue)
-                                    val widthDpValue =
-                                        dimensions.extraWidths[tableId]!!.toDp().value
-                                    presenterFragment.saveTableWidth(tableId, widthDpValue)
-                                }
-                            },
-                            onTableDimensionReset = { tableId ->
-                                dimensions = dimensions.resetWidth(tableId)
-                                presenterFragment.resetTableDimensions(tableId)
-                            }
                         )
                     }
                 }
@@ -227,7 +236,7 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
         dataElement: DataElement,
         cell: TableCell,
         showTimePicker: Boolean,
-        updateCellValue: (TableCell) -> Unit
+        updateCellValue: (TableCell) -> Unit,
     ) {
         val dialog = CalendarPicker(requireContext())
         dialog.setTitle(dataElement.displayFormName())
@@ -246,14 +255,14 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
             }
 
             override fun onPositiveClick(datePicker: DatePicker) {
-                calendar.set(Calendar.YEAR, datePicker.year)
-                calendar.set(Calendar.MONTH, datePicker.month)
-                calendar.set(Calendar.DAY_OF_MONTH, datePicker.dayOfMonth)
+                calendar[Calendar.YEAR] = datePicker.year
+                calendar[Calendar.MONTH] = datePicker.month
+                calendar[Calendar.DAY_OF_MONTH] = datePicker.dayOfMonth
                 if (showTimePicker) {
                     showDateTime(dataElement, cell, calendar, updateCellValue)
                 } else {
-                    calendar.set(Calendar.HOUR_OF_DAY, 0)
-                    calendar.set(Calendar.MINUTE, 0)
+                    calendar[Calendar.HOUR_OF_DAY] = 0
+                    calendar[Calendar.MINUTE] = 0
                     val selectedDate: Date = calendar.time
                     val result = DateUtils.oldUiDateFormat().format(selectedDate)
                     val updatedCellValue = cell.copy(value = result)
@@ -269,7 +278,7 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
         dataElement: DataElement,
         cell: TableCell,
         calendar: Calendar,
-        updateCellValue: (TableCell) -> Unit
+        updateCellValue: (TableCell) -> Unit,
     ) {
         val is24HourFormat = DateFormat.is24HourFormat(context)
         MaterialTimePicker.Builder()
@@ -280,8 +289,8 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
             .setTitleText(dataElement.displayFormName())
             .build().apply {
                 addOnPositiveButtonClickListener {
-                    calendar.set(Calendar.HOUR_OF_DAY, hour)
-                    calendar.set(Calendar.MINUTE, minute)
+                    calendar[Calendar.HOUR_OF_DAY] = hour
+                    calendar[Calendar.MINUTE] = minute
                     val result = DateUtils.databaseDateFormatNoSeconds().format(calendar.time)
                     val updatedCellValue = cell.copy(value = result)
                     updateCellValue(updatedCellValue)
@@ -294,7 +303,7 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
     override fun showTimePicker(
         dataElement: DataElement,
         cell: TableCell,
-        updateCellValue: (TableCell) -> Unit
+        updateCellValue: (TableCell) -> Unit,
     ) {
         val c = Calendar.getInstance()
         if (!cell.value.isNullOrEmpty()) {
@@ -339,7 +348,7 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
     override fun showBooleanDialog(
         dataElement: DataElement,
         cell: TableCell,
-        updateCellValue: (TableCell) -> Unit
+        updateCellValue: (TableCell) -> Unit,
     ) {
         val yesNoView = YesNoView(context)
         yesNoView.setIsBgTransparent(true)
@@ -373,7 +382,7 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
                 }
 
                 override fun onNegative() {}
-            }
+            },
         ) {
             yesNoView.radioGroup.clearCheck()
         }.show()
@@ -382,7 +391,7 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
     override fun showAgeDialog(
         dataElement: DataElement,
         cell: TableCell,
-        updateCellValue: (TableCell) -> Unit
+        updateCellValue: (TableCell) -> Unit,
     ) {
         val ageView = AgeView(context)
         ageView.setIsBgTransparent()
@@ -410,14 +419,14 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
 
                 override fun onNegative() {}
             },
-            null
+            null,
         ).show()
     }
 
     override fun showCoordinatesDialog(
         dataElement: DataElement,
         cell: TableCell,
-        updateCellValue: (TableCell) -> Unit
+        updateCellValue: (TableCell) -> Unit,
     ) {
         val coordinatesView = CoordinatesView(context)
         coordinatesView.setIsBgTransparent(true)
@@ -443,7 +452,7 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
 
                 override fun onNegative() {}
             },
-            null
+            null,
         ).show()
     }
 
@@ -451,7 +460,7 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
         dataElement: DataElement,
         cell: TableCell,
         orgUnits: List<OrganisationUnit>,
-        updateCellValue: (TableCell) -> Unit
+        updateCellValue: (TableCell) -> Unit,
     ) {
         OUTreeFragment.Builder()
             .showAsDialog()
@@ -470,7 +479,7 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
         dataElement: DataElement,
         cell: TableCell,
         spinnerViewModel: SpinnerViewModel,
-        updateCellValue: (TableCell) -> Unit
+        updateCellValue: (TableCell) -> Unit,
     ) {
         val dialog = OptionSetDialog()
         dialog.create(requireContext())
@@ -508,7 +517,7 @@ class DataSetSectionFragment : FragmentGlobalAbstract(), DataValueContract.View 
             dataSetUid: String,
             orgUnitUid: String,
             periodId: String,
-            attributeOptionComboUid: String
+            attributeOptionComboUid: String,
         ): DataSetSectionFragment {
             val bundle = Bundle()
             bundle.putString(DATA_SET_SECTION, sectionUid)

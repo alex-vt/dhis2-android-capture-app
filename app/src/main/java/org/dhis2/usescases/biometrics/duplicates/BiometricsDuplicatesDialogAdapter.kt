@@ -9,11 +9,13 @@ import androidx.recyclerview.widget.DiffUtil
 import org.dhis2.R
 import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.dialogs.imagedetail.ImageDetailBottomDialog
+import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.databinding.ItemSearchTrackedEntityBinding
 import java.io.File
 
 class BiometricsDuplicatesDialogAdapter(
     private val fm: FragmentManager?,
+    private val colorUtils: ColorUtils,
     private val onClickListener: (SearchTeiModel) -> Unit
 ) : PagedListAdapter<SearchTeiModel, BiometricsDuplicatesDialogHolder>(object :
     DiffUtil.ItemCallback<SearchTeiModel>() {
@@ -53,7 +55,7 @@ class BiometricsDuplicatesDialogAdapter(
         val inflater = LayoutInflater.from(parent.context)
         val binding: ItemSearchTrackedEntityBinding =
             DataBindingUtil.inflate(inflater, R.layout.item_search_tracked_entity, parent, false)
-        return BiometricsDuplicatesDialogHolder(binding)
+        return BiometricsDuplicatesDialogHolder(binding, colorUtils)
     }
 
     override fun onBindViewHolder(holder: BiometricsDuplicatesDialogHolder, position: Int) {

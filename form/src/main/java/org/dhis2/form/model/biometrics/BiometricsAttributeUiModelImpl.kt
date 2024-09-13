@@ -1,5 +1,6 @@
 package org.dhis2.form.model.biometrics
 
+import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.KeyboardActionType
 import org.dhis2.form.model.LegendValue
@@ -18,7 +19,10 @@ data class BiometricsAttributeUiModelImpl(
     override val uid: String,
     override val layoutId: Int,
     override val value: String? = null,
-    override val programStageSection: String?
+    override val programStageSection: String?,
+    override val autocompleteList: List<String>?,
+    override val orgUnitSelectorScope: OrgUnitSelectorScope?,
+    override val url: String?
 ) : FieldUiModel, BiometricsRegistrationUIModel{
 
     private var callback: FieldUiModel.Callback? = null
@@ -48,7 +52,6 @@ data class BiometricsAttributeUiModelImpl(
     override val style: FormUiModelStyle? = null
     override val hint: String? = null
     override val description: String = ""
-    override val valueType: ValueType? = null
     override val legend: LegendValue? = null
     override val optionSet: String? = null
     override val allowFutureDates: Boolean? = null
@@ -89,11 +92,8 @@ data class BiometricsAttributeUiModelImpl(
     override val textColor: Int?
         get() = style?.textColor(error, warning)
 
-    override val backGroundColor: Pair<Array<Int>, Int>?
-        get() =
-            valueType?.let {
-                style?.backgroundColor(it, error, warning)
-            }
+    override val backGroundColor: Pair<Array<Int>, Int?>?
+        get() = style?.backgroundColor(ValueType.TEXT, error, warning)
 
     override val hasImage: Boolean
         get() = false
@@ -104,6 +104,9 @@ data class BiometricsAttributeUiModelImpl(
     override val isNegativeChecked: Boolean
         get() = false
 
+    override val valueType: ValueType
+        get() = ValueType.TEXT
+
     override fun onNext() {}
 
     override fun onTextChange(value: CharSequence?) {
@@ -111,7 +114,7 @@ data class BiometricsAttributeUiModelImpl(
             value?.isEmpty() == true -> null
             else -> value?.toString()
         }
-        callback?.intent(FormIntent.OnTextChange(uid, text))
+        callback?.intent(FormIntent.OnTextChange(uid, text, valueType))
     }
 
     override fun onClear() {}

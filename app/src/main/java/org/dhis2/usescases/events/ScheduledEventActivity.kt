@@ -5,17 +5,22 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.DatePicker
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.databinding.DataBindingUtil
-import java.util.Calendar
-import java.util.Date
-import javax.inject.Inject
 import org.dhis2.App
 import org.dhis2.R
+import org.dhis2.commons.biometrics.BIOMETRICS_GUID
+import org.dhis2.commons.biometrics.BIOMETRICS_TEI_ORGANISATION_UNIT
+import org.dhis2.commons.biometrics.BIOMETRICS_VERIFICATION_STATUS
 import org.dhis2.commons.data.EventCreationType
 import org.dhis2.commons.dialogs.calendarpicker.CalendarPicker
 import org.dhis2.commons.dialogs.calendarpicker.OnDatePickerListener
 import org.dhis2.databinding.ActivityEventScheduledBinding
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
+import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.models.EventDate
+import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.models.EventInputDateUiModel
+import org.dhis2.usescases.eventsWithoutRegistration.eventDetails.providers.ProvideInputDate
 import org.dhis2.usescases.eventsWithoutRegistration.eventInitial.EventInitialActivity
 import org.dhis2.usescases.general.ActivityGlobalAbstract
 import org.dhis2.utils.DateUtils
@@ -26,15 +31,21 @@ import org.hisp.dhis.android.core.event.EventStatus
 import org.hisp.dhis.android.core.period.PeriodType
 import org.hisp.dhis.android.core.program.Program
 import org.hisp.dhis.android.core.program.ProgramStage
+import java.util.Calendar
+import java.util.Date
+import javax.inject.Inject
 
 const val EXTRA_EVENT_UID = "EVENT_UID"
 
 class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.View {
 
     companion object {
-        fun getIntent(context: Context, eventUid: String): Intent {
+        fun getIntent(context: Context, eventUid: String, biometricsGuid:String?, verificationStatus: Int, orgUnit:String): Intent {
             val intent = Intent(context, ScheduledEventActivity::class.java)
             intent.putExtra(EXTRA_EVENT_UID, eventUid)
+            intent.putExtra(BIOMETRICS_GUID, biometricsGuid)
+            intent.putExtra(BIOMETRICS_VERIFICATION_STATUS, verificationStatus)
+            intent.putExtra(BIOMETRICS_TEI_ORGANISATION_UNIT, orgUnit)
             return intent
         }
     }
@@ -42,6 +53,9 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
     private lateinit var stage: ProgramStage
     private lateinit var program: Program
     private lateinit var event: Event
+    private lateinit var biometricsGuid: String
+    private var verificationStatus: Int = -1
+    private lateinit var orgUnit: String
     private lateinit var binding: ActivityEventScheduledBinding
 
     @Inject
@@ -52,13 +66,18 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
             (applicationContext as App).userComponent()!!.plus(
                 ScheduledEventModule(
                     intent.extras!!.getString(
-                        EXTRA_EVENT_UID
+                        EXTRA_EVENT_UID,
                     )!!,
-                    this
-                )
+                    this,
+                ),
             )
             ).inject(this)
         super.onCreate(savedInstanceState)
+
+        biometricsGuid = intent.extras!!.getString(BIOMETRICS_GUID)!!
+        verificationStatus = intent.extras!!.getInt(BIOMETRICS_VERIFICATION_STATUS)
+        orgUnit = intent.extras!!.getString(BIOMETRICS_TEI_ORGANISATION_UNIT)!!
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_event_scheduled)
         binding.presenter = presenter
     }
@@ -76,14 +95,13 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
     override fun setEvent(event: Event) {
         this.event = event
 
-        binding.dueDate.setText(DateUtils.uiDateFormat().format(event.dueDate()))
-
         when (event.status()) {
             EventStatus.OVERDUE, EventStatus.SCHEDULE -> {
                 binding.actionButton.visibility = View.VISIBLE
                 binding.actionButton.text = getString(R.string.skip)
                 binding.actionButton.setOnClickListener { presenter.skipEvent() }
             }
+
             else -> {
                 binding.actionButton.visibility = View.GONE
                 binding.actionButton.setOnClickListener(null)
@@ -91,18 +109,49 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
         }
     }
 
-    override fun setStage(programStage: ProgramStage) {
+    override fun setStage(programStage: ProgramStage, event: Event) {
         this.stage = programStage
         binding.programStage = programStage
-        binding.dateLayout.hint =
-            programStage.executionDateLabel() ?: getString(R.string.report_date)
-        binding.dueDateLayout.hint = programStage.dueDateLabel() ?: getString(R.string.due_date)
 
-        if (programStage.hideDueDate() == true) {
-            binding.dueDateLayout.visibility = View.GONE
+        binding.scheduledEventFieldContainer.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                Column {
+                    val eventDate = EventDate(
+                        label = programStage.executionDateLabel()
+                            ?: getString(R.string.report_date),
+                        dateValue = "",
+                    )
+
+                    ProvideInputDate(
+                        EventInputDateUiModel(
+                            eventDate = eventDate,
+                            allowsManualInput = false,
+                            detailsEnabled = true,
+                            onDateClick = { setEvenDateListener(programStage.periodType()) },
+                            onDateSet = {},
+                            onClear = {},
+                        ),
+
+                    )
+                    if (programStage.hideDueDate() == false) {
+                        val dueDate = EventDate(
+                            label = programStage.dueDateLabel() ?: getString(R.string.due_date),
+                            dateValue = DateUtils.uiDateFormat().format(event.dueDate() ?: ""),
+                        )
+                        ProvideInputDate(
+                            EventInputDateUiModel(
+                                eventDate = dueDate,
+                                detailsEnabled = true,
+                                onDateClick = { setDueDateListener(programStage.periodType()) },
+                                onDateSet = {},
+                                onClear = {},
+                            ),
+                        )
+                    }
+                }
+            }
         }
-
-        setEventDateClickListener(programStage.periodType())
     }
 
     override fun setProgram(program: Program) {
@@ -110,63 +159,61 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
         binding.name = program.displayName()
     }
 
-    fun setEventDateClickListener(periodType: PeriodType?) {
-        binding.date.setOnClickListener {
-            if (periodType == null) {
-                showCustomCalendar(false)
-            } else {
-                var minDate =
-                    DateUtils.getInstance().expDate(null, program.expiryDays()!!, periodType)
-                val lastPeriodDate =
-                    DateUtils.getInstance().getNextPeriod(periodType, minDate, -1, true)
+    private fun setEvenDateListener(periodType: PeriodType?) {
+        if (periodType == null) {
+            showCustomCalendar(false)
+        } else {
+            var minDate =
+                DateUtils.getInstance().expDate(null, program.expiryDays()!!, periodType)
+            val lastPeriodDate =
+                DateUtils.getInstance().getNextPeriod(periodType, minDate, -1, true)
 
-                if (lastPeriodDate.after(
-                        DateUtils.getInstance().getNextPeriod(
-                                program.expiryPeriodType(),
-                                minDate,
-                                0
-                            )
-                    )
-                ) {
-                    minDate = DateUtils.getInstance().getNextPeriod(periodType, lastPeriodDate, 0)
-                }
-
-                PeriodDialog()
-                    .setPeriod(periodType)
-                    .setMinDate(minDate)
-                    .setMaxDate(DateUtils.getInstance().today)
-                    .setPossitiveListener { selectedDate -> presenter.setEventDate(selectedDate) }
-                    .show(supportFragmentManager, PeriodDialog::class.java.simpleName)
+            if (lastPeriodDate.after(
+                    DateUtils.getInstance().getNextPeriod(
+                        program.expiryPeriodType(),
+                        minDate,
+                        0,
+                    ),
+                )
+            ) {
+                minDate = DateUtils.getInstance().getNextPeriod(periodType, lastPeriodDate, 0)
             }
+
+            PeriodDialog()
+                .setPeriod(periodType)
+                .setMinDate(minDate)
+                .setMaxDate(DateUtils.getInstance().today)
+                .setPossitiveListener { selectedDate -> presenter.setEventDate(selectedDate) }
+                .show(supportFragmentManager, PeriodDialog::class.java.simpleName)
         }
+    }
 
-        binding.dueDate.setOnClickListener {
-            if (periodType == null) {
-                showCustomCalendar(true)
-            } else {
-                var minDate =
-                    DateUtils.getInstance().expDate(null, program.expiryDays()!!, periodType)
-                val lastPeriodDate =
-                    DateUtils.getInstance().getNextPeriod(periodType, minDate, -1, true)
+    private fun setDueDateListener(periodType: PeriodType?) {
+        if (periodType == null) {
+            showCustomCalendar(true)
+        } else {
+            var minDate =
+                DateUtils.getInstance().expDate(null, program.expiryDays()!!, periodType)
+            val lastPeriodDate =
+                DateUtils.getInstance().getNextPeriod(periodType, minDate, -1, true)
 
-                if (lastPeriodDate.after(
-                        DateUtils.getInstance().getNextPeriod(
-                                program.expiryPeriodType(),
-                                minDate,
-                                0
-                            )
-                    )
-                ) {
-                    minDate = DateUtils.getInstance().getNextPeriod(periodType, lastPeriodDate, 0)
-                }
-
-                PeriodDialog()
-                    .setPeriod(periodType)
-                    .setMinDate(minDate)
-                    .setMaxDate(DateUtils.getInstance().today)
-                    .setPossitiveListener { selectedDate -> presenter.setDueDate(selectedDate) }
-                    .show(supportFragmentManager, PeriodDialog::class.java.simpleName)
+            if (lastPeriodDate.after(
+                    DateUtils.getInstance().getNextPeriod(
+                        program.expiryPeriodType(),
+                        minDate,
+                        0,
+                    ),
+                )
+            ) {
+                minDate = DateUtils.getInstance().getNextPeriod(periodType, lastPeriodDate, 0)
             }
+
+            PeriodDialog()
+                .setPeriod(periodType)
+                .setMinDate(minDate)
+                .setMaxDate(DateUtils.getInstance().today)
+                .setPossitiveListener { selectedDate -> presenter.setDueDate(selectedDate) }
+                .show(supportFragmentManager, PeriodDialog::class.java.simpleName)
         }
     }
 
@@ -182,7 +229,7 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
             val minDate = DateUtils.getInstance().expDate(
                 null,
                 program.expiryDays() ?: 0,
-                program.expiryPeriodType()
+                program.expiryPeriodType(),
             )
             dialog.setMinDate(minDate)
         }
@@ -216,27 +263,35 @@ class ScheduledEventActivity : ActivityGlobalAbstract(), ScheduledEventContract.
     }
 
     override fun openInitialActivity() {
-        val bundle = EventInitialActivity.getBundle(
+        val bundle = EventInitialActivity.getBundleWithBiometrics(
             program.uid(),
             event.uid(),
             EventCreationType.DEFAULT.name,
             presenter.getEventTei(),
             stage.periodType(),
-            presenter.getEnrollment().organisationUnit(),
+            presenter.getEnrollment()?.organisationUnit(),
             stage.uid(),
             event.enrollment(),
             stage.standardInterval() ?: 0,
-            presenter.getEnrollment().status()
+            presenter.getEnrollment()?.status(),
+            biometricsGuid,
+            verificationStatus,
+            orgUnit,
+
         )
         startActivity(Intent(this, EventInitialActivity::class.java).apply { putExtras(bundle) })
         finish()
     }
 
     override fun openFormActivity() {
-        val bundle = EventCaptureActivity.getActivityBundle(
+        val bundle = EventCaptureActivity.getActivityBundleWithBiometrics(
             event.uid(),
             program.uid(),
-            EventMode.CHECK
+            EventMode.CHECK,
+            biometricsGuid,
+            verificationStatus,
+            orgUnit,
+            presenter.getEventTei(),
         )
         Intent(activity, EventCaptureActivity::class.java).apply {
             putExtras(bundle)

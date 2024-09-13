@@ -7,8 +7,15 @@ import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.prefs.PreferenceProvider
 import org.dhis2.data.biometrics.BiometricsConfigApi
 import org.dhis2.data.biometrics.BiometricsConfigRepositoryImpl
+import org.dhis2.data.biometrics.BiometricsParentChildConfigApi
+import org.dhis2.data.biometrics.BiometricsParentChildConfigRepositoryImpl
+import org.dhis2.data.notifications.NotificationD2Repository
+import org.dhis2.data.notifications.NotificationsApi
+import org.dhis2.data.notifications.UserGroupsApi
 import org.dhis2.data.service.workManager.WorkManagerController
-import org.dhis2.usescases.biometrics.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.repositories.BiometricsParentChildConfigRepository
+import org.dhis2.usescases.notifications.domain.NotificationRepository
 import org.dhis2.utils.analytics.AnalyticsHelper
 import org.hisp.dhis.android.core.D2
 
@@ -18,6 +25,19 @@ class SyncDataWorkerModule {
     @PerService
     fun syncRepository(d2: D2): SyncRepository {
         return SyncRepositoryImpl(d2)
+    }
+
+    @Provides
+    @PerService
+    fun notificationsRepository(
+        d2: D2,
+        preference: BasicPreferenceProvider
+    ): NotificationRepository {
+        val notificationsApi = d2.retrofit().create(
+            NotificationsApi::class.java
+        )
+        val userGroupsApi = d2.retrofit().create(UserGroupsApi::class.java)
+        return NotificationD2Repository(d2, preference, notificationsApi, userGroupsApi)
     }
 
     @Provides
@@ -34,6 +54,18 @@ class SyncDataWorkerModule {
 
     @Provides
     @PerService
+    fun biometricsParentChildConfigRepository(
+        d2: D2,
+        basicPreferences: BasicPreferenceProvider
+    ): BiometricsParentChildConfigRepository {
+        val biometricsConfigApi = d2.retrofit().create(
+            BiometricsParentChildConfigApi::class.java
+        )
+        return BiometricsParentChildConfigRepositoryImpl(basicPreferences, biometricsConfigApi)
+    }
+
+    @Provides
+    @PerService
     internal fun syncPresenter(
         d2: D2,
         preferences: PreferenceProvider,
@@ -41,8 +73,9 @@ class SyncDataWorkerModule {
         analyticsHelper: AnalyticsHelper,
         syncStatusController: SyncStatusController,
         syncRepository: SyncRepository,
-        biometricsConfigRepository: BiometricsConfigRepository
-
+        biometricsConfigRepository: BiometricsConfigRepository,
+        biometricsParentChildConfigRepository: BiometricsParentChildConfigRepository,
+        notificationsRepository: NotificationRepository
     ): SyncPresenter {
         return SyncPresenterImpl(
             d2,
@@ -51,7 +84,9 @@ class SyncDataWorkerModule {
             analyticsHelper,
             syncStatusController,
             syncRepository,
-            biometricsConfigRepository
+            biometricsConfigRepository,
+            biometricsParentChildConfigRepository,
+            notificationsRepository
         )
     }
 }

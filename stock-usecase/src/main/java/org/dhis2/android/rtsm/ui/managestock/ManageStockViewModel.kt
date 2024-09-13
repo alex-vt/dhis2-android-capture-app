@@ -3,15 +3,12 @@ package org.dhis2.android.rtsm.ui.managestock
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.jakewharton.rxrelay2.PublishRelay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.disposables.CompositeDisposable
-import java.util.Collections
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +29,7 @@ import org.dhis2.android.rtsm.data.models.StockItem
 import org.dhis2.android.rtsm.data.models.Transaction
 import org.dhis2.android.rtsm.services.SpeechRecognitionManager
 import org.dhis2.android.rtsm.services.StockManager
+import org.dhis2.android.rtsm.services.StockTableDimensionStore
 import org.dhis2.android.rtsm.services.rules.RuleValidationHelper
 import org.dhis2.android.rtsm.services.scheduler.BaseSchedulerProvider
 import org.dhis2.android.rtsm.ui.base.OnQuantityValidated
@@ -43,6 +41,7 @@ import org.dhis2.android.rtsm.ui.home.model.SnackBarUiState
 import org.dhis2.android.rtsm.utils.Utils.Companion.isValidStockOnHand
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.viewmodel.DispatcherProvider
+import org.dhis2.composetable.TableConfigurationState
 import org.dhis2.composetable.TableScreenState
 import org.dhis2.composetable.actions.Validator
 import org.dhis2.composetable.model.KeyboardInputType
@@ -52,6 +51,9 @@ import org.dhis2.composetable.model.ValidationResult
 import org.hisp.dhis.rules.models.RuleActionAssign
 import org.hisp.dhis.rules.models.RuleEffect
 import org.jetbrains.annotations.NotNull
+import java.util.Collections
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @HiltViewModel
 class ManageStockViewModel @Inject constructor(
@@ -62,10 +64,11 @@ class ManageStockViewModel @Inject constructor(
     speechRecognitionManager: SpeechRecognitionManager,
     private val resources: ResourceManager,
     private val tableModelMapper: TableModelMapper,
-    private val dispatcherProvider: DispatcherProvider
+    private val dispatcherProvider: DispatcherProvider,
+    val tableDimensionStore: StockTableDimensionStore,
 ) : Validator, SpeechRecognitionAwareViewModel(
     schedulerProvider,
-    speechRecognitionManager
+    speechRecognitionManager,
 ) {
     private val _config = MutableLiveData<AppConfig>()
     val config: LiveData<AppConfig> = _config
@@ -84,8 +87,7 @@ class ManageStockViewModel @Inject constructor(
     private val _screenState: MutableLiveData<TableScreenState> = MutableLiveData(
         TableScreenState(
             tables = emptyList(),
-            overwrittenRowHeaderWidth = 200F
-        )
+        ),
     )
     val screenState: LiveData<TableScreenState> = _screenState
 
@@ -96,6 +98,7 @@ class ManageStockViewModel @Inject constructor(
     val dataEntryUiState: StateFlow<DataEntryUiState> = _dataEntryUiState
 
     private val _themeColor = MutableStateFlow(Color.White)
+    val themeColor: StateFlow<Color> = _themeColor
 
     private val _scanText = MutableStateFlow("")
     val scanText = _scanText.asStateFlow()
@@ -108,6 +111,10 @@ class ManageStockViewModel @Inject constructor(
     val shouldCloseActivity = MutableLiveData<Void?>()
 
     val shouldNavigateBack = MutableLiveData<Void?>()
+
+    private val _tableConfigurationState = MutableStateFlow(refreshTableConfiguration())
+
+    val tableConfigurationState: StateFlow<TableConfigurationState> = _tableConfigurationState
 
     init {
         configureRelays()
@@ -134,7 +141,17 @@ class ManageStockViewModel @Inject constructor(
 
     fun refreshData() {
         viewModelScope.launch {
-            getStockItems().asFlow().collect { stockItems ->
+            val result = stockManagerRepository.search(
+                search.value ?: SearchParametersModel(
+                    null,
+                    null,
+                    transaction.value?.facility?.uid ?: "",
+                ),
+                transaction.value?.facility?.uid,
+                config.value!!,
+            ).items
+
+            result.asFlow().collect { stockItems ->
                 _stockItems.value = stockItems
                 populateTable()
             }
@@ -143,6 +160,14 @@ class ManageStockViewModel @Inject constructor(
 
     fun setConfig(config: AppConfig) {
         _config.value = config
+        tableDimensionStore.setUids(config.program)
+        refreshConfig()
+    }
+
+    fun refreshConfig() {
+        viewModelScope.launch {
+            _tableConfigurationState.emit(refreshTableConfiguration())
+        }
     }
 
     fun setThemeColor(themeColor: Color) {
@@ -154,16 +179,9 @@ class ManageStockViewModel @Inject constructor(
             SearchParametersModel(
                 null,
                 null,
-                it
+                it,
             )
         }
-    }
-
-    private fun getStockItems() = Transformations.switchMap(search) { q ->
-        val result =
-            stockManagerRepository.search(q, transaction.value?.facility?.uid, config.value!!)
-
-        result.items
     }
 
     private fun configureRelays() {
@@ -180,12 +198,13 @@ class ManageStockViewModel @Inject constructor(
                                 SearchParametersModel(
                                     result,
                                     null,
-                                    it
+                                    it,
                                 )
                             }
+                        refreshData()
                     },
-                    { it.printStackTrace() }
-                )
+                    { it.printStackTrace() },
+                ),
         )
 
         disposable.add(
@@ -206,24 +225,26 @@ class ManageStockViewModel @Inject constructor(
                                 it,
                                 config.value?.program!!,
                                 transaction.value!!,
-                                config.value!!
-                            )
+                                config.value!!,
+                            ),
                         )
                     },
                     {
                         it.printStackTrace()
-                    }
-                )
+                    },
+                ),
         )
     }
 
     private fun populateTable() {
         val items = when (dataEntryUiState.value.step) {
             DataEntryStep.REVIEWING,
-            DataEntryStep.EDITING_REVIEWING ->
+            DataEntryStep.EDITING_REVIEWING,
+            ->
                 _stockItems.value?.filter {
                     itemsCache[it.id] != null
                 }
+
             else -> _stockItems.value
         }
 
@@ -236,14 +257,13 @@ class ManageStockViewModel @Inject constructor(
         val tables = tableModelMapper.map(
             entries = entries,
             stockLabel = resources.getString(R.string.stock),
-            qtdLabel = provideQuantityLabel()
+            qtdLabel = provideQuantityLabel(),
         )
 
         _screenState.postValue(
             TableScreenState(
                 tables = tables,
-                overwrittenRowHeaderWidth = 200F
-            )
+            ),
         )
 
         updateReviewButton()
@@ -262,7 +282,7 @@ class ManageStockViewModel @Inject constructor(
             stockManagerRepository.saveTransaction(
                 getPopulatedEntries(),
                 transaction.value!!,
-                config.value!!
+                config.value!!,
             )
                 .subscribeOn(schedulerProvider.io())
                 .observeOn(schedulerProvider.ui())
@@ -273,8 +293,8 @@ class ManageStockViewModel @Inject constructor(
                                 snackBarUiState = SnackBarUiState(
                                     message = R.string.transaction_completed,
                                     color = R.color.success_color,
-                                    icon = R.drawable.success_icon
-                                )
+                                    icon = R.drawable.success_icon,
+                                ),
                             )
                         }
                         updateStep(DataEntryStep.COMPLETED)
@@ -283,8 +303,8 @@ class ManageStockViewModel @Inject constructor(
                     },
                     {
                         it.printStackTrace()
-                    }
-                )
+                    },
+                ),
         )
     }
 
@@ -303,12 +323,15 @@ class ManageStockViewModel @Inject constructor(
             secondaryLabels = mutableListOf(resources.getString(R.string.quantity)),
             currentValue = cell.value,
             keyboardInputType = KeyboardInputType.NumberPassword(),
-            error = stockEntry?.errorMessage
+            error = stockEntry?.errorMessage,
         )
     }
 
     fun onSaveValueChange(cell: TableCell) {
-        viewModelScope.launch(dispatcherProvider.io()) {
+        viewModelScope.launch(
+            dispatcherProvider.io(),
+            start = CoroutineStart.ATOMIC,
+        ) {
             saveValue(cell)
         }
     }
@@ -325,10 +348,11 @@ class ManageStockViewModel @Inject constructor(
                             item = stockItem,
                             qty = cell.value,
                             stockOnHand = stockItem.stockOnHand,
-                            errorMessage = result.message
+                            errorMessage = result.message,
                         )
                         populateTable()
                     }
+
                     is ValidationResult.Success -> {
                         setQuantity(
                             stockItem,
@@ -342,7 +366,7 @@ class ManageStockViewModel @Inject constructor(
                                     }
                                     populateTable()
                                 }
-                            }
+                            },
                         )
                     }
                 }
@@ -353,7 +377,7 @@ class ManageStockViewModel @Inject constructor(
     private fun applyRuleEffectOnItem(
         ruleEffect: RuleEffect,
         stockItem: StockItem,
-        value: String?
+        value: String?,
     ) {
         if (ruleEffect.ruleAction() is RuleActionAssign &&
             (
@@ -374,7 +398,7 @@ class ManageStockViewModel @Inject constructor(
                 stockItem,
                 value,
                 stockOnHand,
-                errorMessage = errorMessage
+                errorMessage = errorMessage,
             )
         }
     }
@@ -388,7 +412,7 @@ class ManageStockViewModel @Inject constructor(
         item: @NotNull StockItem,
         position: @NotNull Int,
         qty: @NotNull String,
-        callback: OnQuantityValidated?
+        callback: OnQuantityValidated?,
     ) {
         entryRelay.accept(RowAction(StockEntry(item = item, qty = qty), position, callback))
     }
@@ -408,7 +432,7 @@ class ManageStockViewModel @Inject constructor(
             item = item,
             qty = qty,
             stockOnHand = stockOnHand,
-            errorMessage = errorMessage
+            errorMessage = errorMessage,
         )
         hasUnsavedData(true)
     }
@@ -461,9 +485,10 @@ class ManageStockViewModel @Inject constructor(
                     icon = R.drawable.proceed_icon,
                     contentColor = _themeColor.value,
                     containerColor = Color.White,
-                    visible = buttonVisibility
+                    visible = buttonVisibility,
                 )
             }
+
             DataEntryStep.REVIEWING -> {
                 val buttonVisibility = hasData.value && canReview()
                 ButtonUiState(
@@ -471,9 +496,10 @@ class ManageStockViewModel @Inject constructor(
                     icon = R.drawable.confirm_review,
                     contentColor = Color.White,
                     containerColor = _themeColor.value,
-                    visible = buttonVisibility
+                    visible = buttonVisibility,
                 )
             }
+
             else -> {
                 dataEntryUiState.value.button.copy(visible = false)
             }
@@ -490,9 +516,11 @@ class ManageStockViewModel @Inject constructor(
                 onSearchQueryChanged("")
                 updateStep(DataEntryStep.REVIEWING)
             }
+
             DataEntryStep.REVIEWING -> {
                 commitTransaction()
             }
+
             else -> {
                 // Nothing will happen given that the button is hidden
             }
@@ -509,6 +537,7 @@ class ManageStockViewModel @Inject constructor(
                         DataEntryStep.START -> {
                             shouldCloseActivity.postValue(null)
                         }
+
                         DataEntryStep.LISTING -> {
                             if (dataEntryUiState.value.hasUnsavedData) {
                                 _bottomSheetState.value = true
@@ -516,15 +545,19 @@ class ManageStockViewModel @Inject constructor(
                                 shouldCloseActivity.postValue(null)
                             }
                         }
+
                         DataEntryStep.EDITING_LISTING -> {
                             shouldNavigateBack.postValue(null)
                         }
+
                         DataEntryStep.REVIEWING -> {
                             updateStep(DataEntryStep.LISTING)
                         }
+
                         DataEntryStep.EDITING_REVIEWING -> {
                             shouldNavigateBack.postValue(null)
                         }
+
                         DataEntryStep.COMPLETED -> {
                             // Nothing to do here
                         }
@@ -557,4 +590,10 @@ class ManageStockViewModel @Inject constructor(
     fun onBottomSheetClosed() {
         _bottomSheetState.value = false
     }
+
+    private fun refreshTableConfiguration() = TableConfigurationState(
+        overwrittenTableWidth = tableDimensionStore.getTableWidth(),
+        overwrittenRowHeaderWidth = tableDimensionStore.getWidthForSection(),
+        overwrittenColumnWidth = tableDimensionStore.getColumnWidthForSection(null),
+    )
 }

@@ -4,15 +4,8 @@ import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import io.reactivex.Completable
 import io.reactivex.Single
-import java.util.Date
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.dhis2.commons.sync.ConflictType
@@ -28,7 +21,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
-import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import java.util.Date
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GranularSyncPresenterTest {
@@ -36,8 +35,8 @@ class GranularSyncPresenterTest {
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    private val d2: D2 = mock(D2::class.java, Mockito.RETURNS_DEEP_STUBS)
-    private val view = mock(GranularSyncContracts.View::class.java)
+    private val d2: D2 = Mockito.mock(D2::class.java, Mockito.RETURNS_DEEP_STUBS)
+    private val view = Mockito.mock(GranularSyncContracts.View::class.java)
     private val repository: GranularSyncRepository = mock()
     private val trampolineSchedulerProvider = TrampolineSchedulerProvider()
     private val testingDispatcher = UnconfinedTestDispatcher()
@@ -45,10 +44,10 @@ class GranularSyncPresenterTest {
         on { io() } doReturn testingDispatcher
         on { ui() } doReturn testingDispatcher
     }
-    private val workManager = mock(WorkManagerController::class.java)
+    private val workManager = Mockito.mock(WorkManagerController::class.java)
     private val smsSyncProvider: SMSSyncProvider = mock()
     private val context: Context = mock()
-    private val mockedSyncContext: SyncContext = mock()
+    private val syncContext: SyncContext = SyncContext.Global()
 
     @Test
     fun `should return tracker program error state`() {
@@ -60,7 +59,7 @@ class GranularSyncPresenterTest {
             testDispatcher,
             SyncContext.TrackerProgram("test_uid"),
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         val mockedState = SyncUiState(
@@ -70,7 +69,7 @@ class GranularSyncPresenterTest {
             message = "message",
             mainActionLabel = "action 1",
             secondaryActionLabel = "action 2",
-            content = emptyList()
+            content = emptyList(),
         )
         whenever(repository.getUiState()) doReturn mockedState
 
@@ -82,7 +81,7 @@ class GranularSyncPresenterTest {
     @Test
     fun `should block sms for some conflict types`() {
         whenever(
-            smsSyncProvider.isSMSEnabled(any())
+            smsSyncProvider.isSMSEnabled(any()),
         ) doReturn true
 
         val syncContexts = listOf(
@@ -97,7 +96,7 @@ class GranularSyncPresenterTest {
             SyncContext.Event(""),
             SyncContext.GlobalDataSet(""),
             SyncContext.DataSet(""),
-            SyncContext.DataSetInstance("", "", "", "")
+            SyncContext.DataSetInstance("", "", "", ""),
         )
 
         syncContexts.map {
@@ -109,7 +108,7 @@ class GranularSyncPresenterTest {
                 testDispatcher,
                 it,
                 workManager,
-                smsSyncProvider
+                smsSyncProvider,
             ).canSendSMS()
             it to enable
         }.forEach { (syncContext, canSendSMS) ->
@@ -133,16 +132,16 @@ class GranularSyncPresenterTest {
             repository,
             trampolineSchedulerProvider,
             testDispatcher,
-            mockedSyncContext,
+            syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         val testingMsg = "testingMsg"
         val testingGateway = "testingGateWay"
         whenever(smsSyncProvider.isPlayServicesEnabled()) doReturn true
         whenever(smsSyncProvider.getConvertTask()) doReturn Single.just(
-            ConvertTaskResult.Message(testingMsg)
+            ConvertTaskResult.Message(testingMsg),
         )
         whenever(smsSyncProvider.getGatewayNumber()) doReturn testingGateway
         presenter.onSmsSyncClick { }
@@ -159,9 +158,9 @@ class GranularSyncPresenterTest {
             repository,
             trampolineSchedulerProvider,
             testDispatcher,
-            mockedSyncContext,
+            syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         presenter.onSmsNotManuallySent(context)
@@ -176,15 +175,15 @@ class GranularSyncPresenterTest {
             repository,
             trampolineSchedulerProvider,
             testDispatcher,
-            mockedSyncContext,
+            syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         whenever(smsSyncProvider.isPlayServicesEnabled()) doReturn false
         whenever(view.checkSmsPermission()) doReturn true
         whenever(
-            smsSyncProvider.getConvertTask()
+            smsSyncProvider.getConvertTask(),
         ) doReturn Single.just(ConvertTaskResult.Count(1))
         whenever(smsSyncProvider.smsSender) doReturn mock()
         whenever(smsSyncProvider.smsSender.submissionId) doReturn 1
@@ -197,7 +196,7 @@ class GranularSyncPresenterTest {
 
         assertTrue(testingState.value?.isNotEmpty() == true)
         assertTrue(
-            testingState.value?.get(0)?.state == SmsSendingService.State.WAITING_COUNT_CONFIRMATION
+            testingState.value?.get(0)?.state == SmsSendingService.State.WAITING_COUNT_CONFIRMATION,
         )
     }
 
@@ -209,9 +208,9 @@ class GranularSyncPresenterTest {
             repository,
             trampolineSchedulerProvider,
             testDispatcher,
-            mockedSyncContext,
+            syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         whenever(smsSyncProvider.expectsResponseSMS()) doReturn false
@@ -231,9 +230,9 @@ class GranularSyncPresenterTest {
             repository,
             trampolineSchedulerProvider,
             testDispatcher,
-            mockedSyncContext,
+            syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         whenever(smsSyncProvider.expectsResponseSMS()) doReturn true
@@ -251,9 +250,9 @@ class GranularSyncPresenterTest {
             repository,
             trampolineSchedulerProvider,
             testDispatcher,
-            mockedSyncContext,
+            syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         whenever(smsSyncProvider.smsSender) doReturn mock()
@@ -272,9 +271,9 @@ class GranularSyncPresenterTest {
             repository,
             trampolineSchedulerProvider,
             testDispatcher,
-            mockedSyncContext,
+            syncContext,
             workManager,
-            smsSyncProvider
+            smsSyncProvider,
         )
 
         whenever(smsSyncProvider.smsSender) doReturn mock()

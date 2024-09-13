@@ -4,8 +4,8 @@ import com.google.gson.reflect.TypeToken
 import org.dhis2.commons.biometrics.BiometricsIcon
 import org.dhis2.commons.biometrics.BiometricsPreference
 import org.dhis2.commons.prefs.BasicPreferenceProvider
-import org.dhis2.usescases.biometrics.BiometricsConfig
-import org.dhis2.usescases.biometrics.BiometricsConfigRepository
+import org.dhis2.usescases.biometrics.entities.BiometricsConfig
+import org.dhis2.usescases.biometrics.repositories.BiometricsConfigRepository
 import org.hisp.dhis.android.core.D2
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit
 import timber.log.Timber

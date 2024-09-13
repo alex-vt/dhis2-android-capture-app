@@ -1,11 +1,17 @@
 package org.dhis2.usescases.teiDashboard;
 
+import static org.dhis2.data.biometrics.utils.AddParentBiometricsAttributeValueIfRequiredKt.addParentBiometricsAttributeValueIfRequired;
+import static org.dhis2.data.biometrics.utils.GetParentBiometricsAttributeValueIfRequiredKt.getParentBiometricsAttributeValueIfRequired;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.PairKt;
 
 import org.dhis2.R;
+import org.dhis2.commons.biometrics.ExtensionsKt;
 import org.dhis2.commons.data.tuples.Pair;
 import org.dhis2.commons.data.tuples.Trio;
+import org.dhis2.commons.prefs.BasicPreferenceProvider;
 import org.dhis2.commons.resources.ResourceManager;
 import org.dhis2.utils.AuthorityException;
 import org.dhis2.utils.DateUtils;
@@ -38,9 +44,9 @@ import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttribute;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityAttributeValue;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstance;
 import org.hisp.dhis.android.core.trackedentity.TrackedEntityType;
-import org.hisp.dhis.android.core.trackedentity.TrackedEntityTypeAttribute;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import dhis2.org.analytics.charts.Charts;
@@ -63,6 +69,7 @@ public class DashboardRepositoryImpl implements DashboardRepository {
 
     private TeiAttributesProvider teiAttributesProvider;
 
+    private BasicPreferenceProvider basicPreferenceProvider;
 
     public DashboardRepositoryImpl(D2 d2,
                                    @Nullable Charts charts,
@@ -70,7 +77,8 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                                    String programUid,
                                    String enrollmentUid,
                                    ResourceManager resources,
-                                   TeiAttributesProvider teiAttributesProvider) {
+                                   TeiAttributesProvider teiAttributesProvider,
+                                   BasicPreferenceProvider basicPreferenceProvider) {
         this.d2 = d2;
         this.teiUid = teiUid;
         this.programUid = programUid;
@@ -78,6 +86,7 @@ public class DashboardRepositoryImpl implements DashboardRepository {
         this.resources = resources;
         this.charts = charts;
         this.teiAttributesProvider = teiAttributesProvider;
+        this.basicPreferenceProvider = basicPreferenceProvider;
     }
 
     @Override
@@ -142,28 +151,6 @@ public class DashboardRepositoryImpl implements DashboardRepository {
     }
 
     @Override
-    public Observable<Trio<ProgramIndicator, String, String>> getLegendColorForIndicator(ProgramIndicator indicator,
-                                                                                         String value) {
-        String color = "";
-        if (indicator.legendSets() != null && !indicator.legendSets().isEmpty()) {
-            ObjectWithUid legendSet = null;
-            List<Legend> legends = d2.legendSetModule().legends().byStartValue().smallerThan(Double.valueOf(value)).byEndValue().biggerThan(Double.valueOf(value))
-                    .byLegendSet().eq(legendSet.uid()).blockingGet();
-            color = legends.get(0).color();
-        }
-        return Observable.just(Trio.create(indicator, value, color));
-    }
-
-    @Override
-    public Integer getObjectStyle(String uid) {
-        TrackedEntityType teType = d2.trackedEntityModule().trackedEntityTypes().uid(uid).blockingGet();
-        return resources.getObjectStyleDrawableResource(
-                teType.style() != null ? teType.style().icon() : null,
-                R.drawable.ic_navigation_relationships
-        );
-    }
-
-    @Override
     public Observable<List<Pair<RelationshipType, String>>> relationshipsForTeiType(String teType) {
         return d2.systemInfoModule().systemInfo().get().toObservable()
                 .map(SystemInfo::version)
@@ -195,47 +182,39 @@ public class DashboardRepositoryImpl implements DashboardRepository {
     }
 
     @Override
-    public Observable<CategoryCombo> catComboForProgram(String programUid) {
-        return d2.programModule().programs().uid(programUid).get()
-                .map(program -> program.categoryComboUid())
-                .flatMap(catComboUid -> d2.categoryModule().categoryCombos().uid(catComboUid).get())
-                .toObservable();
+    public CategoryOptionCombo catOptionCombo(String catComboUid) {
+        return d2.categoryModule().categoryOptionCombos().uid(catComboUid).blockingGet();
     }
 
-    @Override
-    public boolean isStageFromProgram(String stageUid) {
-        List<ProgramStage> programStages = getProgramStages(programUid).blockingFirst();
-        boolean stageIsInProgram = false;
-        for (ProgramStage stage : programStages) {
-            if (stage.uid().equals(stageUid)) {
-                stageIsInProgram = true;
-                break;
-            }
-        }
-        return stageIsInProgram;
-    }
+    public Observable<List<Pair<TrackedEntityAttribute, TrackedEntityAttributeValue>>> getAttributesMap(String programUid, String teiUid) {
+        return teiAttributesProvider.getProgramTrackedEntityAttributesByProgram(programUid, teiUid)
+                .toObservable()
+                .flatMapIterable(list -> list)
+                .map(pair -> {
+                    TrackedEntityAttribute attribute = pair.getFirst();
+                    TrackedEntityAttributeValue attributeValue = pair.getSecond();
 
-    @Override
-    public Observable<List<CategoryOptionCombo>> catOptionCombos(String catComboUid) {
-        return d2.categoryModule().categoryOptionCombos().byCategoryComboUid().eq(catComboUid).get().toObservable();
-    }
+                    TrackedEntityAttributeValue formattedAttributeValue;
 
-    @Override
-    public void setDefaultCatOptCombToEvent(String eventUid) {
-        CategoryCombo defaultCatCombo = d2.categoryModule().categoryCombos().byIsDefault().isTrue().one().blockingGet();
-        CategoryOptionCombo defaultCatOptComb = d2.categoryModule().categoryOptionCombos().byCategoryComboUid()
-                .eq(defaultCatCombo.uid()).one().blockingGet();
-        try {
-            d2.eventModule().events().uid(eventUid).setAttributeOptionComboUid(defaultCatOptComb.uid());
-        } catch (D2Error d2Error) {
-            Timber.e(d2Error);
-        }
+                    if (attributeValue != null && attribute.valueType() != ValueType.IMAGE) {
+                        formattedAttributeValue = ValueUtils.transform(d2, attributeValue, attribute.valueType(), attribute.optionSet() != null ? attribute.optionSet().uid() : null);
+                    } else {
+                        formattedAttributeValue = TrackedEntityAttributeValue.builder()
+                                .trackedEntityAttribute(attribute.uid())
+                                .trackedEntityInstance(teiUid)
+                                .value("")
+                                .build();
+                    }
+                    return Pair.create(attribute, formattedAttributeValue);
+                }).toList().flatMap(list -> {
+                    return addParentBiometricsAttributeValueToPairIfRequired(programUid, teiUid, list);
+                }).toObservable();
     }
 
     @Override
     public Observable<List<TrackedEntityAttributeValue>> getTEIAttributeValues(String programUid, String teiUid) {
         if (programUid != null) {
-            return teiAttributesProvider.getValuesFromProgramTrackedEntityAttributesByProgram(programUid, teiUid)
+            List<TrackedEntityAttributeValue> attributeValues =  teiAttributesProvider.getValuesFromProgramTrackedEntityAttributesByProgram(programUid, teiUid)
                     .map(attributesValues -> {
                         List<TrackedEntityAttributeValue> formattedValues = new ArrayList<>();
                         for (TrackedEntityAttributeValue attributeValue : attributesValues) {
@@ -257,8 +236,12 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                             }
                         }
                         return formattedValues;
-                    }).toObservable();
+                    }).blockingGet();
 
+            // EyeSeeTea Customization - Parent Biometrics
+            addParentBiometricsAttributeValueIfRequired(d2, teiAttributesProvider, basicPreferenceProvider,attributeValues,programUid,teiUid);
+
+            return Observable.just(attributeValues);
         } else {
             String teType = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet().trackedEntityType();
             List<TrackedEntityAttributeValue> attributeValues = new ArrayList<>();
@@ -286,12 +269,6 @@ public class DashboardRepositoryImpl implements DashboardRepository {
             }
             return Observable.just(attributeValues);
         }
-    }
-
-    @Override
-    public Flowable<List<ProgramIndicator>> getIndicators(String programUid) {
-        return d2.programModule().programIndicators().byProgramUid().eq(programUid).withLegendSets().get()
-                .toFlowable();
     }
 
     @Override
@@ -531,5 +508,40 @@ public class DashboardRepositoryImpl implements DashboardRepository {
                         .get()
                         .toObservable()
         ).blockingFirst().displayName();
+    }
+
+    private Single<List<Pair<TrackedEntityAttribute, TrackedEntityAttributeValue>>> addParentBiometricsAttributeValueToPairIfRequired(String programUid, String teiUid, List<Pair<TrackedEntityAttribute, TrackedEntityAttributeValue>> list) {
+        // EyeSeeTea Customization - Parent Biometrics
+        List<TrackedEntityAttributeValue> attributeValues = new ArrayList<>();
+
+        for (Pair<TrackedEntityAttribute, TrackedEntityAttributeValue> pair : list) {
+            if (!ExtensionsKt.isBiometricText(pair.val0().formName()) ||
+                    (ExtensionsKt.isBiometricText(pair.val0().formName()) && pair.val1().value() != "")){
+                attributeValues.add(pair.val1());
+            }
+        }
+
+        TrackedEntityAttributeValue parentBiometricTEIValue = getParentBiometricsAttributeValueIfRequired(
+                d2,
+                teiAttributesProvider,
+                basicPreferenceProvider,
+                attributeValues,
+                programUid,
+                teiUid
+        );
+
+        List<Pair<TrackedEntityAttribute, TrackedEntityAttributeValue>> attributes = new ArrayList<>();
+        for (Pair<TrackedEntityAttribute, TrackedEntityAttributeValue> pair : list) {
+            Pair<TrackedEntityAttribute, TrackedEntityAttributeValue> newPair ;
+            if (parentBiometricTEIValue != null && pair.val0().uid().equals(parentBiometricTEIValue.trackedEntityAttribute())) {
+                newPair = Pair.create(pair.val0(), parentBiometricTEIValue);
+            }else{
+                newPair = Pair.create(pair.val0(), pair.val1());
+            }
+
+            attributes.add(newPair);
+        }
+
+        return Single.just(attributes);
     }
 }

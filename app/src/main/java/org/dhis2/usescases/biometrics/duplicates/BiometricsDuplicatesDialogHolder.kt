@@ -2,17 +2,22 @@ package org.dhis2.usescases.biometrics.duplicates
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import org.dhis2.Bindings.addEnrollmentIcons
-import org.dhis2.Bindings.hasFollowUp
-import org.dhis2.Bindings.setAttributeList
-import org.dhis2.Bindings.setStatusText
-import org.dhis2.Bindings.setTeiImage
+import org.dhis2.bindings.getEnrollmentIconsData
+import org.dhis2.bindings.hasFollowUp
+import org.dhis2.bindings.paintAllEnrollmentIcons
+import org.dhis2.bindings.setAttributeList
+import org.dhis2.bindings.setStatusText
+import org.dhis2.bindings.setTeiImage
+import org.dhis2.commons.data.EnrollmentIconData
+
 import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.toDateSpan
+import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.databinding.ItemSearchTrackedEntityBinding
 
 class BiometricsDuplicatesDialogHolder(
-    private val binding: ItemSearchTrackedEntityBinding
+    private val binding: ItemSearchTrackedEntityBinding,
+    val colorUtils: ColorUtils,
 ) : RecyclerView.ViewHolder(binding.root) {
 
     lateinit var teiModel: SearchTeiModel
@@ -43,10 +48,14 @@ class BiometricsDuplicatesDialogHolder(
 
         teiModel.apply {
             binding.setFollowUp(enrollments.hasFollowUp())
-            programInfo.addEnrollmentIcons(
-                itemView.context,
+            val enrollmentIconDataList: List<EnrollmentIconData> =
+                programInfo.getEnrollmentIconsData(
+                    itemView.context,
+                    if (selectedEnrollment != null) selectedEnrollment.program() else null,
+                    colorUtils,
+                )
+            enrollmentIconDataList.paintAllEnrollmentIcons(
                 binding.composeProgramList,
-                if (selectedEnrollment != null) selectedEnrollment.program() else null
             )
             if (selectedEnrollment != null) {
                 selectedEnrollment.setStatusText(
@@ -61,6 +70,7 @@ class BiometricsDuplicatesDialogHolder(
                 itemView.context,
                 binding.trackedEntityImage,
                 binding.imageText,
+                colorUtils,
                 profileImagePreviewCallback
             )
 
