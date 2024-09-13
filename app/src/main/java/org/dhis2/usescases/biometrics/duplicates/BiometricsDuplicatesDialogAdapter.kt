@@ -5,19 +5,18 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.FragmentManager
 import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import org.dhis2.R
 import org.dhis2.commons.data.SearchTeiModel
-import org.dhis2.commons.dialogs.imagedetail.ImageDetailBottomDialog
 import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.databinding.ItemSearchTrackedEntityBinding
-import java.io.File
 
 class BiometricsDuplicatesDialogAdapter(
     private val fm: FragmentManager?,
     private val colorUtils: ColorUtils,
     private val onClickListener: (SearchTeiModel) -> Unit
-) : PagedListAdapter<SearchTeiModel, BiometricsDuplicatesDialogHolder>(object :
+) : PagingDataAdapter<SearchTeiModel, BiometricsDuplicatesDialogHolder>(object :
     DiffUtil.ItemCallback<SearchTeiModel>() {
     override fun areItemsTheSame(
         oldItem: SearchTeiModel,
@@ -64,8 +63,9 @@ class BiometricsDuplicatesDialogAdapter(
                 getItem(holder.adapterPosition)!!.toggleAttributeList()
                 notifyItemChanged(holder.adapterPosition)
             },
-            { path: String? ->
-                if (fm != null) {
+            { _: String? ->
+                // this is failing but BiometricsDuplicatesDialogAdapter doesn't appear from time ago
+          /*      if (fm != null) {
                     ImageDetailBottomDialog(
                         null,
                         File(path)
@@ -73,14 +73,9 @@ class BiometricsDuplicatesDialogAdapter(
                         fm,
                         ImageDetailBottomDialog.TAG
                     )
-                }
+                }*/
             })
 
         holder.itemView.setOnClickListener { onClickListener(getItem(position)!!) }
-    }
-
-    fun clearList() {
-        submitList(null)
-        notifyDataSetChanged()
     }
 }

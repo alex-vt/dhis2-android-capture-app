@@ -121,6 +121,7 @@ class EventListFragment : FragmentGlobalAbstract(), EventListFragmentView {
                     binding.emptyTeis.visibility = View.GONE
                     binding.recycler.visibility = View.VISIBLE
                 }
+                EventListIdlingResourceSingleton.decrement()
             }
         }
     }

@@ -11,7 +11,6 @@ import org.dhis2.form.ui.provider.EnrollmentResultDialogUiProvider
 class FormViewFragmentFactory(
     val locationProvider: LocationProvider?,
     private val onItemChangeListener: ((action: RowAction) -> Unit)?,
-    private val needToForceUpdate: Boolean = false,
     private val onLoadingListener: ((loading: Boolean) -> Unit)?,
     private val onFieldsLoadedListener: ((fields: List<FieldUiModel>) -> Unit)?,
     private val onFieldsLoadingListener: ((fields: List<FieldUiModel>) -> List<FieldUiModel>)?,
@@ -42,7 +41,6 @@ class FormViewFragmentFactory(
                 )
                 setConfiguration(
                     locationProvider = locationProvider,
-                    needToForceUpdate = needToForceUpdate,
                     completionListener = completionListener,
                     resultDialogUiProvider = resultDialogUiProvider,
                     actionIconsActivate = actionIconsActivate,

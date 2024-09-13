@@ -18,6 +18,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.ViewCompat
 import androidx.databinding.DataBindingUtil
+import com.google.android.material.snackbar.Snackbar
 import io.noties.markwon.Markwon
 import org.dhis2.App
 import org.dhis2.R
@@ -102,7 +103,7 @@ class ProgramFragment : FragmentGlobalAbstract(), ProgramView,
                 ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed,
             )
             setContent {
-                val items by presenter.programs().observeAsState(emptyList())
+                val items by presenter.programs.observeAsState()
                 val state by presenter.downloadState().observeAsState()
                 ProgramList(
                     downLoadState = state,
@@ -138,10 +139,6 @@ class ProgramFragment : FragmentGlobalAbstract(), ProgramView,
 
     //endregion
 
-    override fun swapProgramModelData(programs: List<ProgramViewModel>) {
-        binding.emptyView.visibility = if (programs.isEmpty()) View.VISIBLE else View.GONE
-    }
-
     override fun showFilterProgress() {
         Bindings.setViewVisibility(
             binding.clearFilter,
@@ -171,7 +168,7 @@ class ProgramFragment : FragmentGlobalAbstract(), ProgramView,
                             val stepCondition = SparseBooleanArray()
                             stepCondition.put(
                                 7,
-                                presenter.programs().value?.size ?: 0 > 0,
+                                (presenter.programs.value?.size ?: 0) > 0,
                             )
                             HelpManager.getInstance().show(
                                 abstractActivity,
@@ -238,7 +235,16 @@ class ProgramFragment : FragmentGlobalAbstract(), ProgramView,
                         }
                     }
                 },
-            ).show(FRAGMENT_TAG)
+            )
+            .onNoConnectionListener {
+                val contextView = activity?.findViewById<View>(R.id.navigationBar)
+                Snackbar.make(
+                    contextView!!,
+                    R.string.sync_offline_check_connection,
+                    Snackbar.LENGTH_SHORT,
+                ).show()
+            }
+            .show(FRAGMENT_TAG)
     }
 
     fun sharedView() = binding.drawerLayout
@@ -246,6 +252,8 @@ class ProgramFragment : FragmentGlobalAbstract(), ProgramView,
     companion object {
         const val FRAGMENT_TAG = "SYNC"
     }
+
+    // EyeSeeTea customizations
 
     override fun renderNotifications(notifications: List<Notification>) {
         notifications.forEach(::showNotification)

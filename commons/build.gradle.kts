@@ -79,6 +79,8 @@ dependencies {
         exclude("junit", "junit")
     }
 
+    api(libs.dhis2.expressionparser)
+    
     api(libs.autoValue)
     kapt(libs.autoValue)
     api(libs.androidx.coreKtx)
