@@ -97,6 +97,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     private boolean biometricsSearchStatus = false;
     private String sessionId;
     private String biometricUid;
+    private boolean enrollmentWithBiometricsMode;
 
     public SearchTEPresenter(SearchTEContractsModule.View view,
                              D2 d2,
@@ -289,6 +290,10 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
     @Override
     public void onEnrollClick(HashMap<String, String> queryData) {
+        if (!enrollmentWithBiometricsMode){
+            queryData.remove(biometricUid);
+        }
+
         if (selectedProgram != null)
             if (canCreateTei())
                 enroll(selectedProgram.uid(), null, queryData);
@@ -300,9 +305,11 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
     @Override
     public void enrollmentWithBiometrics(String biometricsGuid){
+        enrollmentWithBiometricsMode = true;
         HashMap<String, String> queryData = new HashMap<String, String>();
         queryData.put(biometricUid, biometricsGuid);
         onEnrollClick(queryData);
+        enrollmentWithBiometricsMode = false;
     }
 
     private boolean canCreateTei() {
