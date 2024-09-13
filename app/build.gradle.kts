@@ -189,7 +189,7 @@ android {
             applicationId = "org.simprints.dhis2"
             dimension = "default"
             versionCode = libs.versions.vCode.get().toInt()
-            versionName = "2.9.1-simprints-fork-2"
+            versionName = "2.9.1-simprints-fork-3"
         }
     }
 
