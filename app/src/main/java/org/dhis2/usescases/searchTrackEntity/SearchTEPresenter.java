@@ -690,6 +690,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     public void onBiometricsNoneOfTheAboveClick() {
         if(biometricsSearchStatus){
             view.hideNoneOfTheAboveButton();
+            view.hideIdentificationPlusButton();
             biometricsSearchStatus = false;
             view.activeBiometricsSearch(false);
             view.sendBiometricsNoneSelected(sessionId);
