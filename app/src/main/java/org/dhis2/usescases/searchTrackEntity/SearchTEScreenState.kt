@@ -13,6 +13,7 @@ data class SearchList(
     val isSearching: Boolean,
     val searchForm: SearchForm,
     val searchFilters: SearchFilters,
+    val searchHelper: SearchHelper,
 ) : SearchTEScreenState(listType, previousSate) {
 
     fun displayResetFiltersButton(): Boolean {
@@ -29,6 +30,10 @@ data class SearchForm(
 
 data class SearchFilters(
     val hasActiveFilters: Boolean = false,
+    val isOpened: Boolean = false,
+)
+
+data class SearchHelper(
     val isOpened: Boolean = false,
 )
 

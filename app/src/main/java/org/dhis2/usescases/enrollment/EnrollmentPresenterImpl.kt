@@ -3,9 +3,12 @@ package org.dhis2.usescases.enrollment
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.processors.FlowableProcessor
 import io.reactivex.processors.PublishProcessor
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.dhis2.bindings.profilePicturePath
 import org.dhis2.commons.bindings.trackedEntityTypeForTei
 import org.dhis2.commons.biometrics.BIOMETRICS_FAILURE_PATTERN
+import org.dhis2.commons.biometrics.BIOMETRICS_SEARCH_PATTERN
 import org.dhis2.commons.data.TeiAttributesInfo
 import org.dhis2.commons.matomo.Actions.Companion.CREATE_TEI
 import org.dhis2.commons.matomo.Categories.Companion.TRACKER_LIST
@@ -18,6 +21,7 @@ import org.dhis2.data.biometrics.utils.getBiometricsTrackedEntityAttribute
 import org.dhis2.data.biometrics.utils.getParentBiometricsAttributeValueIfRequired
 import org.dhis2.data.biometrics.utils.getTeiByUid
 import org.dhis2.data.biometrics.utils.getTrackedEntityAttributeValueByAttribute
+import org.dhis2.data.biometrics.utils.isUnderAgeThreshold
 import org.dhis2.form.data.EnrollmentRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
@@ -60,6 +64,7 @@ class EnrollmentPresenterImpl(
     private val teiAttributesProvider: TeiAttributesProvider,
     private val basicPreferenceProvider: BasicPreferenceProvider,
 ) {
+    private var pendingSave: Boolean = false
     private val disposable = CompositeDisposable()
     private val backButtonProcessor: FlowableProcessor<Boolean> = PublishProcessor.create()
     private var hasShownIncidentDateEditionWarning = false
@@ -265,8 +270,8 @@ class EnrollmentPresenterImpl(
     fun isEventScheduleOrSkipped(eventUid: String): Boolean {
         val event = eventCollectionRepository.uid(eventUid).blockingGet()
         return event?.status() == EventStatus.SCHEDULE ||
-            event?.status() == EventStatus.SKIPPED ||
-            event?.status() == EventStatus.OVERDUE
+                event?.status() == EventStatus.SKIPPED ||
+                event?.status() == EventStatus.OVERDUE
     }
 
     fun onBiometricsCompleted(guid: String) {
@@ -275,6 +280,7 @@ class EnrollmentPresenterImpl(
 
     fun onBiometricsFailure() {
         val uuid: UUID = UUID.randomUUID()
+        pendingSave = false
         saveBiometricValue("${BIOMETRICS_FAILURE_PATTERN}_${uuid}")
     }
 
@@ -284,16 +290,24 @@ class EnrollmentPresenterImpl(
                     BIOMETRICS_FAILURE_PATTERN
                 )
             ) {
-                biometricsUiModel!!.onTextChange(null)
-                biometricsUiModel!!.onSave(null)
+                saveBiometricValue(null)
             }
         }
     }
 
-    private fun saveBiometricValue(value: String) {
-        if (biometricsUiModel != null) {
-            biometricsUiModel!!.onTextChange(value)
-            biometricsUiModel!!.onSave(value)
+    private fun saveBiometricValue(value: String?) {
+        biometricsUiModel!!.onTextChange(value)
+        biometricsUiModel!!.onSave(value)
+
+        if (pendingSave) {
+            pendingSave = false
+
+            runBlocking {
+                delay(200)
+                view.performSaveClick()
+            }
+
+            return
         }
     }
 
@@ -327,38 +341,62 @@ class EnrollmentPresenterImpl(
                 it is BiometricsAttributeUiModelImpl
             }?.let { it as BiometricsAttributeUiModelImpl }
 
-            biometricsUiModel?.setBiometricsRegisterListener(
-                object : BiometricsAttributeUiModelImpl.BiometricsOnRegisterClickListener {
-                    override fun onClick() {
-                        val orgUnit = enrollmentObjectRepository.get().blockingGet()
-                            ?.organisationUnit()!!
-                        view.registerBiometrics(orgUnit)
+            biometricsUiModel?.setBiometricsRegisterListener {
+                val orgUnit = enrollmentObjectRepository.get().blockingGet()
+                    ?.organisationUnit()!!
 
-                    }
-                })
+                view.registerBiometrics(orgUnit)
+                pendingSave = true
+            }
+
+            biometricsUiModel?.setSaveWithoutBiometrics {
+                saveBiometricValue(null)
+                view.performSaveClick()
+            }
+
+            biometricsUiModel?.setRegisterLastAndSave { sessionId ->
+                pendingSave = true
+                view.registerLast(sessionId)
+            }
+
+            val isVisible =
+                biometricsUiModel != null && !biometricsUiModel!!.value.isNullOrBlank() && (!biometricsUiModel!!.value!!.startsWith(
+                    BIOMETRICS_SEARCH_PATTERN
+                ))
+            view.setSaveButtonVisible(visible = isVisible)
         }
     }
 
-    fun onFieldsLoading(fields: List<FieldUiModel>) :List<FieldUiModel>{
+    fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
+        val allMandatoryFieldsHasValue =
+            fields.count { it.mandatory && (it.value == null || it.value!!.isEmpty())} == 0
+
         return fields.map {
             if (it is BiometricsAttributeUiModelImpl) {
                 val biometricsUiModel = it
 
-                val teiUid = teiRepository.blockingGet()?.uid()?:return fields
+                val teiUid = teiRepository.blockingGet()?.uid() ?: return fields
 
-                val tei = getTeiByUid(d2,teiUid )
+                val tei = getTeiByUid(d2, teiUid)
+
+                val teiAttrValues = tei?.trackedEntityAttributeValues() ?: listOf()
+                val program = programRepository.blockingGet()?.uid() ?: ""
 
                 val parentBiometricsValue = getParentBiometricsAttributeValueIfRequired(
                     d2,
                     teiAttributesProvider,
                     basicPreferenceProvider,
-                    tei?.trackedEntityAttributeValues()?: listOf(),
-                    programRepository.blockingGet()?.uid() ?:"",
-                    teiRepository.blockingGet()?.uid()?:""
+                    teiAttrValues,
+                    program,
+                    teiRepository.blockingGet()?.uid() ?: ""
                 )
 
+                val isUnderAgeThreshold = isUnderAgeThreshold(basicPreferenceProvider,teiAttrValues,program )
+
                 biometricsUiModel
-                    .setValue(parentBiometricsValue?.value()?:biometricsUiModel.value)
+                    .setValue(parentBiometricsValue?.value() ?: biometricsUiModel.value)
+                    .setEditable(allMandatoryFieldsHasValue)
+                    .setAgeUnderThreshold(isUnderAgeThreshold)
             } else {
                 it
             }
@@ -366,9 +404,9 @@ class EnrollmentPresenterImpl(
     }
 
     fun getBiometricsGuid(): String? {
-        val teiUid = teiRepository.blockingGet()?.uid()?: return null
+        val teiUid = teiRepository.blockingGet()?.uid() ?: return null
 
-        val teiValues = getTeiByUid(d2,teiUid)?.trackedEntityAttributeValues()?: return null
+        val teiValues = getTeiByUid(d2, teiUid)?.trackedEntityAttributeValues() ?: return null
 
         val biometricsAttribute = getBiometricsTrackedEntityAttribute(d2) ?: return null
 
@@ -382,8 +420,8 @@ class EnrollmentPresenterImpl(
             teiAttributesProvider,
             basicPreferenceProvider,
             teiValues,
-            programRepository.blockingGet()?.uid() ?:"",
-            teiRepository.blockingGet()?.uid()?:""
+            programRepository.blockingGet()?.uid() ?: "",
+            teiRepository.blockingGet()?.uid() ?: ""
         )?.value()
     }
 }

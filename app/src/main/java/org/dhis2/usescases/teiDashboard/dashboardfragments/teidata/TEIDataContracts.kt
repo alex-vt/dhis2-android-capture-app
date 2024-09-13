@@ -49,5 +49,8 @@ class TEIDataContracts {
             orgUnitUid: String,
             trackedEntityInstance: String
         )
+
+        fun refreshCard()
+        fun registerBiometrics(orgUnit: String, uid: String)
     }
 }

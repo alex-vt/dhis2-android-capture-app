@@ -28,8 +28,13 @@ sealed class RegisterResult {
     data object Failure : RegisterResult()
 }
 
+data class SimprintsItem(
+    val guid: String,
+    val confidence: Float
+)
+
 sealed class IdentifyResult {
-    data class Completed(val guids: List<String>, val sessionId: String) : IdentifyResult()
+    data class Completed(val items: List<SimprintsItem>, val sessionId: String) : IdentifyResult()
     data object BiometricsDeclined : IdentifyResult()
     data class UserNotFound(val sessionId: String) : IdentifyResult()
     data object Failure : IdentifyResult()
@@ -126,9 +131,11 @@ class BiometricsClient(
         val handlePossibleDuplicates = {
             when (val identifyResponse = handleIdentifyResponse(data)) {
                 is IdentifyResult.Completed -> {
-                    Timber.d("Possible duplicates ${identifyResponse.guids}")
+                    val guids = identifyResponse.items.map { it.guid }
+
+                    Timber.d("Possible duplicates guids")
                     RegisterResult.PossibleDuplicates(
-                        identifyResponse.guids,
+                        guids,
                         identifyResponse.sessionId
                     )
                 }
@@ -181,7 +188,7 @@ class BiometricsClient(
 
             return if (identifications == null && refusalForm != null) {
                 IdentifyResult.BiometricsDeclined
-            } else if (identifications == null || identifications.size == 0) {
+            } else if (identifications.isNullOrEmpty()) {
                 IdentifyResult.UserNotFound(sessionId)
             } else {
                 val finalIdentifications =
@@ -191,7 +198,7 @@ class BiometricsClient(
                     Timber.w("Identify returns data but no match with confidence score filter")
                     IdentifyResult.UserNotFound(sessionId)
                 } else {
-                    IdentifyResult.Completed(finalIdentifications.map { it.guid }, sessionId)
+                    IdentifyResult.Completed(finalIdentifications.map { SimprintsItem(it.guid, it.confidence) }, sessionId)
                 }
             }
         } else {

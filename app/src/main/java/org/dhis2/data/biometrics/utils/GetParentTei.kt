@@ -103,3 +103,35 @@ private fun getRelatedTei(
     }.firstOrNull()
 }
 
+fun isUnderAgeThreshold(
+    basicPreferenceProvider: BasicPreferenceProvider,
+    attributeValues: List<TrackedEntityAttributeValue>,
+    programUid: String
+): Boolean {
+    val biometricsParentChildConfig = getBiometricsParentChildConfig(basicPreferenceProvider)
+
+    val birthdayAttribute =
+        biometricsParentChildConfig.dateOfBirthAttributeByProgram
+            .find { (program): DateOfBirthAttributeByProgram -> program == programUid }
+
+    return if (birthdayAttribute != null) {
+        val birthdateAttValue =
+            getTrackedEntityAttributeValueByAttribute(birthdayAttribute.attribute, attributeValues)
+
+        if (birthdateAttValue?.value() != null && birthdateAttValue.value() != ""){
+            val moths = getMonths(birthdateAttValue.value()!!)
+            moths <= biometricsParentChildConfig.ageThresholdMonths
+        } else {
+            false
+        }
+    } else {
+        false
+    }
+}
+
+fun getMonths(date: String): Int {
+    val formatter = DateTimeFormat.forPattern(DateUtils.DATE_FORMAT_EXPRESSION)
+    val dateValue = formatter.parseDateTime(date)
+    return Months.monthsBetween(dateValue, DateTime.now()).months
+}
+

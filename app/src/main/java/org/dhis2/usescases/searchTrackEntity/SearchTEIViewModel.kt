@@ -31,6 +31,9 @@ import org.dhis2.form.ui.intent.FormIntent
 import org.dhis2.form.ui.provider.DisplayNameProvider
 import org.dhis2.maps.layer.basemaps.BaseMapStyle
 import org.dhis2.maps.usecases.MapStyleConfiguration
+import org.dhis2.usescases.biometrics.biometricAttributeId
+import org.dhis2.usescases.biometrics.ui.SequentialSearch
+import org.dhis2.usescases.biometrics.ui.SequentialSearchAction
 import org.dhis2.usescases.biometrics.usecases.GetRelatedTEIUIdsByUid
 import org.dhis2.usescases.searchTrackEntity.listView.SearchResult
 import org.dhis2.usescases.searchTrackEntity.searchparameters.model.SearchParametersUiState
@@ -97,6 +100,9 @@ class SearchTEIViewModel(
     private val _teTypeName = MutableLiveData("")
     val teTypeName: LiveData<String> = _teTypeName
 
+    private val _sequentialSearch = MutableLiveData<SequentialSearch?>(null)
+    val sequentialSearch: LiveData<SequentialSearch?> = _sequentialSearch
+
     var uiState by mutableStateOf(SearchParametersUiState())
 
     private var fetchJob: Job? = null
@@ -116,9 +122,31 @@ class SearchTEIViewModel(
             )
         }
 
-        presenter.setBiometricListener { biometricUid, value ->
-            Timber.d("Search by biometrics %s", value)
-            queryData[biometricUid] = value
+        presenter.setBiometricListener { simprintsItems, biometricAttributeUid, filterValue, sessionId ->
+            val previousSearch = when (sequentialSearch.value) {
+                is SequentialSearch.BiometricsSearch -> null
+                is SequentialSearch.AttributeSearch -> sequentialSearch.value
+                null -> null
+            }
+
+            val nextAction = if (previousSearch == null) {
+                SequentialSearchAction.SearchWithAttributes
+            } else {
+                SequentialSearchAction.RegisterNew
+            }
+
+            _sequentialSearch.postValue(
+                SequentialSearch.BiometricsSearch(
+                    simprintsItems = simprintsItems,
+                    sessionId = sessionId,
+                    previousSearch = previousSearch,
+                    nextAction = nextAction
+                )
+            )
+
+            Timber.d("Search by biometrics %s", filterValue)
+            queryData.clear()
+            queryData[biometricAttributeUid] = filterValue
 
             searchChildren = true
 
@@ -165,7 +193,10 @@ class SearchTEIViewModel(
                     hasActiveFilters = hasActiveFilters(),
                     isOpened = filterIsOpen(),
                 ),
-            ),
+                searchHelper = SearchHelper(
+                    isOpened = false,
+                )
+            )
         )
     }
 
@@ -196,6 +227,10 @@ class SearchTEIViewModel(
                     hasActiveFilters = hasActiveFilters(),
                     isOpened = filterIsOpen(),
                 ),
+
+                searchHelper = SearchHelper(
+                    isOpened = false,
+                )
             ),
         )
     }
@@ -224,12 +259,15 @@ class SearchTEIViewModel(
                         ?.minAttributesRequiredToSearch()
                         ?: 1,
                     isForced = false,
-                    isOpened = true,
+                    isOpened = false,
                 ),
                 searchFilters = SearchFilters(
                     hasActiveFilters = hasActiveFilters(),
                     isOpened = false,
                 ),
+                searchHelper = SearchHelper(
+                    isOpened = true,
+                )
             ),
         )
     }
@@ -448,6 +486,30 @@ class SearchTEIViewModel(
     }
 
     fun onSearch() {
+        val isAttributeSearch = queryData.keys.any { it != biometricAttributeId }
+
+        if (isAttributeSearch) {
+            queryData.remove(biometricAttributeId)
+
+            val previousSearch = when (sequentialSearch.value) {
+                is SequentialSearch.AttributeSearch -> null
+                is SequentialSearch.BiometricsSearch -> sequentialSearch.value
+                null -> null
+            }
+
+            val nextAction = if (previousSearch == null) {
+                SequentialSearchAction.SearchWithBiometrics
+            } else {
+                SequentialSearchAction.RegisterNew
+            }
+
+            _sequentialSearch.postValue(
+                SequentialSearch.AttributeSearch(
+                    previousSearch = previousSearch, nextAction = nextAction
+                )
+            )
+        }
+
         searchRepository.clearFetchedList()
         performSearch()
     }
@@ -572,6 +634,7 @@ class SearchTEIViewModel(
         )
     }
 
+
     fun onDataLoaded(
         programResultCount: Int,
         globalResultCount: Int? = null,
@@ -635,7 +698,8 @@ class SearchTEIViewModel(
 
             hasGlobalResults == null && searchRepository.getProgram(initialProgramUid) != null &&
                     searchRepository.filterQueryForProgram(queryData, null).isNotEmpty() &&
-                    searchRepository.filtersApplyOnGlobalSearch() -> {
+                    searchRepository.filtersApplyOnGlobalSearch() &&
+                    sequentialSearch.value != null && sequentialSearch.value is SequentialSearch.AttributeSearch -> {
                 listOf(
                     SearchResult(
                         SearchResult.SearchResultType.SEARCH_OUTSIDE,
@@ -647,7 +711,8 @@ class SearchTEIViewModel(
 
             hasGlobalResults == null && searchRepository.getProgram(initialProgramUid) != null &&
                     searchRepository.trackedEntityTypeFields().isNotEmpty() &&
-                    searchRepository.filtersApplyOnGlobalSearch() -> {
+                    searchRepository.filtersApplyOnGlobalSearch() &&
+                    sequentialSearch.value != null && sequentialSearch.value is SequentialSearch.AttributeSearch -> {
                 listOf(
                     SearchResult(
                         type = SearchResult.SearchResultType.UNABLE_SEARCH_OUTSIDE,
@@ -667,7 +732,12 @@ class SearchTEIViewModel(
             else ->
                 listOf(SearchResult(SearchResult.SearchResultType.NO_RESULTS))
         }
-        _dataResult.postValue(result)
+
+        val sequentialSearchMessage = getSearchResultSequentialSearchMessage(hasProgramResults)
+
+        val resultWithSequentialSearchMessage = result.toMutableList() + sequentialSearchMessage
+
+        _dataResult.postValue(resultWithSequentialSearchMessage)
     }
 
     fun filtersApplyOnGlobalSearch(): Boolean = searchRepository.filtersApplyOnGlobalSearch()
@@ -707,7 +777,18 @@ class SearchTEIViewModel(
             }
         } ?: false
 
-        if (isPortrait && searchOrFilterIsOpen && !searchScreenIsForced) {
+        val searchHelperIsOpen = _screenState.value?.let {
+            if (it is SearchList) {
+                it.searchHelper.isOpened
+            } else {
+                false
+            }
+        } ?: false
+
+        if (isPortrait && searchHelperIsOpen) {
+            //EyeSeeTea Customization
+            closeSearchHelper()
+        } else if (isPortrait && searchOrFilterIsOpen && !searchScreenIsForced) {
             if (keyBoardIsOpen) closeKeyboardCallback()
             closeSearchOrFilterCallback()
             viewModelScope.launch {
@@ -1004,36 +1085,118 @@ class SearchTEIViewModel(
     }
 
     // EyeSeeTea customization
-
     fun getBiometricsSearchStatus(): Boolean {
         return presenter.biometricsSearchStatus
-    }
-
-    fun onBiometricsDataLoaded(count: Int) {
-        presenter.onDataLoaded(count)
     }
 
     fun evaluateIfNewRequestIdRequired(results: List<SearchTeiModel>) {
         // EyeSeeTea customization to remove (parent-child) confirm with Nacho -
         // This not working well after upgrade to 3.0 nad how the client want's anymore I comment it
         // and to remove in the future
-   /*     val hasBiometrics = searchRepository.programHasBiometrics().blockingSingle()
+        /*     val hasBiometrics = searchRepository.programHasBiometrics().blockingSingle()
 
-        if (hasBiometrics && searchChildren && queryData.isNotEmpty() && results.isNotEmpty()) {
-            val uIds = results.map { it.uid() }
+             if (hasBiometrics && searchChildren && queryData.isNotEmpty() && results.isNotEmpty()) {
+                 val uIds = results.map { it.uid() }
 
-            val childrenUIds = this.getRelatedTEIUidsByUid(results)
+                 val childrenUIds = this.getRelatedTEIUidsByUid(results)
 
-            if (childrenUIds.isNotEmpty()) {
-                this.uIds.addAll(uIds + childrenUIds)
-                searchChildren = false
+                 if (childrenUIds.isNotEmpty()) {
+                     this.uIds.addAll(uIds + childrenUIds)
+                     searchChildren = false
 
-                onSearch()
+                     onSearch()
+                 } else {
+                     this.uIds.clear()
+                 }
+             } else {
+                 this.uIds.clear()
+             }*/
+    }
+
+    fun openSearchForm() {
+        _screenState.value.takeIf { it is SearchList }?.let {
+            val currentScreen = (it as SearchList)
+            currentScreen.copy(
+                searchForm = currentScreen.searchForm.copy(
+                    isOpened = true,
+                ),
+            )
+        }?.let {
+            _screenState.value = it
+        }
+    }
+
+    fun onSearchHelperActionSelected(action: SequentialSearchAction) {
+        closeSearchHelper()
+
+        onSearchHelperAction(action)
+    }
+
+    private var onSequentialSearchActionCallback: ((helperAction: SequentialSearchAction) -> Unit)? =
+        null
+
+    private fun closeSearchHelper() {
+        _screenState.value.takeIf { it is SearchList }?.let {
+            val currentScreen = (it as SearchList)
+            currentScreen.copy(
+                searchHelper = SearchHelper(
+                    isOpened = false,
+                ),
+            )
+        }?.let {
+            _screenState.value = it
+        }
+    }
+
+    fun setOnSequentialSearchActionListener(filterIsOpenCallback: (action: SequentialSearchAction) -> Unit) {
+        this.onSequentialSearchActionCallback = filterIsOpenCallback
+    }
+
+    private fun onSearchHelperAction(action: SequentialSearchAction) {
+        onSequentialSearchActionCallback?.let { it(action) }
+    }
+
+    fun onSearchTeiModelClick(item: SearchTeiModel) {
+        _legacyInteraction.postValue(
+            LegacyInteraction.OnSearchTeiModelClick(item),
+        )
+    }
+
+    fun sequentialSearchNextAction() {
+        if (sequentialSearch.value?.nextAction != null) {
+            onSearchHelperActionSelected(sequentialSearch.value!!.nextAction!!)
+        }
+    }
+
+    fun resetSequentialSearch() {
+        _sequentialSearch.postValue(null)
+    }
+
+    fun getSearchResultSequentialSearchMessage(hasResults: Boolean): List<SearchResult> {
+        if (sequentialSearch.value == null) return emptyList()
+
+        val isFirstSearch = sequentialSearch.value!!.previousSearch == null
+
+        val message = if (isFirstSearch) {
+            if (hasResults) {
+                resourceManager.getString(R.string.patient_not_shown_search_a_different_way)
             } else {
-                this.uIds.clear()
+                resourceManager.getString(R.string.results_not_found_search_a_different_way)
             }
         } else {
-            this.uIds.clear()
-        }*/
+            if (hasResults) {
+                resourceManager.getString(R.string.patient_not_found_register_a_new_patient)
+            } else {
+                resourceManager.getString(R.string.results_not_found_register_a_new_patient)
+            }
+        }
+
+        return listOf(
+            SearchResult(
+                SearchResult.SearchResultType.SEQUENTIAL_SEARCH,
+                message,
+            ),
+        )
     }
 }
+

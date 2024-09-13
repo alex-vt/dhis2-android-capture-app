@@ -29,11 +29,11 @@ data class BiometricsAttributeUiModelImpl(
     override val eventCategories: List<EventCategory>?,
     override val periodSelector: PeriodSelector?,
     override val url: String?,
-) : FieldUiModel, BiometricsRegistrationUIModel{
+    override val editable: Boolean = true,
+    val ageUnderThreshold: Boolean = false
+) : FieldUiModel, BiometricsTEIRegistrationUIModel {
 
     private var callback: FieldUiModel.Callback? = null
-
-    private var biometricListener: BiometricsOnRegisterClickListener? = null
 
     fun isSelected(): Boolean = false
 
@@ -50,9 +50,8 @@ data class BiometricsAttributeUiModelImpl(
     }
 
     override val focused = false
-    override val error:String? = null
-    override val editable = false
-    override val warning:String? = null
+    override val error: String? = null
+    override val warning: String? = null
     override val mandatory = false
     override val label = ""
     override val style: FormUiModelStyle? = null
@@ -149,7 +148,7 @@ data class BiometricsAttributeUiModelImpl(
 
     override fun setError(error: String?) = this.copy()
 
-    override fun setEditable(editable: Boolean) = this.copy()
+    override fun setEditable(editable: Boolean) = this.copy(editable = editable)
 
     override fun setLegend(legendValue: LegendValue?) = this.copy()
 
@@ -159,17 +158,36 @@ data class BiometricsAttributeUiModelImpl(
 
     override fun isSectionWithFields() = false
 
+    fun setAgeUnderThreshold(value: Boolean) = this.copy(ageUnderThreshold = value)
+
     // We don't use the FieldUiModel onItemClick() to avoid infrastructure to listen in FormViewModel
     // because we need listen in enrollmentPresenterImpl to register biometrics
+
+    private var biometricListener: (() -> Unit)? = null
+    private var saveWithoutBiometricsListener: (() -> Unit)? = null
+    private var registerLastAndSave: ((String) -> Unit)? = null
+
     override fun onBiometricsClick() {
-        biometricListener?.onClick();
+        biometricListener?.invoke()
     }
 
-    fun setBiometricsRegisterListener(listener: BiometricsOnRegisterClickListener) {
+    override fun onSaveWithoutBiometrics() {
+        saveWithoutBiometricsListener?.invoke()
+    }
+
+    override fun registerLastAndSave(sessionId: String) {
+        registerLastAndSave?.invoke(sessionId)
+    }
+
+    fun setBiometricsRegisterListener(listener: () -> Unit) {
         this.biometricListener = listener
     }
 
-    interface BiometricsOnRegisterClickListener {
-        fun onClick()
+    fun setSaveWithoutBiometrics(listener: () -> Unit) {
+        this.saveWithoutBiometricsListener = listener
+    }
+
+    fun setRegisterLastAndSave(listener: (String) -> Unit) {
+        this.registerLastAndSave = listener
     }
 }

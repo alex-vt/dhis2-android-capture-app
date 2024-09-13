@@ -86,4 +86,6 @@ public interface SearchRepository {
     Observable<Boolean> programHasBiometrics();
 
     String getBiometricAttributeUid();
+
+    void updateAttributeValue(String teiUid, String biometricUid, String guid);
 }

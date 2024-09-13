@@ -28,6 +28,7 @@ import io.reactivex.functions.Consumer
 import org.dhis2.R
 import org.dhis2.bindings.app
 import org.dhis2.commons.Constants
+import org.dhis2.commons.biometrics.BIOMETRICS_ENROLL_REQUEST
 import org.dhis2.commons.biometrics.BIOMETRICS_VERIFY_REQUEST
 import org.dhis2.commons.data.EventCreationType
 import org.dhis2.commons.data.EventViewModel
@@ -250,7 +251,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                 timelineOnEventCreationOptionSelected = {
                     presenter.onAddNewEventOptionSelected(it, null)
                 },
-                verification = presenter.getBiometricsVerificationModel(),
+                teiDashboardBioModel = presenter.getBiometricsModel(),
             )
         }
     }
@@ -315,6 +316,12 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == BIOMETRICS_VERIFY_REQUEST) {
                 onBiometricsAppResponse(data)
+            } else if (requestCode == BIOMETRICS_ENROLL_REQUEST){
+                if (data != null) {
+                    val result = get(requireContext()).handleRegisterResponse(data)
+
+                    presenter.handleRegisterResponse(result)
+                }
             }
         }
     }
@@ -616,6 +623,19 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         extras[BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID] = trackedEntityInstanceId
         biometricsClient.verify(this, guid, orgUnitUid, extras)
     }
+
+    override fun registerBiometrics(orgUnitUid: String, trackedEntityInstanceUId: String) {
+        val biometricsClient = get(requireContext())
+        val extras: HashMap<String, String> = HashMap()
+        extras[BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID] = trackedEntityInstanceUId
+        biometricsClient.registerFromFragment(this, orgUnitUid, extras)
+    }
+
+    override fun refreshCard() {
+        showDetailCard()
+    }
+
+
 
     companion object {
         const val RC_EVENTS_COMPLETED = 1601

@@ -1,6 +1,8 @@
 package org.dhis2.usescases.searchTrackEntity;
 
 import org.dhis2.commons.di.dagger.PerActivity;
+import org.dhis2.usescases.searchTrackEntity.listView.SearchHelperComponent;
+import org.dhis2.usescases.searchTrackEntity.listView.SearchHelperModule;
 import org.dhis2.usescases.searchTrackEntity.listView.SearchTEListComponent;
 import org.dhis2.usescases.searchTrackEntity.listView.SearchTEListModule;
 import org.dhis2.usescases.searchTrackEntity.mapView.SearchTEMapComponent;
@@ -18,5 +20,6 @@ public interface SearchTEComponent {
     void inject(SearchTEActivity activity);
 
     SearchTEListComponent plus(SearchTEListModule searchTEListModule);
+    SearchHelperComponent plus(SearchHelperModule searchHelperModule);
     SearchTEMapComponent plus(SearchTEMapModule searchTEListModule);
 }

@@ -84,6 +84,9 @@ class BiometricsDataElementProviderTest {
             status,
             null,
             null,
+            null,
+            null,
+            null,
             null
         )
     }

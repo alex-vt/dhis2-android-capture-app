@@ -85,23 +85,11 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <ImageView
-                android:id="@+id/biometric_search"
-                style="@style/ActionIcon"
-                android:layout_width="0dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_bio_fingerprint"
-                tools:ignore="ContentDescription"
-                app:tint="@color/white"
-                android:visibility="invisible"/>
-
-            <ImageView
                 android:id="@+id/search_filter_general"
                 style="@style/ActionIcon"
                 android:onClick="@{()->presenter.showFilterGeneral()}"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/biometric_search"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_filter"
                 tools:ignore="ContentDescription" />
@@ -186,8 +174,6 @@
                 tools:listitem="@layout/item_header_filter"
                 tools:visibility="visible" />
 
-
-
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/clearFilters"
                 style="?attr/floatingActionButtonSmallStyle"
@@ -216,6 +202,18 @@
                 app:layout_constraintTop_toBottomOf="@+id/backdropGuideTop"
                 tools:visibility="visible" />
 
+            <!--EyeSeeTea Customization-->
+            <FrameLayout
+                android:id="@+id/searchHelperViewContainer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:focusableInTouchMode="true"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/backdropGuideTop"
+                tools:visibility="visible" />
+
             <FrameLayout
                 android:id="@+id/mainComponent"
                 android:layout_width="match_parent"
@@ -224,16 +222,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/backdropGuideTop"
                 />
-
-            <include
-                android:id="@+id/biometrics_buttons_container"
-                android:layout_height="0dp"
-                android:layout_width="wrap_content"
-                layout="@layout/activity_search_results_biometrics"
-                app:layout_constraintBottom_toTopOf="@+id/navigationBar"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:presenter="@{presenter}"/>
 
             <org.dhis2.utils.customviews.navigationbar.NavigationBottomBar
                 android:id="@+id/navigationBar"

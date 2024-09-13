@@ -4,22 +4,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import org.dhis2.R
-import org.dhis2.form.extensions.isBiometricText
-import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
 import org.dhis2.commons.data.EventCreationType
+import org.dhis2.usescases.biometrics.addAttrBiometricsEmojiIfRequired
+import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioButton
+import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioModel
+import org.dhis2.usescases.biometrics.ui.teiDashboardBiometrics.TeiDashboardBioStatus
 import org.dhis2.usescases.teiDashboard.ui.model.InfoBarUiModel
-import org.dhis2.usescases.teiDashboard.ui.model.TeiBiometricsVerificationModel
 import org.dhis2.usescases.teiDashboard.ui.model.TeiCardUiModel
-import org.hisp.dhis.mobile.ui.designsystem.component.AdditionalInfoItem
 import org.dhis2.usescases.teiDashboard.ui.model.TimelineEventsHeaderModel
 import org.hisp.dhis.mobile.ui.designsystem.component.CardDetail
 import org.hisp.dhis.mobile.ui.designsystem.component.InfoBar
@@ -35,7 +31,7 @@ fun TeiDetailDashboard(
     timelineEventHeaderModel: TimelineEventsHeaderModel,
     isGrouped: Boolean = true,
     timelineOnEventCreationOptionSelected: (EventCreationType) -> Unit,
-    verification: TeiBiometricsVerificationModel?
+    teiDashboardBioModel: TeiDashboardBioModel?
 ) {
     Column(
         modifier = Modifier
@@ -97,8 +93,12 @@ fun TeiDetailDashboard(
         }
 
         card?.let {
-            // EyeSeeTea customization
-            val additionalInfoList = mapBiometricAttrInAdditionalInfo(card.additionalInfo)
+            // Eyeseetea customization
+            if (teiDashboardBioModel?.verificationStatusModel != null){
+                TeiDashboardBioStatus(teiDashboardBioModel.verificationStatusModel)
+            }
+
+            val additionalInfoList = addAttrBiometricsEmojiIfRequired(card.additionalInfo)
 
             CardDetail(
                 title = card.title,
@@ -120,8 +120,8 @@ fun TeiDetailDashboard(
             Spacer(modifier = Modifier.size(Spacing.Spacing8))
         }
 
-        if (verification != null){
-            TeiVerificationButton(verification)
+        if (teiDashboardBioModel?.buttonModel != null){
+            TeiDashboardBioButton(teiDashboardBioModel.buttonModel)
         }
     }
 }
@@ -130,24 +130,6 @@ const val SYNC_INFO_BAR_TEST_TAG = "sync"
 const val FOLLOWUP_INFO_BAR_TEST_TAG = "followUp"
 const val STATE_INFO_BAR_TEST_TAG = "state"
 
-private fun mapBiometricAttrInAdditionalInfo(additionalInfo: List<AdditionalInfoItem>): List<AdditionalInfoItem> {
-    return if (BIOMETRICS_ENABLED) additionalInfo.map {
-        val key = it.key ?: ""
 
-        if (key.isBiometricText()) {
-            it.copy(value = "", icon = {
-                Icon(
-                    painter = if (it.value.isNotBlank()) painterResource(R.drawable.ic_bio_available_yes)
-                    else painterResource(R.drawable.ic_bio_available_no),
-                    tint = Color.Unspecified,
-                    contentDescription = null,
-                )
-            })
-        } else {
-            it
-        }
-
-    } else additionalInfo
-}
 
 

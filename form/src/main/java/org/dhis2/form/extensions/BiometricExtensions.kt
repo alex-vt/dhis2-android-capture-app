@@ -5,3 +5,7 @@ const val BIOMETRIC_VALUE = "biometrics"
 fun String.isBiometricText(): Boolean {
     return this.replace(":","").equals(BIOMETRIC_VALUE, true)
 }
+
+fun String.isNotBiometricText(): Boolean {
+    return this.isBiometricText().not()
+}

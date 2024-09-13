@@ -17,6 +17,7 @@ data class SearchResult(
         NO_MORE_RESULTS_OFFLINE,
         NO_RESULTS,
         TOO_MANY_RESULTS,
+        SEQUENTIAL_SEARCH
     }
 
     fun shouldClearProgramData() =

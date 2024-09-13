@@ -212,6 +212,18 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:focusableInTouchMode="true"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/backdropGuideDiv"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!--EyeSeeTea Customizations-->
+            <FrameLayout
+                android:id="@+id/searchHelperViewContainer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:focusableInTouchMode="true"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/backdropGuideDiv"
                 app:layout_constraintStart_toStartOf="parent"
@@ -250,16 +262,6 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@id/backdropGuideDiv"
                 app:layout_constraintStart_toStartOf="parent" />
-
-            <include
-                android:id="@+id/biometrics_buttons_container"
-                layout="@layout/activity_search_results_biometrics"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                app:layout_constraintBottom_toTopOf="@+id/navigationBar"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:presenter="@{presenter}" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/filterActions"

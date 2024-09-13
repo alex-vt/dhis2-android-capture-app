@@ -5,10 +5,13 @@ import android.graphics.drawable.Drawable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.dhis2.commons.data.SearchTeiModel;
 import org.dhis2.commons.filters.FilterItem;
 import org.dhis2.commons.filters.FilterManager;
 import org.dhis2.commons.filters.Filters;
+import org.dhis2.data.biometrics.SimprintsItem;
 import org.dhis2.maps.model.StageStyle;
+import org.dhis2.usescases.biometrics.ui.SequentialSearch;
 import org.dhis2.usescases.general.AbstractActivityContracts;
 import org.hisp.dhis.android.core.arch.call.D2Progress;
 import org.hisp.dhis.android.core.organisationunit.OrganisationUnit;
@@ -66,18 +69,10 @@ public class SearchTEContractsModule {
 
         void sendBiometricsConfirmIdentity(String sessionId, String guid, String teiUid,
                 String enrollmentUid, boolean isOnline);
+
+        void showBiometricsSearchConfirmation(SearchTeiModel item);
         void sendBiometricsNoneSelected(String sessionId);
         void biometricsEnrollmentLast(String sessionId);
-
-        void showNoneOfTheAboveButton();
-        void hideNoneOfTheAboveButton();
-        void showIdentificationPlusButton();
-        void hideIdentificationPlusButton();
-
-        void activeBiometricsSearch(boolean active);
-        void setBiometricsVisibility(boolean visible);
-
-        void onDataLoaded(int count);
     }
 
     public interface Presenter {
@@ -92,13 +87,12 @@ public class SearchTEContractsModule {
 
         void onBackClick();
 
-        void onEnrollClick(HashMap<String, String> queryData);
+        void onEnrollClick(HashMap<String, String> queryData, SequentialSearch sequentialSearch);
 
         void enroll(String programUid, String teiUid, HashMap<String, String> queryData);
 
-        void enrollmentWithBiometrics(String biometricsGuid);
-
         void onTEIClick(String teiUid, String enrollmentUid, boolean isOnline);
+        void onSearchTEIModelClick(SearchTeiModel item, SequentialSearch sequentialSearch);
 
         TrackedEntityType getTrackedEntityName();
 
@@ -148,7 +142,7 @@ public class SearchTEContractsModule {
 
         void trackSearchMapVisualization();
 
-        void searchOnBiometrics(List<String> guids, String sessionId);
+        void searchOnBiometrics(List <SimprintsItem> simprintsItems, String sessionId);
 
         boolean getBiometricsSearchStatus();
 
@@ -156,8 +150,8 @@ public class SearchTEContractsModule {
 
         void onBiometricsEnrolmentLastClick();
 
-        void onDataLoaded(int count);
-
         void setBiometricListener(SearchTEPresenter.BiometricsSearchListener biometricsSearchListener);
+
+        void sendBiometricsConfirmIdentity(String teiUid, String enrollmentUid, boolean isOnline);
     }
 }

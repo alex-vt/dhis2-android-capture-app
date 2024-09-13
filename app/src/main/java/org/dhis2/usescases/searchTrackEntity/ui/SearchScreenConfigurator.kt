@@ -34,6 +34,7 @@ class SearchScreenConfigurator(
         when {
             searchConfiguration.searchFilters.isOpened -> openFilters()
             searchConfiguration.searchForm.isOpened -> openSearch()
+            searchConfiguration.searchHelper.isOpened -> openSearchHelper()
             else -> closeBackdrop()
         }
 
@@ -45,8 +46,10 @@ class SearchScreenConfigurator(
     private fun configureLandscapeListScreen(searchConfiguration: SearchList) {
         if (searchConfiguration.searchFilters.isOpened) {
             openFilters()
-        } else {
+        } else if (searchConfiguration.searchForm.isOpened) {
             openSearch()
+        } else {
+            openSearchHelper()
         }
 
         syncButtonVisibility(true)
@@ -78,6 +81,7 @@ class SearchScreenConfigurator(
         }
         binding.filterRecyclerLayout.visibility = View.VISIBLE
         binding.searchContainer.visibility = View.GONE
+        binding.searchHelperViewContainer.visibility = View.GONE
         if (isPortrait()) binding.navigationBar.hide()
         filterIsOpenCallback(true)
         changeBounds(R.id.filterRecyclerLayout, 16.dp)
@@ -90,6 +94,7 @@ class SearchScreenConfigurator(
         }
         binding.filterRecyclerLayout.visibility = View.GONE
         binding.searchContainer.visibility = View.GONE
+        binding.searchHelperViewContainer.visibility = View.GONE
         if (isPortrait()) binding.navigationBar.show()
         filterIsOpenCallback(false)
         changeBounds(R.id.backdropGuideTop, 0)
@@ -102,9 +107,19 @@ class SearchScreenConfigurator(
             binding.title.visibility = View.VISIBLE
         }
         binding.searchContainer.visibility = View.VISIBLE
+        binding.searchHelperViewContainer.visibility = View.GONE
         if (isPortrait()) binding.navigationBar.hide()
         filterIsOpenCallback(false)
         changeBounds(R.id.searchContainer, 0)
+    }
+
+    private fun openSearchHelper() {
+        binding.filterRecyclerLayout.visibility = View.GONE
+        binding.searchContainer.visibility = View.GONE
+        binding.searchHelperViewContainer!!.visibility = View.VISIBLE
+        if (isPortrait()) binding.navigationBar.hide()
+        filterIsOpenCallback(false)
+        changeBounds(R.id.searchHelperViewContainer, 0)
     }
 
     private fun changeBounds(endID: Int, margin: Int) {
