@@ -32,7 +32,7 @@ import timber.log.Timber
 import kotlin.coroutines.CoroutineContext
 
 //EyeSeeTea customizations
-private const val teamStatusUId = "I1CBbsdTg3A"
+private const val teamRequestStatusUId = "POi3jY1mjJ0"
 private const val teamParentUId = "S5Hb8en5OJU"
 private const val teamSDSUid = "aml0insfFuA"
 
@@ -308,7 +308,10 @@ class DataValuePresenter(
             } else {
                 errors.remove(cell.id!!)
             }
-            updateData(catComboUid!!)
+
+            if (catComboUid != null){
+                updateData(catComboUid)
+            }
         }
     }
 
@@ -328,13 +331,8 @@ class DataValuePresenter(
         tableDimensionStore.saveTableWidth(tableId, widthDpValue)
     }
 
+    // EyeSeeTea customizations
     fun createTeamChangeRequest() {
-        val teamStatusCell = screenState.value.tables[0].findCell(teamStatusUId)
-
-        if (teamStatusCell != null) {
-            onSaveValueChange(teamStatusCell.copy(value = "Active"))
-        }
-
         val teamParentCell = screenState.value.tables[0].findCell(teamParentUId)
 
         if (teamParentCell != null) {
@@ -342,6 +340,9 @@ class DataValuePresenter(
 
             onSaveValueChange(teamParentCell.copy(value = parentOrgUnit))
         }
+
+        val requestStatusCell = TableCell(id= "${teamRequestStatusUId}_HllvX50cXC0", value = "REQUESTED", column = 0, row = 0)
+        onSaveValueChange(requestStatusCell)
     }
 
 
