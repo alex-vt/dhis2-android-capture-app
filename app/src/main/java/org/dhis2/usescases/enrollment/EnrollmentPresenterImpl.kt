@@ -242,13 +242,19 @@ class EnrollmentPresenterImpl(
     }
 
     fun deleteAllSavedData() {
-        if (teiRepository.blockingGet()?.syncState() == State.TO_POST) {
+        if (teiRepository.blockingGet()?.syncState() == State.TO_POST && isTeiInNoOtherProgram()) {
             teiRepository.blockingDelete()
         } else {
             enrollmentObjectRepository.blockingDelete()
         }
         analyticsHelper.setEvent(DELETE_AND_BACK, CLICK, DELETE_AND_BACK)
     }
+
+    private fun isTeiInNoOtherProgram(): Boolean =
+        d2.enrollmentModule().enrollments()
+            .byTrackedEntityInstance().eq(teiRepository.blockingGet()?.uid())
+            .byProgram().neq(programRepository.blockingGet()?.uid())
+            .blockingCount() == 0
 
     fun onDettach() {
         disposable.clear()

@@ -17,6 +17,7 @@ import org.hisp.dhis.android.core.common.Access
 import org.hisp.dhis.android.core.common.DataAccess
 import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.common.Geometry
+import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.enrollment.EnrollmentAccess
 import org.hisp.dhis.android.core.enrollment.EnrollmentObjectRepository
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
@@ -246,4 +247,86 @@ class EnrollmentPresenterImplTest {
 
         verify(enrollmentView).setResultAndFinish()
     }
+
+    @Test
+    fun `Should delete TEI in deleteAllSavedData() when sync state is TO_POST and TEI is not in any other program`() {
+        val tei = TrackedEntityInstance.builder()
+            .uid("teiUid")
+            .syncState(State.TO_POST)
+            .build()
+        val program = Program.builder().uid("programUid").build()
+
+        whenever(teiRepository.blockingGet()) doReturn tei
+        whenever(programRepository.blockingGet()) doReturn program
+        whenever(d2.enrollmentModule().enrollments()) doReturn mock()
+        whenever(d2.enrollmentModule().enrollments().byTrackedEntityInstance()) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid")
+        ) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
+        ) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
+                .neq("programUid")
+        ) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
+                .neq("programUid").blockingCount()
+        ) doReturn 0
+
+        presenter.deleteAllSavedData()
+
+        verify(teiRepository).blockingDelete()
+        verify(enrollmentRepository, never()).blockingDelete()
+    }
+
+    @Test
+    fun `Should only delete enrollment in deleteAllSavedData() when TEI is also in another program`() {
+        val tei = TrackedEntityInstance.builder()
+            .uid("teiUid")
+            .syncState(State.TO_POST)
+            .build()
+        val program = Program.builder().uid("programUid").build()
+
+        whenever(teiRepository.blockingGet()) doReturn tei
+        whenever(programRepository.blockingGet()) doReturn program
+        whenever(d2.enrollmentModule().enrollments()) doReturn mock()
+        whenever(d2.enrollmentModule().enrollments().byTrackedEntityInstance()) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid")
+        ) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
+        ) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
+                .neq("programUid")
+        ) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
+                .neq("programUid").blockingCount()
+        ) doReturn 1
+
+        presenter.deleteAllSavedData()
+
+        verify(enrollmentRepository).blockingDelete()
+        verify(teiRepository, never()).blockingDelete()
+    }
+
+    @Test
+    fun `Should only delete enrollment in deleteAllSavedData() when sync state is not TO_POST`() {
+        val tei = TrackedEntityInstance.builder()
+            .uid("teiUid")
+            .syncState(State.SYNCED)
+            .build()
+
+        whenever(teiRepository.blockingGet()) doReturn tei
+
+        presenter.deleteAllSavedData()
+
+        verify(enrollmentRepository).blockingDelete()
+        verify(teiRepository, never()).blockingDelete()
+    }
+
 }
