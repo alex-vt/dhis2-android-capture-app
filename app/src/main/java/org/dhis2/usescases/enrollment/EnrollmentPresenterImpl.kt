@@ -23,6 +23,7 @@ import org.dhis2.data.biometrics.utils.getBiometricsTrackedEntityAttribute
 import org.dhis2.data.biometrics.utils.getParentBiometricsAttributeValueIfRequired
 import org.dhis2.data.biometrics.utils.getTeiByUid
 import org.dhis2.data.biometrics.utils.getTrackedEntityAttributeValueByAttribute
+import org.dhis2.data.biometrics.utils.isTeiInNoOtherProgram
 import org.dhis2.form.data.EnrollmentRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
@@ -242,19 +243,20 @@ class EnrollmentPresenterImpl(
     }
 
     fun deleteAllSavedData() {
-        if (teiRepository.blockingGet()?.syncState() == State.TO_POST && isTeiInNoOtherProgram()) {
+        val isTeiInNoOtherProgram by lazy {
+            isTeiInNoOtherProgram(
+                d2,
+                teiUid = teiRepository.blockingGet()?.uid(),
+                programUid = programRepository.blockingGet()?.uid(),
+            )
+        }
+        if (teiRepository.blockingGet()?.syncState() == State.TO_POST && isTeiInNoOtherProgram) {
             teiRepository.blockingDelete()
         } else {
             enrollmentObjectRepository.blockingDelete()
         }
         analyticsHelper.setEvent(DELETE_AND_BACK, CLICK, DELETE_AND_BACK)
     }
-
-    private fun isTeiInNoOtherProgram(): Boolean =
-        d2.enrollmentModule().enrollments()
-            .byTrackedEntityInstance().eq(teiRepository.blockingGet()?.uid())
-            .byProgram().neq(programRepository.blockingGet()?.uid())
-            .blockingCount() == 0
 
     fun onDettach() {
         disposable.clear()
