@@ -250,30 +250,11 @@ class EnrollmentPresenterImplTest {
 
     @Test
     fun `Should delete TEI in deleteAllSavedData() when sync state is TO_POST and TEI is not in any other program`() {
-        val tei = TrackedEntityInstance.builder()
-            .uid("teiUid")
-            .syncState(State.TO_POST)
-            .build()
-        val program = Program.builder().uid("programUid").build()
-
-        whenever(teiRepository.blockingGet()) doReturn tei
-        whenever(programRepository.blockingGet()) doReturn program
-        whenever(d2.enrollmentModule().enrollments()) doReturn mock()
-        whenever(d2.enrollmentModule().enrollments().byTrackedEntityInstance()) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid")
-        ) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
-        ) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
-                .neq("programUid")
-        ) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
-                .neq("programUid").blockingCount()
-        ) doReturn 0
+        val teiUid = "teiUid"
+        val programUid = "programUid"
+        givenATei(teiUid, State.TO_POST)
+        givenAProgram(programUid)
+        givenEnrollmentCount(teiUid, programUid, count = 0)
 
         presenter.deleteAllSavedData()
 
@@ -283,30 +264,11 @@ class EnrollmentPresenterImplTest {
 
     @Test
     fun `Should only delete enrollment in deleteAllSavedData() when TEI is also in another program`() {
-        val tei = TrackedEntityInstance.builder()
-            .uid("teiUid")
-            .syncState(State.TO_POST)
-            .build()
-        val program = Program.builder().uid("programUid").build()
-
-        whenever(teiRepository.blockingGet()) doReturn tei
-        whenever(programRepository.blockingGet()) doReturn program
-        whenever(d2.enrollmentModule().enrollments()) doReturn mock()
-        whenever(d2.enrollmentModule().enrollments().byTrackedEntityInstance()) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid")
-        ) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
-        ) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
-                .neq("programUid")
-        ) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq("teiUid").byProgram()
-                .neq("programUid").blockingCount()
-        ) doReturn 1
+        val teiUid = "teiUid"
+        val programUid = "programUid"
+        givenATei(teiUid, State.TO_POST)
+        givenAProgram(programUid)
+        givenEnrollmentCount(teiUid, programUid, count = 1)
 
         presenter.deleteAllSavedData()
 
@@ -316,12 +278,8 @@ class EnrollmentPresenterImplTest {
 
     @Test
     fun `Should only delete enrollment in deleteAllSavedData() when sync state is not TO_POST`() {
-        val tei = TrackedEntityInstance.builder()
-            .uid("teiUid")
-            .syncState(State.SYNCED)
-            .build()
-
-        whenever(teiRepository.blockingGet()) doReturn tei
+        givenATei("teiUid", State.SYNCED)
+        givenAProgram("programUid")
 
         presenter.deleteAllSavedData()
 
@@ -329,4 +287,35 @@ class EnrollmentPresenterImplTest {
         verify(teiRepository, never()).blockingDelete()
     }
 
+    private fun givenATei(uid: String, syncState: State) {
+        val tei = TrackedEntityInstance.builder()
+            .uid(uid)
+            .syncState(syncState)
+            .build()
+        whenever(teiRepository.blockingGet()) doReturn tei
+    }
+
+    private fun givenAProgram(uid: String) {
+        val program = Program.builder().uid(uid).build()
+        whenever(programRepository.blockingGet()) doReturn program
+    }
+
+    private fun givenEnrollmentCount(teiUid: String, programUid: String, count: Int) {
+        whenever(d2.enrollmentModule().enrollments()) doReturn mock()
+        whenever(d2.enrollmentModule().enrollments().byTrackedEntityInstance()) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(teiUid)
+        ) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(teiUid).byProgram()
+        ) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(teiUid).byProgram()
+                .neq(programUid)
+        ) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(teiUid).byProgram()
+                .neq(programUid).blockingCount()
+        ) doReturn count
+    }
 }
