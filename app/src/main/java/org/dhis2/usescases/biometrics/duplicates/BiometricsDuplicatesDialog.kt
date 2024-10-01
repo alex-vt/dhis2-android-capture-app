@@ -62,6 +62,9 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
             requireArguments().getString(TRACKED_ENTITY_TYPE_UID)!!,
             requireArguments().getString(PROGRAM_UID)!!
         )
+
+        dialog.setCanceledOnTouchOutside(false)
+
         return dialog
     }
 
