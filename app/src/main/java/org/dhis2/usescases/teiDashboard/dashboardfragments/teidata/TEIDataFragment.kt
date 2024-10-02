@@ -685,7 +685,8 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         val dialog = BiometricsDuplicatesDialog.newInstance(
             guids, sessionId, programUid,
             trackedEntityTypeUid,
-            biometricsAttributeUid
+            biometricsAttributeUid,
+            true
         )
 
         dialog.setOnOpenTeiDashboardListener { teiUid: String, program: String, enrollmentUid: String ->

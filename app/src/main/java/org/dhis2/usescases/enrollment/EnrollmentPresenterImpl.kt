@@ -285,13 +285,23 @@ class EnrollmentPresenterImpl(
     }
 
     fun onBiometricsCompleted(guid: String) {
+        lastPossibleDuplicates = null
         saveBiometricValue(guid)
     }
 
     fun onBiometricsFailure() {
-        val uuid: UUID = UUID.randomUUID()
         pendingSave = false
-        saveBiometricValue("${BIOMETRICS_FAILURE_PATTERN}_${uuid}")
+
+        if (lastPossibleDuplicates != null) {
+            onBiometricsPossibleDuplicates(
+                lastPossibleDuplicates!!.guids,
+                lastPossibleDuplicates!!.sessionId,
+                enrollNewVisible = false
+            )
+        } else {
+            val uuid: UUID = UUID.randomUUID()
+            saveBiometricValue("${BIOMETRICS_FAILURE_PATTERN}_${uuid}")
+        }
     }
 
     fun checkIfBiometricValueValid() {
@@ -321,7 +331,14 @@ class EnrollmentPresenterImpl(
         }
     }
 
-    fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
+    data class LastPossibleDuplicates(
+        val guids: List<String>,
+        val sessionId: String,
+    )
+
+    var lastPossibleDuplicates: LastPossibleDuplicates? = null
+
+    fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String, enrollNewVisible:Boolean = true) {
         val program = getProgram()!!.uid()
         val biometricsAttUid = biometricsUiModel!!.uid
         val teiUid = getEnrollment()!!.trackedEntityInstance()
@@ -337,13 +354,16 @@ class EnrollmentPresenterImpl(
         } else {
             val finalGuids = guids.filter { it != biometricsUiModel!!.value }
 
+            lastPossibleDuplicates = LastPossibleDuplicates(finalGuids, sessionId)
+
             view.hideProgress()
             view.showPossibleDuplicatesDialog(
                 finalGuids,
                 sessionId,
                 program,
                 teiTypeUid,
-                biometricsAttUid
+                biometricsAttUid,
+                enrollNewVisible
             )
         }
     }

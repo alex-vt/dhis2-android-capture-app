@@ -29,7 +29,8 @@ interface EnrollmentView : AbstractActivityContracts.View {
         sessionId: String,
         programUid: String,
         trackedEntityTypeUid: String,
-        biometricsAttributeUid: String
+        biometricsAttributeUid: String,
+        enrollNewVisible:Boolean
     )
 
     fun registerLast(sessionId: String)

@@ -72,20 +72,6 @@
                 app:layout_constraintTop_toBottomOf="@id/title" />
 
             <Button
-                android:id="@+id/cancel_button"
-                style="?borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:layout_gravity="end"
-                android:layout_margin="16dp"
-                android:background="@android:color/transparent"
-                android:text="@string/cancel"
-                android:textColor="@color/colorGreyDefault"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/enroll_new_button" />
-
-            <Button
                 android:id="@+id/enroll_new_button"
                 style="?borderlessButtonStyle"
                 android:layout_width="wrap_content"

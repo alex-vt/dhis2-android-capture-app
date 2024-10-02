@@ -86,11 +86,20 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
         val programUid = requireArguments().getString(PROGRAM_UID)!!
         val trackedEntityTypeUid = requireArguments().getString(TRACKED_ENTITY_TYPE_UID)!!
         val biometricsAttributeUid = requireArguments().getString(BIOMETRICS_ATTRIBUTE_UID)!!
+        val enrollNewVisible = requireArguments().getBoolean(ENROL_NEW_VISIBLE)
+
+        if (enrollNewVisible){
+            binding.enrollNewButton.visibility = View.VISIBLE
+            binding.enrollNewButton.setOnClickListener {
+                presenter.enrollNewClick()
+            }
+        } else {
+            binding.enrollNewButton.visibility = View.GONE
+        }
 
         binding.enrollNewButton.setOnClickListener {
             presenter.enrollNewClick()
         }
-        binding.cancelButton.setOnClickListener { this.dismiss() }
 
         this.adapter =
             BiometricsDuplicatesDialogAdapter(teiCardMapper, ColorUtils()) { searchTeiModel ->
@@ -149,6 +158,11 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
             isDialogShown = false
             super.dismiss()
         }
+    }
+
+    override fun onStop() {
+        presenter.onDetach()
+        super.onStop()
     }
 
     override fun downloadProgress(): Consumer<D2Progress> {
@@ -225,6 +239,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
         private const val PROGRAM_UID = "PROGRAM_UID"
         private const val TRACKED_ENTITY_TYPE_UID = "TRACKED_ENTITY_TYPE_UID"
         private const val BIOMETRICS_ATTRIBUTE_UID = "BIOMETRICS_ATTRIBUTE_UID"
+        private const val ENROL_NEW_VISIBLE = "ENROL_NEW_VISIBLE"
 
         val TAG: String = this::class.java.name
 
@@ -234,7 +249,8 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
             sessionId: String,
             programUid: String,
             trackedEntityTypeUid: String,
-            biometricsAttributeUid: String
+            biometricsAttributeUid: String,
+            enrollNewVisible: Boolean
         ): BiometricsDuplicatesDialog {
             val fragment = BiometricsDuplicatesDialog()
 
@@ -244,6 +260,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
             args.putString(PROGRAM_UID, programUid)
             args.putString(TRACKED_ENTITY_TYPE_UID, trackedEntityTypeUid)
             args.putString(BIOMETRICS_ATTRIBUTE_UID, biometricsAttributeUid)
+            args.putBoolean(ENROL_NEW_VISIBLE, enrollNewVisible)
             fragment.arguments = args
 
             return fragment
