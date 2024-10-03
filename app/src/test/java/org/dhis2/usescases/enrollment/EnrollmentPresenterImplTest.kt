@@ -254,7 +254,7 @@ class EnrollmentPresenterImplTest {
         val programUid = "programUid"
         givenATei(teiUid, State.TO_POST)
         givenAProgram(programUid)
-        givenEnrollmentCount(teiUid, programUid, count = 0)
+        givenTeiInNoOtherProgram(teiUid, programUid, true)
 
         presenter.deleteAllSavedData()
 
@@ -268,7 +268,7 @@ class EnrollmentPresenterImplTest {
         val programUid = "programUid"
         givenATei(teiUid, State.TO_POST)
         givenAProgram(programUid)
-        givenEnrollmentCount(teiUid, programUid, count = 1)
+        givenTeiInNoOtherProgram(teiUid, programUid, false)
 
         presenter.deleteAllSavedData()
 
@@ -300,22 +300,7 @@ class EnrollmentPresenterImplTest {
         whenever(programRepository.blockingGet()) doReturn program
     }
 
-    private fun givenEnrollmentCount(teiUid: String, programUid: String, count: Int) {
-        whenever(d2.enrollmentModule().enrollments()) doReturn mock()
-        whenever(d2.enrollmentModule().enrollments().byTrackedEntityInstance()) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(teiUid)
-        ) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(teiUid).byProgram()
-        ) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(teiUid).byProgram()
-                .neq(programUid)
-        ) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollments().byTrackedEntityInstance().eq(teiUid).byProgram()
-                .neq(programUid).blockingCount()
-        ) doReturn count
+    private fun givenTeiInNoOtherProgram(teiUid: String, programUid: String, value: Boolean) {
+        whenever(dataEntryRepository.isTeiInNoOtherProgram(teiUid, programUid)) doReturn value
     }
 }

@@ -23,7 +23,6 @@ import org.dhis2.data.biometrics.utils.getBiometricsTrackedEntityAttribute
 import org.dhis2.data.biometrics.utils.getParentBiometricsAttributeValueIfRequired
 import org.dhis2.data.biometrics.utils.getTeiByUid
 import org.dhis2.data.biometrics.utils.getTrackedEntityAttributeValueByAttribute
-import org.dhis2.data.biometrics.utils.isTeiInNoOtherProgram
 import org.dhis2.form.data.EnrollmentRepository
 import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
@@ -244,8 +243,7 @@ class EnrollmentPresenterImpl(
 
     fun deleteAllSavedData() {
         val isTeiInNoOtherProgram by lazy {
-            isTeiInNoOtherProgram(
-                d2,
+            dataEntryRepository.isTeiInNoOtherProgram(
                 teiUid = teiRepository.blockingGet()?.uid(),
                 programUid = programRepository.blockingGet()?.uid(),
             )
