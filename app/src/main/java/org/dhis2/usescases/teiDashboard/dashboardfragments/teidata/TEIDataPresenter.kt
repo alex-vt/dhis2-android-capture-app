@@ -37,6 +37,7 @@ import org.dhis2.form.data.RulesUtilsProviderImpl
 import org.dhis2.form.model.EventMode
 import org.dhis2.mobileProgramRules.RuleEngineHelper
 import org.dhis2.usescases.biometrics.biometricAttributeId
+import org.dhis2.usescases.biometrics.duplicates.LastPossibleDuplicates
 import org.dhis2.usescases.biometrics.getAgeInMonthsByAttributes
 import org.dhis2.usescases.biometrics.getOrgUnitAsModuleId
 import org.dhis2.usescases.biometrics.isLastVerificationValid
@@ -117,6 +118,8 @@ class TEIDataPresenter(
     private val lastDeclinedEnrolDuration = basicPreferenceProvider.getInt(
         BiometricsPreference.LAST_DECLINED_ENROL_DURATION, 0
     )
+
+    private var lastPossibleDuplicates: LastPossibleDuplicates? = null
 
     fun init() {
         programUid?.let {
@@ -604,12 +607,22 @@ class TEIDataPresenter(
                 teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
                 lastRegisterResult = null
                 lastVerificationResult = VerifyResult.Match
+                lastPossibleDuplicates = null
             }
             is RegisterResult.Failure -> {
-                if (lastDeclinedEnrolDuration > 0) {
-                    val lastDeclinedEnrolDurationInMillis = TimeUnit.MINUTES.toMillis(lastDeclinedEnrolDuration.toLong())
-                    Timer().schedule(lastDeclinedEnrolDurationInMillis) {
-                        lastRegisterResult = null
+                if (lastPossibleDuplicates != null) {
+                    onBiometricsPossibleDuplicates(
+                        lastPossibleDuplicates!!.guids,
+                        lastPossibleDuplicates!!.sessionId,
+                        enrollNewVisible = false
+                    )
+                } else {
+                    if (lastDeclinedEnrolDuration > 0) {
+                        val lastDeclinedEnrolDurationInMillis =
+                            TimeUnit.MINUTES.toMillis(lastDeclinedEnrolDuration.toLong())
+                        Timer().schedule(lastDeclinedEnrolDurationInMillis) {
+                            lastRegisterResult = null
+                        }
                     }
                 }
             }
@@ -617,7 +630,7 @@ class TEIDataPresenter(
                view.showBiometricsAgeGroupNotSupported()
             }
             is RegisterResult.PossibleDuplicates -> {
-                onBiometricsPossibleDuplicates(result.guids, result.sessionId)
+                onBiometricsPossibleDuplicates(result.guids, result.sessionId, enrollNewVisible = true)
             }
         }
     }
@@ -675,7 +688,8 @@ class TEIDataPresenter(
     }
 
 
-    fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
+    private fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String,
+                                               enrollNewVisible: Boolean = true) {
         lastRegisterResult = null
 
         val program = programUid ?: ""
@@ -699,12 +713,15 @@ class TEIDataPresenter(
         } else {
             val finalGuids = guids.filter { it != biometricsValue?.value() }
 
+            lastPossibleDuplicates = LastPossibleDuplicates(finalGuids, sessionId)
+
             view.showPossibleDuplicatesDialog(
                 finalGuids,
                 sessionId,
                 program,
                 teiTypeUid,
-                biometricsAttUid
+                biometricsAttUid,
+                enrollNewVisible
             )
         }
     }

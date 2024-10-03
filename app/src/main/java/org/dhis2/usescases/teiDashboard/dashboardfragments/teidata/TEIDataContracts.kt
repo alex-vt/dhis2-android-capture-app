@@ -56,7 +56,7 @@ class TEIDataContracts {
         fun showBiometricsAgeGroupNotSupported()
         fun registerLast(sessionId: String)
         fun showPossibleDuplicatesDialog( guids: List<String>, sessionId: String, programUid: String,
-                                          trackedEntityTypeUid: String,
-                                          biometricsAttributeUid: String)
+                                          trackedEntityTypeUid: String, biometricsAttributeUid: String,
+                                          enrollNewVisible:Boolean)
     }
 }

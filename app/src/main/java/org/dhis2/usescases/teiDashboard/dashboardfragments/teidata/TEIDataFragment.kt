@@ -679,14 +679,14 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
 
     override fun showPossibleDuplicatesDialog(
         guids: List<String>, sessionId: String, programUid: String,
-        trackedEntityTypeUid: String,
-        biometricsAttributeUid: String
+        trackedEntityTypeUid: String, biometricsAttributeUid: String,
+        enrollNewVisible: Boolean
     ) {
         val dialog = BiometricsDuplicatesDialog.newInstance(
             guids, sessionId, programUid,
             trackedEntityTypeUid,
             biometricsAttributeUid,
-            true
+            enrollNewVisible
         )
 
         dialog.setOnOpenTeiDashboardListener { teiUid: String, program: String, enrollmentUid: String ->
