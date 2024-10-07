@@ -1,5 +1,11 @@
 package org.dhis2.usescases.biometrics.entities
 
+enum class BiometricsMode {
+    full,
+    limited,
+    zero
+}
+
 data class BiometricsConfig(
     val orgUnitGroup: String?,
     val projectId: String,
@@ -9,5 +15,7 @@ data class BiometricsConfig(
     val lastVerificationDuration: Int?,
     val lastDeclinedEnrolDuration: Int?,
     val program: String?,
-    val orgUnitLevelAsModuleId: Int?
+    val orgUnitLevelAsModuleId: Int?,
+    val biometricsMode: BiometricsMode
 )
+
