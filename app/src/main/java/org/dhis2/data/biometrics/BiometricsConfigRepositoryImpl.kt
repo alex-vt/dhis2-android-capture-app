@@ -106,6 +106,16 @@ class BiometricsConfigRepositoryImpl(
         )
 
         preferenceProvider.setValue(
+            BiometricsPreference.AGE_THRESHOLD_MONTHS,
+            config.ageThresholdMonths
+        )
+
+        preferenceProvider.setValue(
+            BiometricsPreference.DATE_OF_BIRTH_ATTRIBUTE,
+            config.dateOfBirthAttribute
+        )
+
+        preferenceProvider.setValue(
             BiometricsPreference.BIOMETRICS_MODE,
             config.biometricsMode.name
         )
@@ -120,6 +130,8 @@ class BiometricsConfigRepositoryImpl(
         Timber.d("lastVerificationDuration: ${config.lastVerificationDuration}")
         Timber.d("lastDeclinedEnrolDuration: ${config.lastDeclinedEnrolDuration}")
         Timber.d("orgUnitLevelAsModuleId: $orgUnitLevelAsModuleId")
+        Timber.d("ageThresholdMonths: ${config.ageThresholdMonths}")
+        Timber.d("dateOfBirthAttribute: ${config.dateOfBirthAttribute}")
         Timber.d("biometricsMode: ${config.biometricsMode.name}")
     }
 

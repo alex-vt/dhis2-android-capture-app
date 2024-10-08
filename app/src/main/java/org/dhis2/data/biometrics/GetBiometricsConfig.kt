@@ -19,6 +19,10 @@ fun getBiometricsConfig(preferenceProvider: BasicPreferenceProvider): Biometrics
     val program = preferenceProvider.getString(BiometricsPreference.PROGRAM, "")
     val orgUnitLevelAsModuleId =
         preferenceProvider.getInt(BiometricsPreference.ORG_UNIT_LEVEL_AS_MODULE_ID, 0)
+    val ageThresholdMonths =
+        preferenceProvider.getInt(BiometricsPreference.AGE_THRESHOLD_MONTHS, 0)
+    val dateOfBirthAttribute =
+        preferenceProvider.getString(BiometricsPreference.DATE_OF_BIRTH_ATTRIBUTE, "") ?:""
 
     val biometricsMode =
         preferenceProvider.getString(BiometricsPreference.BIOMETRICS_MODE, BiometricsMode.full.name)
@@ -34,6 +38,8 @@ fun getBiometricsConfig(preferenceProvider: BasicPreferenceProvider): Biometrics
         lastDeclinedEnrolDuration,
         program,
         orgUnitLevelAsModuleId,
+        ageThresholdMonths,
+        dateOfBirthAttribute,
         BiometricsMode.valueOf(biometricsMode)
     )
 }

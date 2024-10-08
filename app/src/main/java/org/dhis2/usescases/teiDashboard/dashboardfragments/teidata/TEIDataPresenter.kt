@@ -540,8 +540,7 @@ class TEIDataPresenter(
 
             val ageInMonths = getAgeInMonthsByAttributes(
                 basicPreferenceProvider,
-                dashboardModel!!.trackedEntityAttributeValues,
-                dashboardModel!!.currentProgram().uid()
+                dashboardModel!!.trackedEntityAttributeValues
             )
 
             val orgUnitAsModuleId = getOrgUnitAsModuleId(orgUnit, d2, basicPreferenceProvider)
@@ -561,7 +560,6 @@ class TEIDataPresenter(
             val ageInMonths = getAgeInMonthsByAttributes(
                 basicPreferenceProvider,
                 dashboardModel!!.trackedEntityAttributeValues,
-                dashboardModel!!.currentProgram().uid()
             )
 
             val orgUnitAsModuleId = getOrgUnitAsModuleId(orgUnit, d2, basicPreferenceProvider)
@@ -648,10 +646,9 @@ class TEIDataPresenter(
 
     fun getBiometricsModel(): TeiDashboardBioModel? {
         val teiAttrValues = dashboardModel?.trackedEntityAttributeValues ?: listOf()
-        val program = dashboardModel?.currentProgram()?.uid() ?: ""
 
         val isUnderAgeThreshold =
-            isUnderAgeThreshold(basicPreferenceProvider, teiAttrValues, program)
+            isUnderAgeThreshold(basicPreferenceProvider, teiAttrValues)
 
         return if (dashboardModel?.isBiometricsEnabled() == true && !isUnderAgeThreshold) {
             val bioValue = dashboardModel!!.getBiometricValue()

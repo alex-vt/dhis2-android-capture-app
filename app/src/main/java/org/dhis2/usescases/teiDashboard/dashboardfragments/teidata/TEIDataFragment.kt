@@ -246,8 +246,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                 if (it is DashboardEnrollmentModel) {
                     isUnderAgeThreshold(
                         BasicPreferenceProviderImpl(requireContext()),
-                        it.trackedEntityAttributeValues,
-                        it.currentProgram().uid()
+                        it.trackedEntityAttributeValues
                     )
                 } else {
                     false

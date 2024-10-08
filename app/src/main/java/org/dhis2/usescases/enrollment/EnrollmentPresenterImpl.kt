@@ -20,7 +20,6 @@ import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.schedulers.defaultSubscribe
 import org.dhis2.data.biometrics.utils.getBiometricsTrackedEntityAttribute
-import org.dhis2.data.biometrics.utils.getParentBiometricsAttributeValueIfRequired
 import org.dhis2.data.biometrics.utils.getTeiByUid
 import org.dhis2.data.biometrics.utils.getTrackedEntityAttributeValueByAttribute
 import org.dhis2.form.data.EnrollmentRepository
@@ -358,10 +357,8 @@ class EnrollmentPresenterImpl(
                 val orgUnit = enrollmentObjectRepository.get().blockingGet()
                     ?.organisationUnit()!!
 
-                val program = programRepository.blockingGet()?.uid() ?: ""
-
                 val ageInMonths =
-                    getAgeInMonthsByFieldUiModel(basicPreferenceProvider, fields, program)
+                    getAgeInMonthsByFieldUiModel(basicPreferenceProvider, fields)
 
                 val orgUnitAsModuleId = getOrgUnitAsModuleId(orgUnit, d2, basicPreferenceProvider)
 
@@ -420,22 +417,12 @@ class EnrollmentPresenterImpl(
                 val tei = getTeiByUid(d2, teiUid)
 
                 val teiAttrValues = tei?.trackedEntityAttributeValues() ?: listOf()
-                val program = programRepository.blockingGet()?.uid() ?: ""
-
-                val parentBiometricsValue = getParentBiometricsAttributeValueIfRequired(
-                    d2,
-                    teiAttributesProvider,
-                    basicPreferenceProvider,
-                    teiAttrValues,
-                    program,
-                    teiRepository.blockingGet()?.uid() ?: ""
-                )
 
                 val isUnderAgeThreshold =
-                    isUnderAgeThreshold(basicPreferenceProvider, teiAttrValues, program)
+                    isUnderAgeThreshold(basicPreferenceProvider, teiAttrValues)
 
                 biometricsUiModel
-                    .setValue(parentBiometricsValue?.value() ?: biometricsUiModel.value)
+                    .setValue(biometricsUiModel.value)
                     .setEditable(allMandatoryFieldsHasValue)
                     .setAgeUnderThreshold(isUnderAgeThreshold)
             } else {
@@ -456,13 +443,6 @@ class EnrollmentPresenterImpl(
             teiValues
         )
 
-        return attValue?.value() ?: getParentBiometricsAttributeValueIfRequired(
-            d2,
-            teiAttributesProvider,
-            basicPreferenceProvider,
-            teiValues,
-            programRepository.blockingGet()?.uid() ?: "",
-            teiRepository.blockingGet()?.uid() ?: ""
-        )?.value()
+        return attValue?.value()
     }
 }
