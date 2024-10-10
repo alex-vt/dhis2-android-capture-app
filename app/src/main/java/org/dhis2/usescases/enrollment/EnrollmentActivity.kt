@@ -35,6 +35,7 @@ import org.dhis2.ui.dialogs.bottomsheet.BottomSheetDialog
 import org.dhis2.ui.dialogs.bottomsheet.BottomSheetDialogUiModel
 import org.dhis2.ui.dialogs.bottomsheet.DialogButtonStyle
 import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialog
+import org.dhis2.usescases.biometrics.entities.BiometricsMode
 import org.dhis2.usescases.events.ScheduledEventActivity
 import org.dhis2.usescases.eventsWithoutRegistration.eventCapture.EventCaptureActivity
 import org.dhis2.usescases.general.ActivityGlobalAbstract
@@ -117,7 +118,10 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                     showProgress()
                 } else {
                     hideProgress()
-                    //presenter.showOrHideSaveButton()
+
+                    if (presenter.biometricsMode != BiometricsMode.full){
+                        presenter.showOrHideSaveButton()
+                    }
                 }
             }
             .onFinishDataEntry {

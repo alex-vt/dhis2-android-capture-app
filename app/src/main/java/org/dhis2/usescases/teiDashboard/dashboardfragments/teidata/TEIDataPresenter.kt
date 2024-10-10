@@ -660,6 +660,8 @@ class TEIDataPresenter(
             val bioValue = dashboardModel!!.getBiometricValue()
 
             if (bioValue.isNullOrBlank() || (lastRegisterResult != null)) {
+                if (biometricsMode == BiometricsMode.limited) return null
+
                 TeiDashboardBioRegistrationMapper(resourceManager).map(
                     lastRegisterResult
                 ) {

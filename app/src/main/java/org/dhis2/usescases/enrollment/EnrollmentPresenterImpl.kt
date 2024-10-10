@@ -19,6 +19,7 @@ import org.dhis2.commons.matomo.MatomoAnalyticsController
 import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.schedulers.defaultSubscribe
+import org.dhis2.data.biometrics.getBiometricsConfig
 import org.dhis2.data.biometrics.utils.getBiometricsTrackedEntityAttribute
 import org.dhis2.data.biometrics.utils.getTeiByUid
 import org.dhis2.data.biometrics.utils.getTrackedEntityAttributeValueByAttribute
@@ -27,6 +28,7 @@ import org.dhis2.form.model.FieldUiModel
 import org.dhis2.form.model.RowAction
 import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
 import org.dhis2.usescases.biometrics.BIOMETRICS_ENABLED
+import org.dhis2.usescases.biometrics.entities.BiometricsMode
 import org.dhis2.usescases.biometrics.getAgeInMonthsByFieldUiModel
 import org.dhis2.usescases.biometrics.getOrgUnitAsModuleId
 import org.dhis2.usescases.biometrics.isUnderAgeThreshold
@@ -79,6 +81,8 @@ class EnrollmentPresenterImpl(
         BiometricsPreference.LAST_DECLINED_ENROL_DURATION, 0
     )
     private var resetBiometricsFailureAfterTimeDisposable: Disposable? = null
+
+    val biometricsMode = getBiometricsConfig(basicPreferenceProvider).biometricsMode
 
     fun init() {
         view.setSaveButtonVisible(false)
@@ -405,10 +409,15 @@ class EnrollmentPresenterImpl(
     }
 
     fun onFieldsLoading(fields: List<FieldUiModel>): List<FieldUiModel> {
-        val allMandatoryFieldsHasValue =
-            fields.count { it.mandatory && (it.value == null || it.value!!.isEmpty()) } == 0
 
-        return fields.map {
+        val finalFields = if (biometricsMode == BiometricsMode.full) fields else fields.filter {
+            it !is BiometricsAttributeUiModelImpl
+        }.toMutableList()
+
+        val allMandatoryFieldsHasValue =
+            finalFields.count { it.mandatory && (it.value == null || it.value!!.isEmpty()) } == 0
+
+        return finalFields.map {
             if (it is BiometricsAttributeUiModelImpl) {
                 val biometricsUiModel = it
 
