@@ -31,12 +31,14 @@ import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.data.biometrics.RegisterResult
 import org.dhis2.data.biometrics.VerifyResult
+import org.dhis2.data.biometrics.getBiometricsConfig
 import org.dhis2.form.data.FormValueStore
 import org.dhis2.form.data.OptionsRepository
 import org.dhis2.form.data.RulesUtilsProviderImpl
 import org.dhis2.form.model.EventMode
 import org.dhis2.mobileProgramRules.RuleEngineHelper
 import org.dhis2.usescases.biometrics.biometricAttributeId
+import org.dhis2.usescases.biometrics.entities.BiometricsMode
 import org.dhis2.usescases.biometrics.getAgeInMonthsByAttributes
 import org.dhis2.usescases.biometrics.getOrgUnitAsModuleId
 import org.dhis2.usescases.biometrics.isLastVerificationValid
@@ -117,6 +119,8 @@ class TEIDataPresenter(
     private val lastDeclinedEnrolDuration = basicPreferenceProvider.getInt(
         BiometricsPreference.LAST_DECLINED_ENROL_DURATION, 0
     )
+
+    private val  biometricsMode = getBiometricsConfig(basicPreferenceProvider).biometricsMode
 
     fun init() {
         programUid?.let {
@@ -645,6 +649,8 @@ class TEIDataPresenter(
     }
 
     fun getBiometricsModel(): TeiDashboardBioModel? {
+        if (biometricsMode == BiometricsMode.zero) return null
+
         val teiAttrValues = dashboardModel?.trackedEntityAttributeValues ?: listOf()
 
         val isUnderAgeThreshold =
