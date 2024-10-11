@@ -120,7 +120,7 @@ class TEIDataPresenter(
         BiometricsPreference.LAST_DECLINED_ENROL_DURATION, 0
     )
 
-    private val  biometricsMode = getBiometricsConfig(basicPreferenceProvider).biometricsMode
+    private val biometricsMode = getBiometricsConfig(basicPreferenceProvider).biometricsMode
 
     fun init() {
         programUid?.let {
@@ -649,6 +649,10 @@ class TEIDataPresenter(
     }
 
     fun getBiometricsModel(): TeiDashboardBioModel? {
+        return getBiometricsModelByDashboardModel(dashboardModel)
+    }
+
+    fun getBiometricsModelByDashboardModel(dashboardModel: DashboardEnrollmentModel?): TeiDashboardBioModel? {
         if (biometricsMode == BiometricsMode.zero) return null
 
         val teiAttrValues = dashboardModel?.trackedEntityAttributeValues ?: listOf()
@@ -678,7 +682,6 @@ class TEIDataPresenter(
             null
         }
     }
-
 
     fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
         lastRegisterResult = null
