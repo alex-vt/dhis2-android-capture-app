@@ -700,6 +700,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     public interface BiometricsSearchListener {
-        void onBiometricsSearch(List<SimprintsItem> simprintsItems, String biometricAttributeUid, String filterValue, String sessionId, Boolean ageNotSupported);
+        void onBiometricsSearch(List<SimprintsItem> simprintsItems, String biometricAttributeUid, String filterValue, @Nullable String sessionId, Boolean ageNotSupported);
     }
 }

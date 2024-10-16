@@ -485,8 +485,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode) {
             case BIOMETRICS_IDENTIFY_REQUEST: {
-
-
                     IdentifyResult result = BiometricsClientFactory.INSTANCE.get(
                             this).handleIdentifyResponse(resultCode, data);
 
@@ -499,15 +497,34 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                     } else if (result instanceof IdentifyResult.BiometricsDeclined) {
                         Toast.makeText(getContext(), R.string.biometrics_declined,
                                 Toast.LENGTH_SHORT).show();
+
+                        presenter.searchOnBiometrics(
+                                Collections.singletonList(new SimprintsItem(BIOMETRICS_USER_NOT_FOUND, 0)),
+                                null, false);
+
+/*                        if (viewModel.getSequentialSearch().getValue() == null ||
+                                viewModel.getSequentialSearch().getValue().getPreviousSearch() == null) {
+                            viewModel.openSearchForm();
+                        }*/
                     } else if (result instanceof IdentifyResult.UserNotFound) {
                         Toast.makeText(getContext(), R.string.biometrics_user_not_found,
                                 Toast.LENGTH_SHORT).show();
+
                         presenter.searchOnBiometrics(
                                 Collections.singletonList(new SimprintsItem(BIOMETRICS_USER_NOT_FOUND, 0)),
                                 ((IdentifyResult.UserNotFound) result).getSessionId(), false);
                     } else if (result instanceof IdentifyResult.Failure) {
                         Toast.makeText(getContext(), R.string.biometrics_failed,
                                 Toast.LENGTH_SHORT).show();
+
+                        presenter.searchOnBiometrics(
+                                Collections.singletonList(new SimprintsItem(BIOMETRICS_USER_NOT_FOUND, 0)),
+                                null, false);
+
+                        /*if (viewModel.getSequentialSearch().getValue() == null ||
+                                viewModel.getSequentialSearch().getValue().getPreviousSearch() == null) {
+                            viewModel.openSearchForm();
+                        }*/
                     }  else if (result instanceof IdentifyResult.AgeGroupNotSupported) {
                         Toast.makeText(getContext(), R.string.age_group_not_supported,
                                 Toast.LENGTH_SHORT).show();
