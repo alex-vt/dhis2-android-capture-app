@@ -17,6 +17,7 @@ import org.hisp.dhis.android.core.common.Access
 import org.hisp.dhis.android.core.common.DataAccess
 import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.common.Geometry
+import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.enrollment.EnrollmentAccess
 import org.hisp.dhis.android.core.enrollment.EnrollmentObjectRepository
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
@@ -245,5 +246,61 @@ class EnrollmentPresenterImplTest {
         presenter.finish(CHECK)
 
         verify(enrollmentView).setResultAndFinish()
+    }
+
+    @Test
+    fun `Should delete TEI in deleteAllSavedData() when sync state is TO_POST and TEI is not in any other program`() {
+        val teiUid = "teiUid"
+        val programUid = "programUid"
+        givenATei(teiUid, State.TO_POST)
+        givenAProgram(programUid)
+        givenTeiInNoOtherProgram(teiUid, programUid, true)
+
+        presenter.deleteAllSavedData()
+
+        verify(teiRepository).blockingDelete()
+        verify(enrollmentRepository, never()).blockingDelete()
+    }
+
+    @Test
+    fun `Should only delete enrollment in deleteAllSavedData() when TEI is also in another program`() {
+        val teiUid = "teiUid"
+        val programUid = "programUid"
+        givenATei(teiUid, State.TO_POST)
+        givenAProgram(programUid)
+        givenTeiInNoOtherProgram(teiUid, programUid, false)
+
+        presenter.deleteAllSavedData()
+
+        verify(enrollmentRepository).blockingDelete()
+        verify(teiRepository, never()).blockingDelete()
+    }
+
+    @Test
+    fun `Should only delete enrollment in deleteAllSavedData() when sync state is not TO_POST`() {
+        givenATei("teiUid", State.SYNCED)
+        givenAProgram("programUid")
+
+        presenter.deleteAllSavedData()
+
+        verify(enrollmentRepository).blockingDelete()
+        verify(teiRepository, never()).blockingDelete()
+    }
+
+    private fun givenATei(uid: String, syncState: State) {
+        val tei = TrackedEntityInstance.builder()
+            .uid(uid)
+            .syncState(syncState)
+            .build()
+        whenever(teiRepository.blockingGet()) doReturn tei
+    }
+
+    private fun givenAProgram(uid: String) {
+        val program = Program.builder().uid(uid).build()
+        whenever(programRepository.blockingGet()) doReturn program
+    }
+
+    private fun givenTeiInNoOtherProgram(teiUid: String, programUid: String, value: Boolean) {
+        whenever(dataEntryRepository.isTeiInNoOtherProgram(teiUid, programUid)) doReturn value
     }
 }
