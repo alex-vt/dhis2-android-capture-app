@@ -633,7 +633,9 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                         (teiUid, programUid, enrollmentUid) -> {
                             openDashboard(teiUid,
                                     programUid,
-                                    enrollmentUid);
+                                    enrollmentUid,
+                                    presenter.getLastBiometricsSessionId()
+                                    );
                             return Unit.INSTANCE;
                         },
                         (teiUid, enrollmentUid) -> {
@@ -836,8 +838,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     @Override
-    public void openDashboard(String teiUid, String programUid, String enrollmentUid) {
-        searchNavigator.openDashboard(teiUid, programUid, enrollmentUid);
+    public void openDashboard(String teiUid, String programUid, String enrollmentUid, String sessionId) {
+        searchNavigator.openDashboard(teiUid, programUid, enrollmentUid, sessionId);
     }
 
     public void refreshData() {

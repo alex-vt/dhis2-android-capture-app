@@ -465,7 +465,8 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                     this,
                     teiUid,
                     programUid,
-                    enrollmentUid
+                    enrollmentUid,
+                    sessionId
                 )
             )
         }

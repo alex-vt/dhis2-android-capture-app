@@ -118,6 +118,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
             val teiUid = getString("TEI_UID")
                 ?: throw NullPointerException("A TEI uid is required to launch fragment")
             val enrollmentUid = getString("ENROLLMENT_UID") ?: ""
+            val lastBiometricsSessionID = getString(Constants.LAST_BIOMETRICS_SESSION_ID)
             app().dashboardComponent()?.plus(
                 TEIDataModule(
                     this@TEIDataFragment,
@@ -125,6 +126,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                     teiUid,
                     enrollmentUid,
                     requireActivity().activityResultRegistry,
+                    lastBiometricsSessionID
                 ),
             )?.inject(this@TEIDataFragment)
         }
@@ -235,6 +237,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                                 dashboardActivity.teiUid,
                                 null,
                                 null,
+                                dashboardActivity.lastBiometricsSearchSessionId,
                             ),
                         )
                     },
@@ -520,6 +523,7 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                 teiUid,
                 programUid,
                 enrollmentUid,
+                null
             ),
         )
         dashboardActivity.finish()
@@ -694,7 +698,8 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
                     requireContext(),
                     teiUid,
                     program,
-                    enrollmentUid
+                    enrollmentUid,
+                    sessionId
                 )
             )
         }
@@ -723,12 +728,14 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
             programUid: String?,
             teiUid: String?,
             enrollmentUid: String?,
+            sessionId: String?
         ): TEIDataFragment {
             val fragment = TEIDataFragment()
             val args = Bundle()
             args.putString("PROGRAM_UID", programUid)
             args.putString("TEI_UID", teiUid)
             args.putString("ENROLLMENT_UID", enrollmentUid)
+            args.putString(Constants.LAST_BIOMETRICS_SESSION_ID, sessionId)
             fragment.arguments = args
             return fragment
         }

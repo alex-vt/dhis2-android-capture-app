@@ -377,7 +377,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
             biometricsSearchStatus = false;
         } else {
             if (!isOnline) {
-                openDashboard(TeiUid, enrollmentUid);
+                openDashboard(TeiUid, enrollmentUid, sessionId);
             } else {
                 downloadTei(TeiUid, enrollmentUid);
             }
@@ -397,6 +397,11 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
 
             view.sendBiometricsConfirmIdentity(sessionId, guid, teiUid, enrollmentUid, isOnline);
         }
+    }
+
+    @Override
+    public String getLastBiometricsSessionId() {
+        return sessionId;
     }
 
     private String getBiometricsValueFromTEI(TrackedEntityInstance tei) {
@@ -454,7 +459,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                         () -> {
                             if (d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingExists()) {
                                 if (teiHasEnrollmentInProgram(teiUid)) {
-                                    openDashboard(teiUid, enrollmentUid);
+                                    openDashboard(teiUid, enrollmentUid, sessionId);
                                 } else if (canCreateTei()) {
                                     enroll(selectedProgram.uid(), teiUid, new HashMap<>());
                                 }
@@ -495,8 +500,8 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         return searchRepository.getOrgUnits(selectedProgram != null ? selectedProgram.uid() : null);
     }
 
-    private void openDashboard(String teiUid, String enrollmentUid) {
-        view.openDashboard(teiUid, selectedProgram != null ? selectedProgram.uid() : null, enrollmentUid);
+    private void openDashboard(String teiUid, String enrollmentUid, String sessionId) {
+        view.openDashboard(teiUid, selectedProgram != null ? selectedProgram.uid() : null, enrollmentUid, sessionId);
     }
 
     @Override
