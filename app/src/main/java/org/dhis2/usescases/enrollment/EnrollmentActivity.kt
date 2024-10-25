@@ -214,7 +214,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
 
                         is RegisterResult.PossibleDuplicates -> {
                             presenter.onBiometricsPossibleDuplicates(
-                                result.guids,
+                                result.items,
                                 result.sessionId
                             )
                         }
@@ -476,6 +476,10 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
 
         dialog.setOnEnrollNewListener { biometricsSessionId ->
             BiometricsClientFactory.get(this).registerLast(this, biometricsSessionId)
+        }
+
+        dialog.setOnEnrollWithoutBiometricsListener {
+            performSaveClick()
         }
 
         dialog.show(

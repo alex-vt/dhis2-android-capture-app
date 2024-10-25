@@ -40,6 +40,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
 
     private var onEnrollNewListener: ((sessionId: String) -> Unit)? = null
     private var onOpenTeiDashboardListener: ((String, String, String) -> Unit)? = null
+    private var onEnrollWithoutBiometricsListener: (() -> Unit)? = null
     private lateinit var binding: DialogBiometricsDuplicatesBinding
     private var lastSelection: LastSelection? = null
 
@@ -99,15 +100,18 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
 
         if (enrollNewVisible){
             binding.enrollNewButton.visibility = View.VISIBLE
-            binding.enrollNewButton.setOnClickListener {
-                presenter.enrollNewClick()
-            }
+            binding.enrollWithoutBiometricsButton.visibility = View.GONE
         } else {
             binding.enrollNewButton.visibility = View.GONE
+            binding.enrollWithoutBiometricsButton.visibility = View.VISIBLE
         }
 
         binding.enrollNewButton.setOnClickListener {
             presenter.enrollNewClick()
+        }
+
+        binding.enrollWithoutBiometricsButton.setOnClickListener {
+            presenter.enrollWithoutBiometrics()
         }
 
         this.adapter =
@@ -197,6 +201,11 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
         dismiss()
     }
 
+    override fun enrollWithoutBiometrics() {
+        onEnrollWithoutBiometricsListener?.invoke()
+        dismiss()
+    }
+
     override fun sendBiometricsConfirmIdentity(
         sessionId: String,
         guid: String,
@@ -210,6 +219,22 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
             mutableMapOf(BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID to teiUid)
 
         context?.let { get(it).confirmIdentify(this, sessionId, guid, extras) }
+    }
+
+    override fun showEnrollNewButton() {
+        binding.enrollNewButton.visibility = View.VISIBLE
+    }
+
+    override fun showEnrollWithoutBiometricsButton() {
+        binding.enrollWithoutBiometricsButton.visibility = View.VISIBLE
+    }
+
+    override fun hideEnrollNewButton() {
+        binding.enrollNewButton.visibility = View.GONE
+    }
+
+    override fun hideEnrollWithoutBiometricsButton() {
+        binding.enrollWithoutBiometricsButton.visibility = View.GONE
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -233,6 +258,10 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
 
     fun setOnEnrollNewListener(onEnrollNewListener: (sessionId: String) -> Unit) {
         this.onEnrollNewListener = onEnrollNewListener
+    }
+
+    fun setOnEnrollWithoutBiometricsListener(onEnrollWithoutBiometricsListener: () -> Unit) {
+        this.onEnrollWithoutBiometricsListener = onEnrollWithoutBiometricsListener
     }
 
     private fun create(teiType: String, program: String) {

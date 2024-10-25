@@ -631,7 +631,7 @@ class TEIDataPresenter(
                view.showBiometricsAgeGroupNotSupported()
             }
             is RegisterResult.PossibleDuplicates -> {
-                onBiometricsPossibleDuplicates(result.guids, result.sessionId, enrollNewVisible = true)
+                onBiometricsPossibleDuplicates(result.items, result.sessionId, enrollNewVisible = true)
             }
         }
     }

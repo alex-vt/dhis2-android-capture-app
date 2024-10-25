@@ -24,7 +24,7 @@ import timber.log.Timber
 
 sealed class RegisterResult {
     data class Completed(val guid: String) : RegisterResult()
-    data class PossibleDuplicates(val guids: List<SimprintsItem>, val sessionId: String) : RegisterResult()
+    data class PossibleDuplicates(val items: List<SimprintsItem>, val sessionId: String) : RegisterResult()
     data object Failure : RegisterResult()
     data object AgeGroupNotSupported : RegisterResult()
 

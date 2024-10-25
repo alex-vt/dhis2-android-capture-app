@@ -84,6 +84,19 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+            <Button
+                android:id="@+id/enroll_without_biometrics_button"
+                style="?borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_gravity="end"
+                android:layout_margin="16dp"
+                android:background="@android:color/transparent"
+                android:text="@string/biometrics_enroll_without_biometrics"
+                android:textColor="@color/colorGreyDefault"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </RelativeLayout>

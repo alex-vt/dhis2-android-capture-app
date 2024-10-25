@@ -705,6 +705,10 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
             get(requireContext()).registerLastFromFragment(this, biometricsSessionId)
         }
 
+        dialog.setOnEnrollWithoutBiometricsListener {
+
+        }
+
         dialog.show(
             parentFragmentManager,
             BiometricsDuplicatesDialog.TAG

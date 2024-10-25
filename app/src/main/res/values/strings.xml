@@ -1014,6 +1014,7 @@
     <string name="age_group_not_supported">Age group not supported</string>
     <string name="biometrics_not_applicable_for_this_age_group_search_with_personal_details">Biometrics not applicable for this age group, Search with personal details</string>
     <string name="biometrics_not_applicable_for_this_age_group_register_a_new_patient">Biometrics not applicable for this age group. Register a new patient</string>
+    <string name="biometrics_enroll_without_biometrics">Enrol without biometrics</string>
 
     <!--endregion-->
 </resources>
