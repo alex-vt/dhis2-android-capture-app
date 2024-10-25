@@ -23,6 +23,7 @@ import org.dhis2.commons.featureconfig.model.Feature
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.data.biometrics.BiometricsClientFactory
 import org.dhis2.data.biometrics.RegisterResult
+import org.dhis2.data.biometrics.SimprintsItem
 import org.dhis2.databinding.EnrollmentActivityBinding
 import org.dhis2.form.data.GeometryController
 import org.dhis2.form.data.GeometryParserImpl
@@ -448,13 +449,13 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
     }
 
     override fun showPossibleDuplicatesDialog(
-        guids: List<String>, sessionId: String, programUid: String,
+        possibleDuplicates: List<SimprintsItem>, sessionId: String, programUid: String,
         trackedEntityTypeUid: String,
         biometricsAttributeUid: String,
         enrollNewVisible: Boolean
     ) {
         val dialog = BiometricsDuplicatesDialog.newInstance(
-            guids, sessionId, programUid,
+            possibleDuplicates, sessionId, programUid,
             trackedEntityTypeUid,
             biometricsAttributeUid,
             enrollNewVisible

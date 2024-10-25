@@ -24,7 +24,7 @@ import timber.log.Timber
 
 sealed class RegisterResult {
     data class Completed(val guid: String) : RegisterResult()
-    data class PossibleDuplicates(val guids: List<String>, val sessionId: String) : RegisterResult()
+    data class PossibleDuplicates(val guids: List<SimprintsItem>, val sessionId: String) : RegisterResult()
     data object Failure : RegisterResult()
     data object AgeGroupNotSupported : RegisterResult()
 
@@ -170,11 +170,9 @@ class BiometricsClient(
         val handlePossibleDuplicates = {
             when (val identifyResponse = handleIdentifyResponse(resultCode, data)) {
                 is IdentifyResult.Completed -> {
-                    val guids = identifyResponse.items.map { it.guid }
-
-                    Timber.d("Possible duplicates: $guids")
+                    Timber.d("Possible duplicates: ${identifyResponse.items}")
                     RegisterResult.PossibleDuplicates(
-                        guids,
+                        identifyResponse.items,
                         identifyResponse.sessionId
                     )
                 }
@@ -184,11 +182,11 @@ class BiometricsClient(
                 }
 
                 is IdentifyResult.UserNotFound -> {
-                    val guids = listOf<String>()
+                    val items = listOf<SimprintsItem>()
 
                     Timber.d("Possible duplicates but IdentifyResult is UserNotFound")
                     RegisterResult.PossibleDuplicates(
-                        guids,
+                        items,
                         identifyResponse.sessionId
                     )
                 }

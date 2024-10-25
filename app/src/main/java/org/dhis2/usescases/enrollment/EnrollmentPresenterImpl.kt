@@ -19,6 +19,7 @@ import org.dhis2.commons.matomo.MatomoAnalyticsController
 import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.schedulers.defaultSubscribe
+import org.dhis2.data.biometrics.SimprintsItem
 import org.dhis2.data.biometrics.utils.getBiometricsTrackedEntityAttribute
 import org.dhis2.data.biometrics.utils.getParentBiometricsAttributeValueIfRequired
 import org.dhis2.data.biometrics.utils.getTeiByUid
@@ -333,7 +334,7 @@ class EnrollmentPresenterImpl(
         }
     }
 
-    fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String, enrollNewVisible:Boolean = true) {
+    fun onBiometricsPossibleDuplicates(possibleDuplicates: List<SimprintsItem>, sessionId: String, enrollNewVisible:Boolean = true) {
         val program = getProgram()!!.uid()
         val biometricsAttUid = biometricsUiModel!!.uid
         val teiUid = getEnrollment()!!.trackedEntityInstance()
@@ -341,19 +342,19 @@ class EnrollmentPresenterImpl(
         val teiTypeUid = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
             ?.trackedEntityType()!!
 
-        if (guids.isEmpty()){
+        if (possibleDuplicates.isEmpty()){
             view.registerLast(sessionId)
         }
-        else if (guids.size == 1 && guids[0] == biometricsUiModel!!.value) {
+        else if (possibleDuplicates.size == 1 && possibleDuplicates[0].guid == biometricsUiModel!!.value) {
             view.registerLast(sessionId)
         } else {
-            val finalGuids = guids.filter { it != biometricsUiModel!!.value }
+            val finalPossibleDuplicates = possibleDuplicates.filter { it.guid != biometricsUiModel!!.value }
 
-            lastPossibleDuplicates = LastPossibleDuplicates(finalGuids, sessionId)
+            lastPossibleDuplicates = LastPossibleDuplicates(finalPossibleDuplicates, sessionId)
 
             view.hideProgress()
             view.showPossibleDuplicatesDialog(
-                finalGuids,
+                finalPossibleDuplicates,
                 sessionId,
                 program,
                 teiTypeUid,

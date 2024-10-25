@@ -3,7 +3,10 @@ package org.dhis2.usescases.biometrics.duplicates
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Parcel
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +29,7 @@ import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.data.biometrics.BiometricsClient
 import org.dhis2.data.biometrics.BiometricsClientFactory.get
+import org.dhis2.data.biometrics.SimprintsItem
 import org.dhis2.databinding.DialogBiometricsDuplicatesBinding
 import org.dhis2.usescases.searchTrackEntity.ui.mapper.TEICardMapper
 import org.dhis2.utils.LastSelection
@@ -80,8 +84,13 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
             false
         )
 
-        val biometricsGuids: List<String> =
-            requireArguments().getString(BIOMETRICS_GUIDs)!!.trim().split(",")
+
+        val possibleDuplicates: List<SimprintsItem> =
+            requireArguments().getParcelableArrayList<SimprintsItemParcelable>(POSSIBLE_DUPLICATES)?.toList()?.map {
+                SimprintsItem(it.guid, it.confidence)
+            } ?: emptyList()
+
+
         val biometricsSessionId = requireArguments().getString(BIOMETRICS_SESSION_ID)!!
         val programUid = requireArguments().getString(PROGRAM_UID)!!
         val trackedEntityTypeUid = requireArguments().getString(TRACKED_ENTITY_TYPE_UID)!!
@@ -114,7 +123,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
 
         presenter.init(
             this,
-            biometricsGuids,
+            possibleDuplicates,
             biometricsSessionId,
             programUid,
             trackedEntityTypeUid,
@@ -234,7 +243,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
     }
 
     companion object {
-        private const val BIOMETRICS_GUIDs = "GUIDs"
+        private const val POSSIBLE_DUPLICATES = "POSSIBLE_DUPLICATES"
         private const val BIOMETRICS_SESSION_ID = "BIOMETRICS_SESSION_ID"
         private const val PROGRAM_UID = "PROGRAM_UID"
         private const val TRACKED_ENTITY_TYPE_UID = "TRACKED_ENTITY_TYPE_UID"
@@ -245,7 +254,7 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
 
         @JvmStatic
         fun newInstance(
-            guids: List<String>,
+            possibleDuplicates: List<SimprintsItem>,
             sessionId: String,
             programUid: String,
             trackedEntityTypeUid: String,
@@ -255,7 +264,12 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
             val fragment = BiometricsDuplicatesDialog()
 
             val args = Bundle()
-            args.putString(BIOMETRICS_GUIDs, guids.joinToString(","))
+
+            val possibleDuplicatesParcelable = possibleDuplicates.map {
+                SimprintsItemParcelable(it.guid, it.confidence)
+            }
+
+            args.putParcelableArrayList(POSSIBLE_DUPLICATES, ArrayList(possibleDuplicatesParcelable))
             args.putString(BIOMETRICS_SESSION_ID, sessionId)
             args.putString(PROGRAM_UID, programUid)
             args.putString(TRACKED_ENTITY_TYPE_UID, trackedEntityTypeUid)
@@ -266,4 +280,39 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
             return fragment
         }
     }
+}
+
+data class SimprintsItemParcelable(
+    val guid: String,
+    val confidence: Float
+): Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readString() ?: "",
+        parcel.readFloat()
+    ) {
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(guid)
+        parcel.writeFloat(confidence)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<SimprintsItemParcelable> {
+        override fun createFromParcel(parcel: Parcel): SimprintsItemParcelable {
+            return SimprintsItemParcelable(parcel)
+        }
+
+        override fun newArray(size: Int): Array<SimprintsItemParcelable?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
+
+inline fun <reified T : Parcelable> Intent.extractParcelableArrayListExtra(key: String): List<T>? = when {
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> getParcelableArrayListExtra(key, T::class.java)
+    else -> @Suppress("DEPRECATION") getParcelableArrayListExtra(key)
 }

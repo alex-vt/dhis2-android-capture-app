@@ -30,6 +30,7 @@ import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.data.biometrics.RegisterResult
+import org.dhis2.data.biometrics.SimprintsItem
 import org.dhis2.data.biometrics.VerifyResult
 import org.dhis2.form.data.FormValueStore
 import org.dhis2.form.data.OptionsRepository
@@ -688,7 +689,7 @@ class TEIDataPresenter(
     }
 
 
-    private fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String,
+    private fun onBiometricsPossibleDuplicates(possibleDuplicates: List<SimprintsItem>, sessionId: String,
                                                enrollNewVisible: Boolean = true) {
         lastRegisterResult = null
 
@@ -705,18 +706,18 @@ class TEIDataPresenter(
         val biometricsValue  =
             values.firstOrNull { it.trackedEntityAttribute() == dashboardModel!!.getBiometricsAttributeUid() }
 
-        if (guids.isEmpty()){
+        if (possibleDuplicates.isEmpty()){
             view.registerLast(sessionId)
         }
-        else if (guids.size == 1 && guids[0] == biometricsValue?.value()) {
+        else if (possibleDuplicates.size == 1 && possibleDuplicates[0].guid == biometricsValue?.value()) {
             view.registerLast(sessionId)
         } else {
-            val finalGuids = guids.filter { it != biometricsValue?.value() }
+            val finalPossibleDuplicates = possibleDuplicates.filter { it.guid != biometricsValue?.value() }
 
-            lastPossibleDuplicates = LastPossibleDuplicates(finalGuids, sessionId)
+            lastPossibleDuplicates = LastPossibleDuplicates(finalPossibleDuplicates, sessionId)
 
             view.showPossibleDuplicatesDialog(
-                finalGuids,
+                finalPossibleDuplicates,
                 sessionId,
                 program,
                 teiTypeUid,
