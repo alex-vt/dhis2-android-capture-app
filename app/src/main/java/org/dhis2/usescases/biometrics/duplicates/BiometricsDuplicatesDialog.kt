@@ -145,13 +145,17 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
     override fun setLiveData(flow: Flow<PagingData<SearchTeiModel>>) {
         lifecycleScope.launch {
             flow.collectLatest {
-                adapter.submitData(it)
-
-                if (adapter.snapshot().items.isEmpty()) {
-                    binding.duplicatesEmptyContainer.visibility = View.VISIBLE
-                } else {
-                    binding.duplicatesEmptyContainer.visibility = View.GONE
+                adapter.addOnPagesUpdatedListener {
+                    if (adapter.snapshot().items.isEmpty()) {
+                        binding.duplicatesEmptyContainer.visibility = View.VISIBLE
+                        binding.duplicatesRecycler.visibility = View.GONE
+                    } else {
+                        binding.duplicatesEmptyContainer.visibility = View.GONE
+                        binding.duplicatesRecycler.visibility = View.VISIBLE
+                    }
                 }
+
+                adapter.submitData(it)
             }
         }
     }
