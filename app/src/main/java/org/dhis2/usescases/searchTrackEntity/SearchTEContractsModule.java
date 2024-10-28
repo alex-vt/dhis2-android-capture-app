@@ -155,5 +155,7 @@ public class SearchTEContractsModule {
         void sendBiometricsConfirmIdentity(String teiUid, String enrollmentUid, boolean isOnline);
 
         String getLastBiometricsSessionId();
+
+        void resetLastBiometricsSessionId();
     }
 }

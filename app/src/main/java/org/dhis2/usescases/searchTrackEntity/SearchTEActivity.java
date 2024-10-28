@@ -840,6 +840,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     @Override
     public void openDashboard(String teiUid, String programUid, String enrollmentUid, String sessionId) {
         searchNavigator.openDashboard(teiUid, programUid, enrollmentUid, sessionId);
+        viewModel.resetSequentialSearch();
+        viewModel.clearQueryData();
     }
 
     public void refreshData() {

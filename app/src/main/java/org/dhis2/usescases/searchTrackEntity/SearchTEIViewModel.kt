@@ -329,6 +329,7 @@ class SearchTEIViewModel(
         clearSearchParameters()
         updateSearch()
         performSearch()
+        presenter.resetLastBiometricsSessionId()
     }
 
     private fun clearSearchParameters() {

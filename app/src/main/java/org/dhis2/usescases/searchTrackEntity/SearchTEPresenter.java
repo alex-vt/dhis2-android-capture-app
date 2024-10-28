@@ -377,7 +377,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
             biometricsSearchStatus = false;
         } else {
             if (!isOnline) {
-                openDashboard(TeiUid, enrollmentUid, sessionId);
+                openDashboard(TeiUid, enrollmentUid);
             } else {
                 downloadTei(TeiUid, enrollmentUid);
             }
@@ -402,6 +402,11 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     @Override
     public String getLastBiometricsSessionId() {
         return sessionId;
+    }
+
+    @Override
+    public void resetLastBiometricsSessionId() {
+        sessionId = null;
     }
 
     private String getBiometricsValueFromTEI(TrackedEntityInstance tei) {
@@ -459,7 +464,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                         () -> {
                             if (d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingExists()) {
                                 if (teiHasEnrollmentInProgram(teiUid)) {
-                                    openDashboard(teiUid, enrollmentUid, sessionId);
+                                    openDashboard(teiUid, enrollmentUid);
                                 } else if (canCreateTei()) {
                                     enroll(selectedProgram.uid(), teiUid, new HashMap<>());
                                 }
@@ -500,7 +505,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         return searchRepository.getOrgUnits(selectedProgram != null ? selectedProgram.uid() : null);
     }
 
-    private void openDashboard(String teiUid, String enrollmentUid, String sessionId) {
+    private void openDashboard(String teiUid, String enrollmentUid) {
         view.openDashboard(teiUid, selectedProgram != null ? selectedProgram.uid() : null, enrollmentUid, sessionId);
     }
 
