@@ -132,10 +132,10 @@ class SearchTEIViewModel(
                 null -> null
             }
 
-            val nextAction = if (previousSearch == null) {
-                SequentialSearchAction.SearchWithAttributes
+            val nextActions = if (previousSearch == null) {
+                listOf(SequentialSearchAction.SearchWithAttributes)
             } else {
-                SequentialSearchAction.RegisterNew
+                listOf(SequentialSearchAction.RegisterNew)
             }
 
             _sequentialSearch.postValue(
@@ -144,7 +144,7 @@ class SearchTEIViewModel(
                     sessionId = sessionId,
                     isAgeNotSupported = ageNotSupported,
                     previousSearch = previousSearch,
-                    nextAction = nextAction
+                    nextActions = nextActions
                 )
             )
 
@@ -503,17 +503,21 @@ class SearchTEIViewModel(
             }
 
             val queryDataContainsAgeUnderThreadsHold =
-                containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider,queryData, initialProgramUid ?: "")
+                containsAgeFilterAndIsUnderAgeThreshold(
+                    basicPreferenceProvider,
+                    queryData,
+                    initialProgramUid ?: ""
+                )
 
-            val nextAction = if (previousSearch == null && !queryDataContainsAgeUnderThreadsHold ) {
-                SequentialSearchAction.SearchWithBiometrics
+            val nextActions = if (previousSearch == null && !queryDataContainsAgeUnderThreadsHold) {
+                listOf(SequentialSearchAction.SearchWithBiometrics, SequentialSearchAction.RegisterNew)
             } else {
-                SequentialSearchAction.RegisterNew
+                listOf(SequentialSearchAction.RegisterNew)
             }
 
             _sequentialSearch.postValue(
                 SequentialSearch.AttributeSearch(
-                    previousSearch = previousSearch, nextAction = nextAction
+                    previousSearch = previousSearch, nextActions = nextActions
                 )
             )
         }
@@ -1172,10 +1176,8 @@ class SearchTEIViewModel(
         )
     }
 
-    fun sequentialSearchNextAction() {
-        if (sequentialSearch.value?.nextAction != null) {
-            onSearchHelperActionSelected(sequentialSearch.value!!.nextAction!!)
-        }
+    fun sequentialSearchNextAction(action: SequentialSearchAction) {
+        onSearchHelperActionSelected(action)
     }
 
     fun resetSequentialSearch() {
@@ -1187,7 +1189,9 @@ class SearchTEIViewModel(
 
         val isFirstSearch = sequentialSearch.value!!.previousSearch == null
         val isBiometricsSearch = sequentialSearch.value is SequentialSearch.BiometricsSearch
-        val isAgeNotSupported = (sequentialSearch.value as? SequentialSearch.BiometricsSearch)?.isAgeNotSupported ?: false
+        val isAgeNotSupported =
+            (sequentialSearch.value as? SequentialSearch.BiometricsSearch)?.isAgeNotSupported
+                ?: false
 
         val message = if (isFirstSearch) {
             if (hasResults) {
@@ -1203,7 +1207,7 @@ class SearchTEIViewModel(
             if (hasResults) {
                 resourceManager.getString(R.string.patient_not_found_register_a_new_patient)
             } else {
-                if (isBiometricsSearch && isAgeNotSupported){
+                if (isBiometricsSearch && isAgeNotSupported) {
                     resourceManager.getString(R.string.biometrics_not_applicable_for_this_age_group_register_a_new_patient)
                 } else {
                     resourceManager.getString(R.string.results_not_found_register_a_new_patient)
