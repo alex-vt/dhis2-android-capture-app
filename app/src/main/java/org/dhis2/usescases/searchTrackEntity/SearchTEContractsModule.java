@@ -72,7 +72,6 @@ public class SearchTEContractsModule {
 
         void showBiometricsSearchConfirmation(SearchTeiModel item);
         void sendBiometricsNoneSelected(String sessionId);
-        void biometricsEnrollmentLast(String sessionId);
         void launchBiometricsIdentify(String moduleId);
     }
 
@@ -149,8 +148,6 @@ public class SearchTEContractsModule {
 
         void onBiometricsNoneOfTheAboveClick();
 
-        void onBiometricsEnrolmentLastClick();
-
         void setBiometricListener(SearchTEPresenter.BiometricsSearchListener biometricsSearchListener);
 
         void sendBiometricsConfirmIdentity(String teiUid, String enrollmentUid, boolean isOnline);
@@ -158,8 +155,6 @@ public class SearchTEContractsModule {
         String getLastBiometricsSessionId();
 
         void resetLastBiometricsSessionId();
-
-        List<String> getUserOrgUnits();
 
         void onBiometricsClick();
     }

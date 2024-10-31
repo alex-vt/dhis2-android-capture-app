@@ -415,13 +415,8 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     @Override
-    public List<String> getUserOrgUnits() {
-        return searchRepository.getUserOrgUnits(selectedProgram.uid());
-    }
-
-    @Override
     public void onBiometricsClick() {
-        List<String> userOrgUnits = getUserOrgUnits();
+        List<String> userOrgUnits = searchRepository.getUserOrgUnits(selectedProgram.uid());
 
         if (userOrgUnits.size() > 1) {
             view.launchBiometricsIdentify(null);
@@ -690,14 +685,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         if (sessionId != null) {
             biometricsSearchStatus = false;
             view.sendBiometricsNoneSelected(sessionId);
-        }
-    }
-
-    @Override
-    public void onBiometricsEnrolmentLastClick() {
-        if (biometricsSearchStatus) {
-            biometricsSearchStatus = false;
-            view.biometricsEnrollmentLast(sessionId);
         }
     }
 

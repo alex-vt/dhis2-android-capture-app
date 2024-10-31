@@ -477,13 +477,6 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     }
 
     @Override
-    public void biometricsEnrollmentLast(String sessionId) {
-        BiometricsClientFactory.INSTANCE.get(this).registerLast(this, sessionId);
-    }
-
-
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         switch (requestCode) {
             case BIOMETRICS_IDENTIFY_REQUEST: {
