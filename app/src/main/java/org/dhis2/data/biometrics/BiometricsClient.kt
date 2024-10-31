@@ -103,11 +103,13 @@ class BiometricsClient(
         }
     }
 
-    fun identify(activity: Activity) {
-        Timber.d("Biometrics identify!")
-        Timber.d("moduleId: $defaultModuleId")
+    fun identify(activity: Activity, moduleId: String?) {
+        val finalModuleId = moduleId ?: defaultModuleId
 
-        val intent = simHelper.identify(defaultModuleId)
+        Timber.d("Biometrics identify!")
+        Timber.d("moduleId: $finalModuleId")
+
+        val intent = simHelper.identify(finalModuleId)
 
         launchSimprintsAppFromActivity(activity, intent, BIOMETRICS_IDENTIFY_REQUEST)
     }

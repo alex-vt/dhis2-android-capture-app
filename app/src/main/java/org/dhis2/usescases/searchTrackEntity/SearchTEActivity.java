@@ -221,7 +221,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         viewModel.setOnSequentialSearchActionListener(action -> {
             if (action != null) {
                 if (action instanceof SequentialSearchAction.SearchWithBiometrics) {
-                    searchByBiometrics();
+                    presenter.onBiometricsClick();
                 } else if (action instanceof SequentialSearchAction.SearchWithAttributes) {
                     viewModel.openSearchForm();
                 } else {
@@ -429,10 +429,10 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
         );
     }
 
-    private void searchByBiometrics() {
-        BiometricsClientFactory.INSTANCE.get(this).identify(this);
+    @Override
+    public void launchBiometricsIdentify(String moduleId) {
+        BiometricsClientFactory.INSTANCE.get(this).identify(this, moduleId);
     }
-
 
     @Override
     public void showBiometricsSearchConfirmation(SearchTeiModel item) {
@@ -480,6 +480,8 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     public void biometricsEnrollmentLast(String sessionId) {
         BiometricsClientFactory.INSTANCE.get(this).registerLast(this, sessionId);
     }
+
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
