@@ -7,6 +7,8 @@ import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.schedulers.TrampolineSchedulerProvider
 import org.dhis2.form.data.EnrollmentRepository
+import org.dhis2.form.model.FieldUiModel
+import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
 import org.dhis2.usescases.enrollment.EnrollmentActivity.EnrollmentMode.CHECK
 import org.dhis2.usescases.enrollment.EnrollmentActivity.EnrollmentMode.NEW
 import org.dhis2.usescases.teiDashboard.TeiAttributesProvider
@@ -30,6 +32,7 @@ import org.hisp.dhis.android.core.trackedentity.TrackedEntityInstanceObjectRepos
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -141,23 +144,12 @@ class EnrollmentPresenterImplTest {
     }
 
     @Test
-    fun `Should show save button when the enrollment is editable`() {
-        val geometry = Geometry.builder()
-            .coordinates("[-30.00, 11.00]")
-            .type(FeatureType.POINT)
-            .build()
-        val tei = TrackedEntityInstance.builder().geometry(geometry).uid("random").build()
-        val program = Program.builder().uid("tUID").build()
+    fun `Should show save button when the enrollment is editable and biometrics not available`() {
+        setupEnrollmentAccess(EnrollmentAccess.WRITE_ACCESS)
+        val nonBiometricsFieldUiModel = mock<FieldUiModel>()
+        val fields = listOf(nonBiometricsFieldUiModel)
 
-        whenever(teiRepository.blockingGet()) doReturn tei
-        whenever(programRepository.blockingGet()) doReturn program
-        whenever(d2.enrollmentModule()) doReturn mock()
-        whenever(d2.enrollmentModule().enrollmentService()) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollmentService()
-                .blockingGetEnrollmentAccess(tei.uid(), program.uid()),
-        ) doReturn EnrollmentAccess.WRITE_ACCESS
-
+        presenter.onFieldsLoaded(fields)
         presenter.showOrHideSaveButton()
 
         verify(enrollmentView).setSaveButtonVisible(true)
@@ -165,25 +157,24 @@ class EnrollmentPresenterImplTest {
 
     @Test
     fun `Should hide save button when the enrollment is not editable`() {
-        val geometry = Geometry.builder()
-            .coordinates("[-30.00, 11.00]")
-            .type(FeatureType.POINT)
-            .build()
-        val tei = TrackedEntityInstance.builder().geometry(geometry).uid("random").build()
-        val program = Program.builder().uid("tUID").build()
-
-        whenever(teiRepository.blockingGet()) doReturn tei
-        whenever(programRepository.blockingGet()) doReturn program
-        whenever(d2.enrollmentModule()) doReturn mock()
-        whenever(d2.enrollmentModule().enrollmentService()) doReturn mock()
-        whenever(
-            d2.enrollmentModule().enrollmentService()
-                .blockingGetEnrollmentAccess(tei.uid(), program.uid()),
-        ) doReturn EnrollmentAccess.NO_ACCESS
+        setupEnrollmentAccess(EnrollmentAccess.NO_ACCESS)
 
         presenter.showOrHideSaveButton()
 
         verify(enrollmentView).setSaveButtonVisible(false)
+    }
+
+    @Test
+    fun `Should hide save button when biometrics is available`() {
+        setupEnrollmentAccess(EnrollmentAccess.WRITE_ACCESS)
+        val biometricsFieldUiModel = mock<BiometricsAttributeUiModelImpl>()
+        val fields = listOf(biometricsFieldUiModel)
+
+        presenter.onFieldsLoaded(fields)
+        presenter.showOrHideSaveButton()
+
+        verify(enrollmentView, atLeastOnce()).setSaveButtonVisible(false)
+        verify(enrollmentView, never()).setSaveButtonVisible(true)
     }
 
     @Test
@@ -285,6 +276,24 @@ class EnrollmentPresenterImplTest {
 
         verify(enrollmentRepository).blockingDelete()
         verify(teiRepository, never()).blockingDelete()
+    }
+
+    private fun setupEnrollmentAccess(access: EnrollmentAccess) {
+        val geometry = Geometry.builder()
+            .coordinates("[-30.00, 11.00]")
+            .type(FeatureType.POINT)
+            .build()
+        val tei = TrackedEntityInstance.builder().geometry(geometry).uid("random").build()
+        val program = Program.builder().uid("tUID").build()
+
+        whenever(teiRepository.blockingGet()) doReturn tei
+        whenever(programRepository.blockingGet()) doReturn program
+        whenever(d2.enrollmentModule()) doReturn mock()
+        whenever(d2.enrollmentModule().enrollmentService()) doReturn mock()
+        whenever(
+            d2.enrollmentModule().enrollmentService()
+                .blockingGetEnrollmentAccess(tei.uid(), program.uid()),
+        ) doReturn access
     }
 
     private fun givenATei(uid: String, syncState: State) {

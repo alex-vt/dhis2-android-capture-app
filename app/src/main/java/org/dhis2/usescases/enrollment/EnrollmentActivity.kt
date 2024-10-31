@@ -117,7 +117,7 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                     showProgress()
                 } else {
                     hideProgress()
-                    //presenter.showOrHideSaveButton()
+                    presenter.showOrHideSaveButton()
                 }
             }
             .onFinishDataEntry {
