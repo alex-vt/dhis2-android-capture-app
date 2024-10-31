@@ -363,6 +363,7 @@ class SearchTEList : FragmentGlobalAbstract() {
             },
             onlineErrorCode = liveAdapter.snapshot().items.lastOrNull()?.onlineErrorCode,
         )
+        (context as SearchTEActivity).hideProgress()
     }
 
     private fun onGlobalDataLoaded() {
@@ -370,6 +371,7 @@ class SearchTEList : FragmentGlobalAbstract() {
             programResultCount = liveAdapter.itemCount,
             globalResultCount = globalAdapter.itemCount,
         )
+        (context as SearchTEActivity).hideProgress()
     }
 
     private fun initGlobalData() {
@@ -394,6 +396,7 @@ class SearchTEList : FragmentGlobalAbstract() {
                 listOf(SearchResult(SearchResult.SearchResultType.LOADING)),
             )
         }
+        (context as SearchTEActivity).showProgress()
     }
 
     private fun initLoading(result: List<SearchResult>?) {
