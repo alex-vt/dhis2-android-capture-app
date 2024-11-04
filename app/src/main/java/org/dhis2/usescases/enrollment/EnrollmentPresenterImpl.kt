@@ -295,16 +295,8 @@ class EnrollmentPresenterImpl(
     fun onBiometricsFailure() {
         pendingSave = false
 
-        if (lastPossibleDuplicates != null) {
-            onBiometricsPossibleDuplicates(
-                lastPossibleDuplicates!!.guids,
-                lastPossibleDuplicates!!.sessionId,
-                enrollNewVisible = false
-            )
-        } else {
-            val uuid: UUID = UUID.randomUUID()
-            saveBiometricValue("${BIOMETRICS_FAILURE_PATTERN}_${uuid}")
-        }
+        val uuid: UUID = UUID.randomUUID()
+        saveBiometricValue("${BIOMETRICS_FAILURE_PATTERN}_${uuid}")
     }
 
     fun checkIfBiometricValueValid() {
@@ -334,7 +326,11 @@ class EnrollmentPresenterImpl(
         }
     }
 
-    fun onBiometricsPossibleDuplicates(possibleDuplicates: List<SimprintsItem>, sessionId: String, enrollNewVisible:Boolean = true) {
+    fun onBiometricsPossibleDuplicates(
+        possibleDuplicates: List<SimprintsItem>,
+        sessionId: String,
+        enrollNewVisible: Boolean = true
+    ) {
         val program = getProgram()!!.uid()
         val biometricsAttUid = biometricsUiModel!!.uid
         val teiUid = getEnrollment()!!.trackedEntityInstance()
@@ -342,13 +338,13 @@ class EnrollmentPresenterImpl(
         val teiTypeUid = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
             ?.trackedEntityType()!!
 
-        if (possibleDuplicates.isEmpty()){
+        if (possibleDuplicates.isEmpty()) {
             view.registerLast(sessionId)
-        }
-        else if (possibleDuplicates.size == 1 && possibleDuplicates[0].guid == biometricsUiModel!!.value) {
+        } else if (possibleDuplicates.size == 1 && possibleDuplicates[0].guid == biometricsUiModel!!.value) {
             view.registerLast(sessionId)
         } else {
-            val finalPossibleDuplicates = possibleDuplicates.filter { it.guid != biometricsUiModel!!.value }
+            val finalPossibleDuplicates =
+                possibleDuplicates.filter { it.guid != biometricsUiModel!!.value }
 
             lastPossibleDuplicates = LastPossibleDuplicates(finalPossibleDuplicates, sessionId)
 
@@ -386,7 +382,7 @@ class EnrollmentPresenterImpl(
             }
 
             biometricsUiModel?.setSaveTEI { removeBiometrics ->
-                if (removeBiometrics){
+                if (removeBiometrics) {
                     saveBiometricValue(null)
                 }
 
@@ -398,7 +394,7 @@ class EnrollmentPresenterImpl(
                 view.registerLast(sessionId)
             }
 
-           if (biometricsUiModel?.value?.startsWith(BIOMETRICS_FAILURE_PATTERN) == true) {
+            if (biometricsUiModel?.value?.startsWith(BIOMETRICS_FAILURE_PATTERN) == true) {
                 resetBiometricsFailureAfterTime()
             }
         }
@@ -406,7 +402,8 @@ class EnrollmentPresenterImpl(
 
     private fun resetBiometricsFailureAfterTime() {
         if (resetBiometricsFailureAfterTimeDisposable != null &&
-            !resetBiometricsFailureAfterTimeDisposable!!.isDisposed) {
+            !resetBiometricsFailureAfterTimeDisposable!!.isDisposed
+        ) {
             resetBiometricsFailureAfterTimeDisposable!!.dispose()
         }
 

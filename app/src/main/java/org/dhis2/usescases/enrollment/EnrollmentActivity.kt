@@ -207,11 +207,6 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                         is RegisterResult.Completed -> {
                             presenter.onBiometricsCompleted(result.guid)
                         }
-
-                        is RegisterResult.Failure -> {
-                            presenter.onBiometricsFailure()
-                        }
-
                         is RegisterResult.PossibleDuplicates -> {
                             presenter.onBiometricsPossibleDuplicates(
                                 result.items,
@@ -224,6 +219,9 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                                 context, getString(R.string.age_group_not_supported),
                                 Toast.LENGTH_SHORT
                             ).show()
+                        }
+                        else -> {
+                            presenter.onBiometricsFailure()
                         }
                     }
                 }
@@ -241,6 +239,14 @@ class EnrollmentActivity : ActivityGlobalAbstract(), EnrollmentView {
                         is RegisterResult.AgeGroupNotSupported -> {
                             Toast.makeText(
                                 context, getString(R.string.age_group_not_supported),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        is RegisterResult.RegisterLastFailure -> {
+                            performSaveClick()
+                            Toast.makeText(
+                                context, getString(R.string.unable_save_biometrics),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }

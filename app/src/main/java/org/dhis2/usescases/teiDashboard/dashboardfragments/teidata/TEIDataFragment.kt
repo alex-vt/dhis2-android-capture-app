@@ -715,6 +715,13 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
         )
     }
 
+    override fun showUnableSaveBiometricsMessage() {
+        Toast.makeText(
+            context, getString(R.string.unable_save_biometrics),
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
     override fun refreshCard() {
         showDetailCard()
     }

@@ -26,6 +26,7 @@ sealed class RegisterResult {
     data class Completed(val guid: String) : RegisterResult()
     data class PossibleDuplicates(val items: List<SimprintsItem>, val sessionId: String) : RegisterResult()
     data object Failure : RegisterResult()
+    data object RegisterLastFailure : RegisterResult()
     data object AgeGroupNotSupported : RegisterResult()
 
 }
@@ -149,9 +150,11 @@ class BiometricsClient(
         Timber.d("Result code: $resultCode")
 
         if (resultCode != Activity.RESULT_OK) {
-            return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
-                RegisterResult.AgeGroupNotSupported
-            else RegisterResult.Failure
+            return when (resultCode) {
+                Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED -> RegisterResult.AgeGroupNotSupported
+                Constants.SIMPRINTS_ENROLMENT_LAST_BIOMETRICS_FAILED -> RegisterResult.RegisterLastFailure
+                else -> RegisterResult.Failure
+            }
         }
 
         val biometricsCompleted = checkBiometricsCompleted(data)

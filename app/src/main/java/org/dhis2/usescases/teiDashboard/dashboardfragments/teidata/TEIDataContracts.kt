@@ -59,5 +59,7 @@ class TEIDataContracts {
         fun showPossibleDuplicatesDialog( possibleDuplicates: List<SimprintsItem>, sessionId: String, programUid: String,
                                           trackedEntityTypeUid: String, biometricsAttributeUid: String,
                                           enrollNewVisible:Boolean)
+
+        fun showUnableSaveBiometricsMessage()
     }
 }
