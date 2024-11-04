@@ -245,7 +245,13 @@ class EnrollmentPresenterImpl(
     }
 
     fun deleteAllSavedData() {
-        if (teiRepository.blockingGet()?.syncState() == State.TO_POST) {
+        val isTeiInNoOtherProgram by lazy {
+            dataEntryRepository.isTeiInNoOtherProgram(
+                teiUid = teiRepository.blockingGet()?.uid(),
+                programUid = programRepository.blockingGet()?.uid(),
+            )
+        }
+        if (teiRepository.blockingGet()?.syncState() == State.TO_POST && isTeiInNoOtherProgram) {
             teiRepository.blockingDelete()
         } else {
             enrollmentObjectRepository.blockingDelete()
