@@ -18,8 +18,4 @@ interface BiometricsDuplicatesDialogView {
     fun sendBiometricsConfirmIdentity(
         sessionId: String, guid: String, teiUid: String, enrollmentUid: String, isOnline: Boolean
     )
-    fun showEnrollNewButton()
-    fun showEnrollWithoutBiometricsButton()
-    fun hideEnrollNewButton()
-    fun hideEnrollWithoutBiometricsButton()
 }

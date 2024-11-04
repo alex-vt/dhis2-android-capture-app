@@ -4,7 +4,6 @@ import androidx.paging.map
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.flow.map
-import org.dhis2.commons.biometrics.BiometricsPreference
 import org.dhis2.commons.filters.FilterManager
 import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.schedulers.SchedulerProvider
@@ -51,23 +50,6 @@ class BiometricsDuplicatesDialogPresenter(
         this.biometricsAttributeUid = biometricsAttributeUid
 
         loadData()
-
-        checkButtonToShow()
-    }
-
-    private fun checkButtonToShow() {
-        val confidenceScoreDuplicates = basicPreferenceProvider.getInt(
-            BiometricsPreference.CONFIDENCE_SCORE_DUPLICATES, 0)
-
-        val maxConfidenceInDuplicates = possibleDuplicates.maxBy { it.confidence }.confidence
-
-        if (maxConfidenceInDuplicates >= confidenceScoreDuplicates ) {
-            view.hideEnrollNewButton()
-            view.showEnrollWithoutBiometricsButton()
-        } else {
-            view.showEnrollNewButton()
-            view.hideEnrollWithoutBiometricsButton()
-        }
     }
 
     private fun loadData() {

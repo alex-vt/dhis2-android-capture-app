@@ -100,10 +100,9 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
 
         if (enrollNewVisible){
             binding.enrollNewButton.visibility = View.VISIBLE
-            binding.enrollWithoutBiometricsButton.visibility = View.GONE
+
         } else {
             binding.enrollNewButton.visibility = View.GONE
-            binding.enrollWithoutBiometricsButton.visibility = View.VISIBLE
         }
 
         binding.enrollNewButton.setOnClickListener {
@@ -223,22 +222,6 @@ class BiometricsDuplicatesDialog : DialogFragment(), BiometricsDuplicatesDialogV
             mutableMapOf(BiometricsClient.SIMPRINTS_TRACKED_ENTITY_INSTANCE_ID to teiUid)
 
         context?.let { get(it).confirmIdentify(this, sessionId, guid, extras) }
-    }
-
-    override fun showEnrollNewButton() {
-        binding.enrollNewButton.visibility = View.VISIBLE
-    }
-
-    override fun showEnrollWithoutBiometricsButton() {
-        binding.enrollWithoutBiometricsButton.visibility = View.VISIBLE
-    }
-
-    override fun hideEnrollNewButton() {
-        binding.enrollNewButton.visibility = View.GONE
-    }
-
-    override fun hideEnrollWithoutBiometricsButton() {
-        binding.enrollWithoutBiometricsButton.visibility = View.GONE
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

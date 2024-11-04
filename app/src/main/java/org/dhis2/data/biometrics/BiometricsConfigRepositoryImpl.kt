@@ -79,11 +79,6 @@ class BiometricsConfigRepositoryImpl(
             config.confidenceScoreFilter ?: 0
         )
 
-        preferenceProvider.setValue(
-            BiometricsPreference.CONFIDENCE_SCORE_DUPLICATES,
-            config.confidenceScoreDuplicates ?: 0
-        )
-
         val icon =
             BiometricsIcon.values()
                 .firstOrNull { it.name == config.icon?.toUpperCase() }?.name
@@ -112,7 +107,6 @@ class BiometricsConfigRepositoryImpl(
         Timber.d("projectId: ${config.projectId}")
         Timber.d("userId: ${config.userId}")
         Timber.d("confidenceScoreFilter: ${config.confidenceScoreFilter}")
-        Timber.d("confidenceScoreDuplicates: ${config.confidenceScoreDuplicates}")
         Timber.d("icon: $icon")
         Timber.d("lastVerificationDuration: ${config.lastVerificationDuration}")
         Timber.d("lastDeclinedEnrolDuration: ${config.lastDeclinedEnrolDuration}")
