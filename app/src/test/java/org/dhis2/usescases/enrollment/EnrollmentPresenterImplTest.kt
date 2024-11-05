@@ -2,11 +2,18 @@ package org.dhis2.usescases.enrollment
 
 import io.reactivex.Single
 import io.reactivex.processors.PublishProcessor
+import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertNull
+import org.dhis2.commons.biometrics.BiometricsPreference
 import org.dhis2.commons.matomo.MatomoAnalyticsController
 import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.data.schedulers.TrampolineSchedulerProvider
 import org.dhis2.form.data.EnrollmentRepository
+import org.dhis2.form.model.FieldUiModel
+import org.dhis2.form.model.FieldUiModelImpl
+import org.dhis2.form.model.biometrics.BiometricsAttributeUiModelImpl
+import org.dhis2.usescases.biometrics.entities.BiometricsMode
 import org.dhis2.usescases.enrollment.EnrollmentActivity.EnrollmentMode.CHECK
 import org.dhis2.usescases.enrollment.EnrollmentActivity.EnrollmentMode.NEW
 import org.dhis2.usescases.teiDashboard.TeiAttributesProvider
@@ -17,6 +24,8 @@ import org.hisp.dhis.android.core.common.Access
 import org.hisp.dhis.android.core.common.DataAccess
 import org.hisp.dhis.android.core.common.FeatureType
 import org.hisp.dhis.android.core.common.Geometry
+import org.hisp.dhis.android.core.common.ValueType
+import org.hisp.dhis.android.core.common.State
 import org.hisp.dhis.android.core.enrollment.EnrollmentAccess
 import org.hisp.dhis.android.core.enrollment.EnrollmentObjectRepository
 import org.hisp.dhis.android.core.enrollment.EnrollmentStatus
@@ -245,5 +254,160 @@ class EnrollmentPresenterImplTest {
         presenter.finish(CHECK)
 
         verify(enrollmentView).setResultAndFinish()
+    }
+
+    @Test
+    fun `Should delete TEI in deleteAllSavedData() when sync state is TO_POST and TEI is not in any other program`() {
+        val teiUid = "teiUid"
+        val programUid = "programUid"
+        givenATei(teiUid, State.TO_POST)
+        givenAProgram(programUid)
+        givenTeiInNoOtherProgram(teiUid, programUid, true)
+
+        presenter.deleteAllSavedData()
+
+        verify(teiRepository).blockingDelete()
+        verify(enrollmentRepository, never()).blockingDelete()
+    }
+
+    @Test
+    fun `Should only delete enrollment in deleteAllSavedData() when TEI is also in another program`() {
+        val teiUid = "teiUid"
+        val programUid = "programUid"
+        givenATei(teiUid, State.TO_POST)
+        givenAProgram(programUid)
+        givenTeiInNoOtherProgram(teiUid, programUid, false)
+
+        presenter.deleteAllSavedData()
+
+        verify(enrollmentRepository).blockingDelete()
+        verify(teiRepository, never()).blockingDelete()
+    }
+
+    @Test
+    fun `Should only delete enrollment in deleteAllSavedData() when sync state is not TO_POST`() {
+        givenATei("teiUid", State.SYNCED)
+        givenAProgram("programUid")
+
+        presenter.deleteAllSavedData()
+
+        verify(enrollmentRepository).blockingDelete()
+        verify(teiRepository, never()).blockingDelete()
+    }
+
+    private fun givenATei(uid: String, syncState: State) {
+        val tei = TrackedEntityInstance.builder()
+            .uid(uid)
+            .syncState(syncState)
+            .build()
+        whenever(teiRepository.blockingGet()) doReturn tei
+    }
+
+    private fun givenAProgram(uid: String) {
+        val program = Program.builder().uid(uid).build()
+        whenever(programRepository.blockingGet()) doReturn program
+    }
+
+    private fun givenTeiInNoOtherProgram(teiUid: String, programUid: String, value: Boolean) {
+        whenever(dataEntryRepository.isTeiInNoOtherProgram(teiUid, programUid)) doReturn value
+    }
+
+    //EyeSeeTea Customizations
+    @Test
+    fun `should_not_remove_biometrics_attribute_if_biometrics_mode_is_full`() {
+        val presenter = givenABiometricsMode(BiometricsMode.full)
+
+        val fields = givenAFieldsWithBiometrics()
+
+        val finalFields = presenter.onFieldsLoading(fields)
+
+        val biometricsModel = finalFields.find { it is BiometricsAttributeUiModelImpl }
+
+        assertNotNull(biometricsModel)
+    }
+
+    @Test
+    fun `should_remove_biometrics_attribute_if_biometrics_mode_is_limited`() {
+        val presenter = givenABiometricsMode(BiometricsMode.limited)
+
+        val fields = givenAFieldsWithBiometrics()
+
+        val finalFields = presenter.onFieldsLoading(fields)
+
+        val biometricsModel = finalFields.find { it is BiometricsAttributeUiModelImpl }
+
+        assertNull(biometricsModel)
+    }
+
+    @Test
+    fun `should_remove_biometrics_attribute_if_biometrics_mode_is_zero`() {
+        val presenter = givenABiometricsMode(BiometricsMode.zero)
+
+        val fields = givenAFieldsWithBiometrics()
+
+        val finalFields = presenter.onFieldsLoading(fields)
+
+        val biometricsModel = finalFields.find { it is BiometricsAttributeUiModelImpl }
+
+        assertNull(biometricsModel)
+    }
+
+    private fun givenABiometricsMode(biometricsMode: BiometricsMode): EnrollmentPresenterImpl {
+        whenever(
+            basicPreferenceProvider.getString(
+                BiometricsPreference.BIOMETRICS_MODE,
+                BiometricsMode.full.name
+            )
+        ).thenReturn(biometricsMode.name)
+
+        return EnrollmentPresenterImpl(
+            enrollmentView,
+            d2,
+            enrollmentRepository,
+            dataEntryRepository,
+            teiRepository,
+            programRepository,
+            schedulers,
+            enrollmentFormRepository,
+            analyticsHelper,
+            matomoAnalyticsController,
+            eventCollectionRepository,
+            teiAttributesProvider,
+            basicPreferenceProvider
+        )
+    }
+
+    private fun givenAFieldsWithBiometrics(): List<FieldUiModel> {
+        return listOf(
+            FieldUiModelImpl(
+                uid = "uid",
+                layoutId = 0,
+                value = null,
+                programStageSection = null,
+                autocompleteList = null,
+                orgUnitSelectorScope = null,
+                selectableDates = null,
+                eventCategories = null,
+                periodSelector = null,
+                url = null,
+                label = "",
+                optionSetConfiguration = null,
+                valueType = ValueType.TEXT
+            ),
+            BiometricsAttributeUiModelImpl(
+                uid = "uid",
+                layoutId = 0,
+                value = null,
+                programStageSection = null,
+                autocompleteList = null,
+                orgUnitSelectorScope = null,
+                selectableDates = null,
+                eventCategories = null,
+                periodSelector = null,
+                url = null,
+                editable = true,
+                ageUnderThreshold = false
+            )
+        )
     }
 }
