@@ -980,7 +980,7 @@ public class SearchRepositoryImpl implements SearchRepository {
     private boolean displayOrgUnit() {
         return d2.organisationUnitModule().organisationUnits()
                 .byProgramUids(Collections.singletonList(currentProgram))
-                .blockingGet().size() > 1;
+                .count().blockingGet() > 1;
     }
 
     // EyeSeeTea customizations
