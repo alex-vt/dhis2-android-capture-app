@@ -9,7 +9,6 @@ enum class BiometricsMode {
 data class BiometricsConfig(
     val orgUnitGroup: String?,
     val projectId: String,
-    val userId: String,
     val confidenceScoreFilter: Int?,
     val icon: String?,
     val lastVerificationDuration: Int?,

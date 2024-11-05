@@ -76,8 +76,6 @@ class BiometricsConfigRepositoryImpl(
 
         preferenceProvider.setValue(BiometricsPreference.PROJECT_ID, config.projectId)
 
-        preferenceProvider.setValue(BiometricsPreference.USER_ID, config.userId)
-
         preferenceProvider.setValue(
             BiometricsPreference.CONFIDENCE_SCORE_FILTER,
             config.confidenceScoreFilter ?: 0
@@ -124,7 +122,6 @@ class BiometricsConfigRepositoryImpl(
         Timber.d("orgUnitGroup: ${config.orgUnitGroup}")
         Timber.d("program: ${config.program}")
         Timber.d("projectId: ${config.projectId}")
-        Timber.d("userId: ${config.userId}")
         Timber.d("confidenceScoreFilter: ${config.confidenceScoreFilter}")
         Timber.d("icon: $icon")
         Timber.d("lastVerificationDuration: ${config.lastVerificationDuration}")

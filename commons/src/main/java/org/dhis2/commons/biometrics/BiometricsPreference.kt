@@ -7,7 +7,6 @@ class BiometricsPreference {
         const val ORG_UNIT_GROUP = "ORG_UNIT_GROUP"
         const val PROGRAM = "PROGRAM"
         const val PROJECT_ID = "PROJECT_ID"
-        const val USER_ID = "USER_ID"
         const val CONFIDENCE_SCORE_FILTER = "CONFIDENCE_SCORE_FILTER"
         const val CONFIDENCE_SCORE_DUPLICATES = "CONFIDENCE_SCORE_DUPLICATES"
         const val ICON = "ICON"

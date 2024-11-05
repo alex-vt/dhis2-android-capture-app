@@ -8,7 +8,6 @@ import org.dhis2.usescases.biometrics.entities.BiometricsMode
 fun getBiometricsConfig(preferenceProvider: BasicPreferenceProvider): BiometricsConfig {
     val orgUnitGroup = preferenceProvider.getString(BiometricsPreference.ORG_UNIT_GROUP, "")
     val projectId = preferenceProvider.getString(BiometricsPreference.PROJECT_ID, "") ?: ""
-    val userId = preferenceProvider.getString(BiometricsPreference.USER_ID, "") ?: ""
     val confidenceScoreFilter =
         preferenceProvider.getInt(BiometricsPreference.CONFIDENCE_SCORE_FILTER, 0)
     val icon = preferenceProvider.getString(BiometricsPreference.ICON, "")
@@ -31,7 +30,6 @@ fun getBiometricsConfig(preferenceProvider: BasicPreferenceProvider): Biometrics
     return BiometricsConfig(
         orgUnitGroup,
         projectId,
-        userId,
         confidenceScoreFilter,
         icon,
         lastVerificationDuration,
