@@ -30,6 +30,7 @@ import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.schedulers.SchedulerProvider
 import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.data.biometrics.RegisterResult
+import org.dhis2.data.biometrics.SimprintsItem
 import org.dhis2.data.biometrics.VerifyResult
 import org.dhis2.data.biometrics.getBiometricsConfig
 import org.dhis2.form.data.FormValueStore
@@ -39,6 +40,7 @@ import org.dhis2.form.model.EventMode
 import org.dhis2.mobileProgramRules.RuleEngineHelper
 import org.dhis2.usescases.biometrics.biometricAttributeId
 import org.dhis2.usescases.biometrics.entities.BiometricsMode
+import org.dhis2.usescases.biometrics.duplicates.LastPossibleDuplicates
 import org.dhis2.usescases.biometrics.getAgeInMonthsByAttributes
 import org.dhis2.usescases.biometrics.getOrgUnitAsModuleId
 import org.dhis2.usescases.biometrics.isLastVerificationValid
@@ -119,6 +121,8 @@ class TEIDataPresenter(
     private val lastDeclinedEnrolDuration = basicPreferenceProvider.getInt(
         BiometricsPreference.LAST_DECLINED_ENROL_DURATION, 0
     )
+
+    private var lastPossibleDuplicates: LastPossibleDuplicates? = null
 
     private val biometricsMode = getBiometricsConfig(basicPreferenceProvider).biometricsMode
 
@@ -575,7 +579,7 @@ class TEIDataPresenter(
     }
 
     fun handleVerifyResponse(result: VerifyResult) {
-        when(result){
+        when (result) {
             VerifyResult.Match -> {
                 lastVerificationResult = result
 
@@ -585,12 +589,15 @@ class TEIDataPresenter(
                     teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
                 }
             }
+
             VerifyResult.NoMatch -> {
                 lastVerificationResult = result
             }
+
             VerifyResult.Failure -> {
                 lastVerificationResult = result
             }
+
             VerifyResult.AgeGroupNotSupported -> {
                 view.showBiometricsAgeGroupNotSupported()
             }
@@ -600,26 +607,38 @@ class TEIDataPresenter(
     fun handleRegisterResponse(result: RegisterResult) {
         lastRegisterResult = result
 
-        when(result){
+        when (result) {
             is RegisterResult.Completed -> {
                 val biometricsValue = result.guid
                 teiDataRepository.updateBiometricsAttributeValueInTei(biometricsValue)
                 lastRegisterResult = null
                 lastVerificationResult = VerifyResult.Match
+                lastPossibleDuplicates = null
             }
+
             is RegisterResult.Failure -> {
                 if (lastDeclinedEnrolDuration > 0) {
-                    val lastDeclinedEnrolDurationInMillis = TimeUnit.MINUTES.toMillis(lastDeclinedEnrolDuration.toLong())
+                    val lastDeclinedEnrolDurationInMillis =
+                        TimeUnit.MINUTES.toMillis(lastDeclinedEnrolDuration.toLong())
                     Timer().schedule(lastDeclinedEnrolDurationInMillis) {
                         lastRegisterResult = null
                     }
                 }
             }
-            is RegisterResult.AgeGroupNotSupported -> {
-               view.showBiometricsAgeGroupNotSupported()
+            is RegisterResult.RegisterLastFailure -> {
+                view.showUnableSaveBiometricsMessage()
             }
+
+            is RegisterResult.AgeGroupNotSupported -> {
+                view.showBiometricsAgeGroupNotSupported()
+            }
+
             is RegisterResult.PossibleDuplicates -> {
-                onBiometricsPossibleDuplicates(result.guids, result.sessionId)
+                onBiometricsPossibleDuplicates(
+                    result.items,
+                    result.sessionId,
+                    enrollNewVisible = true
+                )
             }
         }
     }
@@ -683,12 +702,16 @@ class TEIDataPresenter(
         }
     }
 
-    fun onBiometricsPossibleDuplicates(guids: List<String>, sessionId: String) {
+
+    private fun onBiometricsPossibleDuplicates(
+        possibleDuplicates: List<SimprintsItem>, sessionId: String,
+        enrollNewVisible: Boolean = true
+    ) {
         lastRegisterResult = null
 
         val program = programUid ?: ""
         val biometricsAttUid = biometricAttributeId
-        val teiUid = getEnrollment()!!.trackedEntityInstance() ?:""
+        val teiUid = getEnrollment()!!.trackedEntityInstance() ?: ""
 
         val teiTypeUid = d2.trackedEntityModule().trackedEntityInstances().uid(teiUid).blockingGet()
             ?.trackedEntityType()!!
@@ -696,23 +719,26 @@ class TEIDataPresenter(
         val values =
             dashboardRepository.getTEIAttributeValues(programUid, teiUid).blockingSingle()
 
-        val biometricsValue  =
+        val biometricsValue =
             values.firstOrNull { it.trackedEntityAttribute() == dashboardModel!!.getBiometricsAttributeUid() }
 
-        if (guids.isEmpty()){
+        if (possibleDuplicates.isEmpty()) {
             view.registerLast(sessionId)
-        }
-        else if (guids.size == 1 && guids[0] == biometricsValue?.value()) {
+        } else if (possibleDuplicates.size == 1 && possibleDuplicates[0].guid == biometricsValue?.value()) {
             view.registerLast(sessionId)
         } else {
-            val finalGuids = guids.filter { it != biometricsValue?.value() }
+            val finalPossibleDuplicates =
+                possibleDuplicates.filter { it.guid != biometricsValue?.value() }
+
+            lastPossibleDuplicates = LastPossibleDuplicates(finalPossibleDuplicates, sessionId)
 
             view.showPossibleDuplicatesDialog(
-                finalGuids,
+                finalPossibleDuplicates,
                 sessionId,
                 program,
                 teiTypeUid,
-                biometricsAttUid
+                biometricsAttUid,
+                enrollNewVisible
             )
         }
     }
