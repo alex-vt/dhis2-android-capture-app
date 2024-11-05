@@ -507,13 +507,17 @@ class SearchTEIViewModel(
             }
 
             val queryDataContainsAgeUnderThreadsHold =
-                containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider,queryData)
+                containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider, queryData)
 
-            val nextAction = if (previousSearch == null && !queryDataContainsAgeUnderThreadsHold ) {
-                SequentialSearchAction.SearchWithBiometrics
-            } else {
-                SequentialSearchAction.RegisterNew
-            }
+
+            val nextAction =
+                if (previousSearch == null &&
+                    !queryDataContainsAgeUnderThreadsHold &&
+                    biometricsMode == BiometricsMode.full) {
+                    SequentialSearchAction.SearchWithBiometrics
+                } else {
+                    SequentialSearchAction.RegisterNew
+                }
 
             _sequentialSearch.postValue(
                 SequentialSearch.AttributeSearch(
@@ -1167,7 +1171,9 @@ class SearchTEIViewModel(
 
         val isFirstSearch = sequentialSearch.value!!.previousSearch == null
         val isBiometricsSearch = sequentialSearch.value is SequentialSearch.BiometricsSearch
-        val isAgeNotSupported = (sequentialSearch.value as? SequentialSearch.BiometricsSearch)?.isAgeNotSupported ?: false
+        val isAgeNotSupported =
+            (sequentialSearch.value as? SequentialSearch.BiometricsSearch)?.isAgeNotSupported
+                ?: false
 
         val message = if (isFirstSearch) {
             if (hasResults) {
@@ -1183,7 +1189,7 @@ class SearchTEIViewModel(
             if (hasResults) {
                 resourceManager.getString(R.string.patient_not_found_register_a_new_patient)
             } else {
-                if (isBiometricsSearch && isAgeNotSupported){
+                if (isBiometricsSearch && isAgeNotSupported) {
                     resourceManager.getString(R.string.biometrics_not_applicable_for_this_age_group_register_a_new_patient)
                 } else {
                     resourceManager.getString(R.string.results_not_found_register_a_new_patient)
