@@ -8,6 +8,7 @@ import static org.dhis2.commons.matomo.Actions.SYNC_TEI;
 import static org.dhis2.commons.matomo.Categories.SEARCH;
 import static org.dhis2.commons.matomo.Categories.TRACKER_LIST;
 import static org.dhis2.commons.matomo.Labels.CLICK;
+import static org.dhis2.usescases.biometrics.OrgUnitAsModuleIdKt.getOrgUnitAsModuleId;
 import static org.dhis2.usescases.teiDashboard.dashboardfragments.relationships.RelationshipFragment.TEI_A_UID;
 import static org.dhis2.utils.analytics.AnalyticsConstants.ADD_RELATIONSHIP;
 import static org.dhis2.utils.analytics.AnalyticsConstants.CREATE_ENROLL;
@@ -33,12 +34,14 @@ import org.dhis2.commons.filters.data.FilterRepository;
 import org.dhis2.commons.matomo.MatomoAnalyticsController;
 import org.dhis2.commons.orgunitselector.OUTreeFragment;
 import org.dhis2.commons.orgunitselector.OrgUnitSelectorScope;
+import org.dhis2.commons.prefs.BasicPreferenceProvider;
 import org.dhis2.commons.prefs.Preference;
 import org.dhis2.commons.prefs.PreferenceProvider;
 import org.dhis2.commons.resources.ColorUtils;
 import org.dhis2.commons.resources.ObjectStyleUtils;
 import org.dhis2.commons.resources.ResourceManager;
 import org.dhis2.commons.schedulers.SchedulerProvider;
+import org.dhis2.data.biometrics.BiometricsClientFactory;
 import org.dhis2.data.biometrics.SimprintsItem;
 import org.dhis2.data.service.SyncStatusController;
 import org.dhis2.maps.model.StageStyle;
@@ -94,11 +97,11 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     private final SyncStatusController syncStatusController;
 
     private final ColorUtils colorUtils;
+    private final BasicPreferenceProvider basicPreferenceProvider;
 
     private boolean biometricsSearchStatus = false;
     private String sessionId;
     private String biometricUid;
-    private boolean enrollmentWithBiometricsMode;
 
     public SearchTEPresenter(SearchTEContractsModule.View view,
                              D2 d2,
@@ -113,7 +116,8 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
                              MatomoAnalyticsController matomoAnalyticsController,
                              SyncStatusController syncStatusController,
                              ResourceManager resourceManager,
-                             ColorUtils colorUtils) {
+                             ColorUtils colorUtils,
+                             BasicPreferenceProvider basicPreferenceProvider) {
         this.view = view;
         this.preferences = preferenceProvider;
         this.searchRepository = searchRepository;
@@ -131,6 +135,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         this.trackedEntityType = teTypeUid;
         this.trackedEntity = searchRepository.getTrackedEntityType(trackedEntityType).blockingFirst();
         this.colorUtils = colorUtils;
+        this.basicPreferenceProvider = basicPreferenceProvider;
     }
 
     //-----------------------------------
@@ -409,6 +414,19 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         sessionId = null;
     }
 
+    @Override
+    public void onBiometricsClick() {
+        List<String> userOrgUnits = searchRepository.getUserOrgUnits(selectedProgram.uid());
+
+        if (userOrgUnits.size() > 1) {
+            view.launchBiometricsIdentify(null);
+        } else {
+            String orgUnitAsModuleId = getOrgUnitAsModuleId(userOrgUnits.get(0), d2, basicPreferenceProvider);
+
+            view.launchBiometricsIdentify(orgUnitAsModuleId);
+        }
+    }
+
     private String getBiometricsValueFromTEI(TrackedEntityInstance tei) {
         String guid = "";
 
@@ -667,14 +685,6 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         if (sessionId != null) {
             biometricsSearchStatus = false;
             view.sendBiometricsNoneSelected(sessionId);
-        }
-    }
-
-    @Override
-    public void onBiometricsEnrolmentLastClick() {
-        if (biometricsSearchStatus) {
-            biometricsSearchStatus = false;
-            view.biometricsEnrollmentLast(sessionId);
         }
     }
 
