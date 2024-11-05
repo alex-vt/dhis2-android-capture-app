@@ -221,10 +221,10 @@ class BiometricsClient(
         }
     }
 
-    fun handleIdentifyResponse(resultCode: Int, data: Intent): IdentifyResult {
+    fun handleIdentifyResponse(resultCode: Int, data: Intent?): IdentifyResult {
         Timber.d("Result code: $resultCode")
 
-        if (resultCode != Activity.RESULT_OK) {
+        if (resultCode != Activity.RESULT_OK || data == null) {
             return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
                 IdentifyResult.AgeGroupNotSupported
             else IdentifyResult.Failure
