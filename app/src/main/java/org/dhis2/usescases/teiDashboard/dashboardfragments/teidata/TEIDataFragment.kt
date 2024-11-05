@@ -48,6 +48,7 @@ import org.dhis2.commons.sync.OnDismissListener
 import org.dhis2.commons.sync.SyncContext.EnrollmentEvent
 import org.dhis2.data.biometrics.BiometricsClient
 import org.dhis2.data.biometrics.BiometricsClientFactory.get
+import org.dhis2.data.biometrics.SimprintsItem
 import org.dhis2.databinding.FragmentTeiDataBinding
 import org.dhis2.form.model.EventMode
 import org.dhis2.usescases.biometrics.duplicates.BiometricsDuplicatesDialog
@@ -678,14 +679,15 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
 
 
     override fun showPossibleDuplicatesDialog(
-        guids: List<String>, sessionId: String, programUid: String,
-        trackedEntityTypeUid: String,
-        biometricsAttributeUid: String
+        possibleDuplicates: List<SimprintsItem>, sessionId: String, programUid: String,
+        trackedEntityTypeUid: String, biometricsAttributeUid: String,
+        enrollNewVisible: Boolean
     ) {
         val dialog = BiometricsDuplicatesDialog.newInstance(
-            guids, sessionId, programUid,
+            possibleDuplicates, sessionId, programUid,
             trackedEntityTypeUid,
-            biometricsAttributeUid
+            biometricsAttributeUid,
+            enrollNewVisible
         )
 
         dialog.setOnOpenTeiDashboardListener { teiUid: String, program: String, enrollmentUid: String ->
@@ -703,10 +705,21 @@ class TEIDataFragment : FragmentGlobalAbstract(), TEIDataContracts.View {
             get(requireContext()).registerLastFromFragment(this, biometricsSessionId)
         }
 
+        dialog.setOnEnrollWithoutBiometricsListener {
+
+        }
+
         dialog.show(
             parentFragmentManager,
             BiometricsDuplicatesDialog.TAG
         )
+    }
+
+    override fun showUnableSaveBiometricsMessage() {
+        Toast.makeText(
+            context, getString(R.string.unable_save_biometrics),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     override fun refreshCard() {
