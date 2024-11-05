@@ -716,10 +716,18 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
     private void observeMapLoading() {
         viewModel.getRefreshData().observe(this, refresh -> {
             if (currentContent == Content.MAP) {
-                binding.toolbarProgress.show();
+                showProgress();
             }
         });
-        viewModel.getMapResults().observe(this, result -> binding.toolbarProgress.hide());
+        viewModel.getMapResults().observe(this, result -> hideProgress());
+    }
+
+    public void showProgress() {
+        binding.toolbarProgress.show();
+    }
+
+    public void hideProgress() {
+        binding.toolbarProgress.hide();
     }
 
     @Override
