@@ -97,6 +97,7 @@ class TEIDataPresenter(
     private val d2ErrorUtils: D2ErrorUtils,
     private val basicPreferenceProvider: BasicPreferenceProvider,
     private val resourceManager: ResourceManager,
+    private val lastBiometricsSearchSessionId: String?
 ) {
     private var dashboardModel: DashboardEnrollmentModel? = null
     private val groupingProcessor: BehaviorProcessor<Boolean> = BehaviorProcessor.create()
@@ -572,9 +573,13 @@ class TEIDataPresenter(
 
             val orgUnitAsModuleId = getOrgUnitAsModuleId(orgUnit, d2, basicPreferenceProvider)
 
-            view.registerBiometrics(
-                orgUnitAsModuleId, dashboardModel!!.trackedEntityInstance.uid(), ageInMonths
-            )
+            if (lastBiometricsSearchSessionId != null){
+                view.registerLast(lastBiometricsSearchSessionId)
+            } else {
+                view.registerBiometrics(
+                    orgUnitAsModuleId, dashboardModel!!.trackedEntityInstance.uid(), ageInMonths
+                )
+            }
         }
     }
 

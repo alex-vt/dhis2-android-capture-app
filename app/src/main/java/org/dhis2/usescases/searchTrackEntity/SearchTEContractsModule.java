@@ -51,7 +51,7 @@ public class SearchTEContractsModule {
 
         Consumer<D2Progress> downloadProgress();
 
-        void openDashboard(String teiUid, String programUid, String enrollmentUid);
+        void openDashboard(String teiUid, String programUid, String enrollmentUid, String sessionId);
 
         void showBreakTheGlass(String teiUid, String enrollmentUid);
 
@@ -153,5 +153,9 @@ public class SearchTEContractsModule {
         void setBiometricListener(SearchTEPresenter.BiometricsSearchListener biometricsSearchListener);
 
         void sendBiometricsConfirmIdentity(String teiUid, String enrollmentUid, boolean isOnline);
+
+        String getLastBiometricsSessionId();
+
+        void resetLastBiometricsSessionId();
     }
 }

@@ -399,6 +399,16 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
         }
     }
 
+    @Override
+    public String getLastBiometricsSessionId() {
+        return sessionId;
+    }
+
+    @Override
+    public void resetLastBiometricsSessionId() {
+        sessionId = null;
+    }
+
     private String getBiometricsValueFromTEI(TrackedEntityInstance tei) {
         String guid = "";
 
@@ -496,7 +506,7 @@ public class SearchTEPresenter implements SearchTEContractsModule.Presenter {
     }
 
     private void openDashboard(String teiUid, String enrollmentUid) {
-        view.openDashboard(teiUid, selectedProgram != null ? selectedProgram.uid() : null, enrollmentUid);
+        view.openDashboard(teiUid, selectedProgram != null ? selectedProgram.uid() : null, enrollmentUid, sessionId);
     }
 
     @Override
