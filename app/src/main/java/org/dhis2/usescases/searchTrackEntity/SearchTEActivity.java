@@ -227,11 +227,11 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 } else if (action instanceof SequentialSearchAction.SearchWithAttributes) {
                     viewModel.openSearchForm();
                 } else {
-                    // register new
                     presenter.onEnrollClick(new HashMap<>(viewModel.getQueryData()),
                             viewModel.getSequentialSearch().getValue());
 
                     viewModel.resetSequentialSearch();
+                    viewModel.clearQueryData();
                 }
             }
 
