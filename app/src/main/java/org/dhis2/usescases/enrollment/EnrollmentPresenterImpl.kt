@@ -277,12 +277,15 @@ class EnrollmentPresenterImpl(
         }
     }
 
+    private fun isBiometricsAvailable(): Boolean =
+        BIOMETRICS_ENABLED && biometricsUiModel != null
+
     fun showOrHideSaveButton() {
         val teiUid = teiRepository.blockingGet()?.uid() ?: ""
         val programUid = getProgram()?.uid() ?: ""
         val hasEnrollmentAccess = d2.enrollmentModule().enrollmentService()
             .blockingGetEnrollmentAccess(teiUid, programUid)
-        if (hasEnrollmentAccess == EnrollmentAccess.WRITE_ACCESS) {
+        if (!isBiometricsAvailable() && hasEnrollmentAccess == EnrollmentAccess.WRITE_ACCESS) {
             view.setSaveButtonVisible(visible = true)
         } else {
             view.setSaveButtonVisible(visible = false)
@@ -374,6 +377,10 @@ class EnrollmentPresenterImpl(
             biometricsUiModel = fields.firstOrNull {
                 it is BiometricsAttributeUiModelImpl
             }?.let { it as BiometricsAttributeUiModelImpl }
+
+            biometricsUiModel?.let {
+                showOrHideSaveButton()
+            }
 
             biometricsUiModel?.setBiometricsRegisterListener {
                 val orgUnit = enrollmentObjectRepository.get().blockingGet()
