@@ -36,7 +36,6 @@ import org.dhis2.usescases.biometrics.biometricAttributeId
 import org.dhis2.usescases.biometrics.containsAgeFilterAndIsUnderAgeThreshold
 import org.dhis2.usescases.biometrics.ui.SequentialSearch
 import org.dhis2.usescases.biometrics.ui.SequentialSearchAction
-import org.dhis2.usescases.biometrics.usecases.GetRelatedTEIUIdsByUid
 import org.dhis2.usescases.searchTrackEntity.listView.SearchResult
 import org.dhis2.usescases.searchTrackEntity.searchparameters.model.SearchParametersUiState
 import org.dhis2.usescases.searchTrackEntity.ui.UnableToSearchOutsideData
@@ -62,7 +61,6 @@ class SearchTEIViewModel(
     private val mapStyleConfig: MapStyleConfiguration,
     private val resourceManager: ResourceManager,
     private val displayNameProvider: DisplayNameProvider,
-    private val getRelatedTEIUidsByUid: GetRelatedTEIUIdsByUid,
     private val basicPreferenceProvider: BasicPreferenceProvider
 ) : ViewModel() {
 
@@ -502,7 +500,7 @@ class SearchTEIViewModel(
             }
 
             val queryDataContainsAgeUnderThreadsHold =
-                containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider,queryData, initialProgramUid ?: "")
+                containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider,queryData)
 
             val nextAction = if (previousSearch == null && !queryDataContainsAgeUnderThreadsHold ) {
                 SequentialSearchAction.SearchWithBiometrics
@@ -1096,30 +1094,6 @@ class SearchTEIViewModel(
     // EyeSeeTea customization
     fun getBiometricsSearchStatus(): Boolean {
         return presenter.biometricsSearchStatus
-    }
-
-    fun evaluateIfNewRequestIdRequired(results: List<SearchTeiModel>) {
-        // EyeSeeTea customization to remove (parent-child) confirm with Nacho -
-        // This not working well after upgrade to 3.0 nad how the client want's anymore I comment it
-        // and to remove in the future
-        /*     val hasBiometrics = searchRepository.programHasBiometrics().blockingSingle()
-
-             if (hasBiometrics && searchChildren && queryData.isNotEmpty() && results.isNotEmpty()) {
-                 val uIds = results.map { it.uid() }
-
-                 val childrenUIds = this.getRelatedTEIUidsByUid(results)
-
-                 if (childrenUIds.isNotEmpty()) {
-                     this.uIds.addAll(uIds + childrenUIds)
-                     searchChildren = false
-
-                     onSearch()
-                 } else {
-                     this.uIds.clear()
-                 }
-             } else {
-                 this.uIds.clear()
-             }*/
     }
 
     fun openSearchForm() {
