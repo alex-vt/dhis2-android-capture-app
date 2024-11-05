@@ -448,6 +448,7 @@ class TEICardMapper(
 
     // EyeSeeTea customization
     val firstNameAttrUid = "y1w2R6leVmh"
+    val middleNameAttrUid = "Rslz2y06aBf"
     val lastNameAttrUid = "eo3A0YXVBqr"
 
 
@@ -489,11 +490,16 @@ class TEICardMapper(
             val firsNameValue =
                 item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == firstNameAttrUid }
                     ?.value()
+
+            val middleNameValue =
+                item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == middleNameAttrUid }
+                    ?.value()
+
             val lastNameValue =
                 item.attributeValues.values.firstOrNull { it.trackedEntityAttribute() == lastNameAttrUid }
                     ?.value()
 
-            "$firsNameValue $lastNameValue"
+            "$firsNameValue $middleNameValue $lastNameValue"
         }
     }
 
