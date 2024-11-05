@@ -103,7 +103,7 @@ class TeiDashboardCardMapper(
 
             val middleNameValue =
                 item.trackedEntityAttributeValues.firstOrNull { it.trackedEntityAttribute() == middleNameAttrUid }
-                    ?.value()
+                    ?.value() ?: ""
             val lastNameValue =
                 item.trackedEntityAttributeValues.firstOrNull { it.trackedEntityAttribute() == lastNameAttrUid }
                     ?.value()
