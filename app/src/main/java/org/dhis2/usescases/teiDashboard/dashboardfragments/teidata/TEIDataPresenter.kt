@@ -32,12 +32,14 @@ import org.dhis2.commons.viewmodel.DispatcherProvider
 import org.dhis2.data.biometrics.RegisterResult
 import org.dhis2.data.biometrics.SimprintsItem
 import org.dhis2.data.biometrics.VerifyResult
+import org.dhis2.data.biometrics.getBiometricsConfig
 import org.dhis2.form.data.FormValueStore
 import org.dhis2.form.data.OptionsRepository
 import org.dhis2.form.data.RulesUtilsProviderImpl
 import org.dhis2.form.model.EventMode
 import org.dhis2.mobileProgramRules.RuleEngineHelper
 import org.dhis2.usescases.biometrics.biometricAttributeId
+import org.dhis2.usescases.biometrics.entities.BiometricsMode
 import org.dhis2.usescases.biometrics.duplicates.LastPossibleDuplicates
 import org.dhis2.usescases.biometrics.getAgeInMonthsByAttributes
 import org.dhis2.usescases.biometrics.getOrgUnitAsModuleId
@@ -121,6 +123,8 @@ class TEIDataPresenter(
     )
 
     private var lastPossibleDuplicates: LastPossibleDuplicates? = null
+
+    private val biometricsMode = getBiometricsConfig(basicPreferenceProvider).biometricsMode
 
     fun init() {
         programUid?.let {
@@ -664,6 +668,12 @@ class TEIDataPresenter(
     }
 
     fun getBiometricsModel(): TeiDashboardBioModel? {
+        return getBiometricsModelByDashboardModel(dashboardModel)
+    }
+
+    fun getBiometricsModelByDashboardModel(dashboardModel: DashboardEnrollmentModel?): TeiDashboardBioModel? {
+        if (biometricsMode == BiometricsMode.zero) return null
+
         val teiAttrValues = dashboardModel?.trackedEntityAttributeValues ?: listOf()
 
         val isUnderAgeThreshold =
@@ -673,6 +683,8 @@ class TEIDataPresenter(
             val bioValue = dashboardModel!!.getBiometricValue()
 
             if (bioValue.isNullOrBlank() || (lastRegisterResult != null)) {
+                if (biometricsMode == BiometricsMode.limited) return null
+
                 TeiDashboardBioRegistrationMapper(resourceManager).map(
                     lastRegisterResult
                 ) {

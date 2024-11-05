@@ -3,6 +3,7 @@ package org.dhis2.data.biometrics
 import org.dhis2.commons.biometrics.BiometricsPreference
 import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.usescases.biometrics.entities.BiometricsConfig
+import org.dhis2.usescases.biometrics.entities.BiometricsMode
 
 fun getBiometricsConfig(preferenceProvider: BasicPreferenceProvider): BiometricsConfig {
     val orgUnitGroup = preferenceProvider.getString(BiometricsPreference.ORG_UNIT_GROUP, "")
@@ -23,6 +24,10 @@ fun getBiometricsConfig(preferenceProvider: BasicPreferenceProvider): Biometrics
     val dateOfBirthAttribute =
         preferenceProvider.getString(BiometricsPreference.DATE_OF_BIRTH_ATTRIBUTE, "") ?:""
 
+    val biometricsMode =
+        preferenceProvider.getString(BiometricsPreference.BIOMETRICS_MODE, BiometricsMode.full.name)
+            ?: BiometricsMode.full.name
+
     return BiometricsConfig(
         orgUnitGroup,
         projectId,
@@ -34,6 +39,7 @@ fun getBiometricsConfig(preferenceProvider: BasicPreferenceProvider): Biometrics
         program,
         orgUnitLevelAsModuleId,
         ageThresholdMonths,
-        dateOfBirthAttribute
+        dateOfBirthAttribute,
+        BiometricsMode.valueOf(biometricsMode)
     )
 }

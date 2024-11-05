@@ -26,6 +26,7 @@ import org.dhis2.commons.network.NetworkUtils
 import org.dhis2.commons.prefs.BasicPreferenceProvider
 import org.dhis2.commons.resources.ResourceManager
 import org.dhis2.commons.viewmodel.DispatcherProvider
+import org.dhis2.data.biometrics.getBiometricsConfig
 import org.dhis2.data.search.SearchParametersModel
 import org.dhis2.form.model.FieldUiModelImpl
 import org.dhis2.form.ui.intent.FormIntent
@@ -34,6 +35,7 @@ import org.dhis2.maps.layer.basemaps.BaseMapStyle
 import org.dhis2.maps.usecases.MapStyleConfiguration
 import org.dhis2.usescases.biometrics.biometricAttributeId
 import org.dhis2.usescases.biometrics.containsAgeFilterAndIsUnderAgeThreshold
+import org.dhis2.usescases.biometrics.entities.BiometricsMode
 import org.dhis2.usescases.biometrics.ui.SequentialSearch
 import org.dhis2.usescases.biometrics.ui.SequentialSearchAction
 import org.dhis2.usescases.searchTrackEntity.listView.SearchResult
@@ -110,6 +112,8 @@ class SearchTEIViewModel(
 
     private var searchChildren: Boolean = false
     private val uIds = mutableListOf<String>()
+
+    private val biometricsMode = getBiometricsConfig(basicPreferenceProvider).biometricsMode
 
     init {
         viewModelScope.launch(dispatchers.io()) {
@@ -197,7 +201,8 @@ class SearchTEIViewModel(
                 ),
                 searchHelper = SearchHelper(
                     isOpened = false,
-                )
+                ),
+                biometricsMode
             )
         )
     }
@@ -232,7 +237,8 @@ class SearchTEIViewModel(
 
                 searchHelper = SearchHelper(
                     isOpened = false,
-                )
+                ),
+                BiometricsMode.zero
             ),
         )
     }
@@ -261,15 +267,16 @@ class SearchTEIViewModel(
                         ?.minAttributesRequiredToSearch()
                         ?: 1,
                     isForced = false,
-                    isOpened = false,
+                    isOpened = biometricsMode != BiometricsMode.full,
                 ),
                 searchFilters = SearchFilters(
                     hasActiveFilters = hasActiveFilters(),
                     isOpened = false,
                 ),
                 searchHelper = SearchHelper(
-                    isOpened = true,
-                )
+                    isOpened = biometricsMode == BiometricsMode.full,
+                ),
+                biometricsMode
             ),
         )
     }
@@ -500,13 +507,17 @@ class SearchTEIViewModel(
             }
 
             val queryDataContainsAgeUnderThreadsHold =
-                containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider,queryData)
+                containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider, queryData)
 
-            val nextAction = if (previousSearch == null && !queryDataContainsAgeUnderThreadsHold ) {
-                SequentialSearchAction.SearchWithBiometrics
-            } else {
-                SequentialSearchAction.RegisterNew
-            }
+
+            val nextAction =
+                if (previousSearch == null &&
+                    !queryDataContainsAgeUnderThreadsHold &&
+                    biometricsMode == BiometricsMode.full) {
+                    SequentialSearchAction.SearchWithBiometrics
+                } else {
+                    SequentialSearchAction.RegisterNew
+                }
 
             _sequentialSearch.postValue(
                 SequentialSearch.AttributeSearch(
@@ -1160,7 +1171,9 @@ class SearchTEIViewModel(
 
         val isFirstSearch = sequentialSearch.value!!.previousSearch == null
         val isBiometricsSearch = sequentialSearch.value is SequentialSearch.BiometricsSearch
-        val isAgeNotSupported = (sequentialSearch.value as? SequentialSearch.BiometricsSearch)?.isAgeNotSupported ?: false
+        val isAgeNotSupported =
+            (sequentialSearch.value as? SequentialSearch.BiometricsSearch)?.isAgeNotSupported
+                ?: false
 
         val message = if (isFirstSearch) {
             if (hasResults) {
@@ -1176,7 +1189,7 @@ class SearchTEIViewModel(
             if (hasResults) {
                 resourceManager.getString(R.string.patient_not_found_register_a_new_patient)
             } else {
-                if (isBiometricsSearch && isAgeNotSupported){
+                if (isBiometricsSearch && isAgeNotSupported) {
                     resourceManager.getString(R.string.biometrics_not_applicable_for_this_age_group_register_a_new_patient)
                 } else {
                     resourceManager.getString(R.string.results_not_found_register_a_new_patient)
