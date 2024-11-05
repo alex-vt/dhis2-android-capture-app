@@ -24,8 +24,9 @@ import timber.log.Timber
 
 sealed class RegisterResult {
     data class Completed(val guid: String) : RegisterResult()
-    data class PossibleDuplicates(val guids: List<String>, val sessionId: String) : RegisterResult()
+    data class PossibleDuplicates(val items: List<SimprintsItem>, val sessionId: String) : RegisterResult()
     data object Failure : RegisterResult()
+    data object RegisterLastFailure : RegisterResult()
     data object AgeGroupNotSupported : RegisterResult()
 
 }
@@ -151,9 +152,11 @@ class BiometricsClient(
         Timber.d("Result code: $resultCode")
 
         if (resultCode != Activity.RESULT_OK) {
-            return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
-                RegisterResult.AgeGroupNotSupported
-            else RegisterResult.Failure
+            return when (resultCode) {
+                Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED -> RegisterResult.AgeGroupNotSupported
+                Constants.SIMPRINTS_ENROLMENT_LAST_BIOMETRICS_FAILED -> RegisterResult.RegisterLastFailure
+                else -> RegisterResult.Failure
+            }
         }
 
         val biometricsCompleted = checkBiometricsCompleted(data)
@@ -172,11 +175,9 @@ class BiometricsClient(
         val handlePossibleDuplicates = {
             when (val identifyResponse = handleIdentifyResponse(resultCode, data)) {
                 is IdentifyResult.Completed -> {
-                    val guids = identifyResponse.items.map { it.guid }
-
-                    Timber.d("Possible duplicates: $guids")
+                    Timber.d("Possible duplicates: ${identifyResponse.items}")
                     RegisterResult.PossibleDuplicates(
-                        guids,
+                        identifyResponse.items,
                         identifyResponse.sessionId
                     )
                 }
@@ -186,11 +187,11 @@ class BiometricsClient(
                 }
 
                 is IdentifyResult.UserNotFound -> {
-                    val guids = listOf<String>()
+                    val items = listOf<SimprintsItem>()
 
                     Timber.d("Possible duplicates but IdentifyResult is UserNotFound")
                     RegisterResult.PossibleDuplicates(
-                        guids,
+                        items,
                         identifyResponse.sessionId
                     )
                 }
@@ -222,10 +223,10 @@ class BiometricsClient(
         }
     }
 
-    fun handleIdentifyResponse(resultCode: Int, data: Intent): IdentifyResult {
+    fun handleIdentifyResponse(resultCode: Int, data: Intent?): IdentifyResult {
         Timber.d("Result code: $resultCode")
 
-        if (resultCode != Activity.RESULT_OK) {
+        if (resultCode != Activity.RESULT_OK || data == null) {
             return if (resultCode == Constants.SIMPRINTS_AGE_GROUP_NOT_SUPPORTED)
                 IdentifyResult.AgeGroupNotSupported
             else IdentifyResult.Failure
