@@ -336,8 +336,6 @@ class SearchTEList : FragmentGlobalAbstract() {
                 it?.takeIf { view != null }?.collectLatest {
                     liveAdapter.addOnPagesUpdatedListener {
                         onInitDataLoaded()
-
-                        viewModel.evaluateIfNewRequestIdRequired(liveAdapter.snapshot().items)
                     }
 
                     val pagingData = it.map { searchResult ->

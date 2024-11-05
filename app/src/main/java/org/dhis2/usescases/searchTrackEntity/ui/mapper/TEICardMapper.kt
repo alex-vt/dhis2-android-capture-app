@@ -142,8 +142,7 @@ class TEICardMapper(
 
         val isUnderAgeThreshold = isUnderAgeThreshold(
             BasicPreferenceProviderImpl(context),
-            searchTEIModel.allAttributeValues.values.toList(),
-            searchTEIModel.selectedEnrollment.program() ?: ""
+            searchTEIModel.allAttributeValues.values.toList()
         )
 
         // EyeSeeTea customization
@@ -536,7 +535,6 @@ class TEICardMapper(
         val isUnderAgeThreshold = isUnderAgeThreshold(
             BasicPreferenceProviderImpl(context),
             searchTEIModel.allAttributeValues.values.toList(),
-            searchTEIModel.selectedEnrollment.program() ?: ""
         )
 
         return addAttrBiometricsEmojiIfRequired(attributeList, isUnderAgeThreshold).toMutableList()
