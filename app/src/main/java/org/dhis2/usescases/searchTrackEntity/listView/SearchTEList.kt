@@ -32,7 +32,7 @@ import org.dhis2.commons.filters.workingLists.WorkingListViewModel
 import org.dhis2.commons.filters.workingLists.WorkingListViewModelFactory
 import org.dhis2.commons.resources.ColorUtils
 import org.dhis2.databinding.FragmentSearchListBinding
-import org.dhis2.usescases.biometrics.ui.SequentialNextSearchAction
+import org.dhis2.usescases.biometrics.ui.SequentialNextSearchActions
 import org.dhis2.usescases.biometrics.ui.SequentialSearch
 import org.dhis2.usescases.general.FragmentGlobalAbstract
 import org.dhis2.usescases.searchTrackEntity.SearchTEActivity
@@ -431,10 +431,10 @@ class SearchTEList : FragmentGlobalAbstract() {
                     setMargins(0, 0, 0, bottomMargin)
                 }
 
-                if (sequentialSearch?.nextAction != null) {
-                    SequentialNextSearchAction(
-                        sequentialSearchAction = sequentialSearch?.nextAction!!,
-                        onClick = { viewModel.sequentialSearchNextAction() })
+                if (sequentialSearch?.nextActions?.isNotEmpty() == true) {
+                    SequentialNextSearchActions(
+                        sequentialSearchActions = sequentialSearch?.nextActions!!,
+                        onClick = { action ->  viewModel.sequentialSearchNextAction(action) })
                 }
             }
         }

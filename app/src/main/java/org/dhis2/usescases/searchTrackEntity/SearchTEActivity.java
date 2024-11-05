@@ -542,7 +542,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
 
     private void launchSearchFormIfRequired() {
         if (viewModel.getSequentialSearch().getValue() == null ||
-                viewModel.getSequentialSearch().getValue().getNextAction() == null) {
+                viewModel.getSequentialSearch().getValue().getNextActions().isEmpty()) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> viewModel.openSearchForm(), 100);
         }
     }

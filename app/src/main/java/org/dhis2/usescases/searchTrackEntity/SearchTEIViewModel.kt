@@ -134,10 +134,10 @@ class SearchTEIViewModel(
                 null -> null
             }
 
-            val nextAction = if (previousSearch == null) {
-                SequentialSearchAction.SearchWithAttributes
+            val nextActions = if (previousSearch == null) {
+                listOf(SequentialSearchAction.SearchWithAttributes)
             } else {
-                SequentialSearchAction.RegisterNew
+                listOf(SequentialSearchAction.RegisterNew)
             }
 
             _sequentialSearch.postValue(
@@ -146,7 +146,7 @@ class SearchTEIViewModel(
                     sessionId = sessionId,
                     isAgeNotSupported = ageNotSupported,
                     previousSearch = previousSearch,
-                    nextAction = nextAction
+                    nextActions = nextActions
                 )
             )
 
@@ -509,20 +509,25 @@ class SearchTEIViewModel(
 
             val queryDataContainsAgeUnderThreadsHold =
                 containsAgeFilterAndIsUnderAgeThreshold(basicPreferenceProvider, queryData)
+            containsAgeFilterAndIsUnderAgeThreshold(
+                basicPreferenceProvider,
+                queryData,
+            )
 
-
-            val nextAction =
-                if (previousSearch == null &&
-                    !queryDataContainsAgeUnderThreadsHold &&
-                    biometricsMode == BiometricsMode.full) {
-                    SequentialSearchAction.SearchWithBiometrics
-                } else {
+            val nextActions = if (previousSearch == null && !queryDataContainsAgeUnderThreadsHold &&
+                biometricsMode == BiometricsMode.full
+            ) {
+                listOf(
+                    SequentialSearchAction.SearchWithBiometrics,
                     SequentialSearchAction.RegisterNew
-                }
+                )
+            } else {
+                listOf(SequentialSearchAction.RegisterNew)
+            }
 
             _sequentialSearch.postValue(
                 SequentialSearch.AttributeSearch(
-                    previousSearch = previousSearch, nextAction = nextAction
+                    previousSearch = previousSearch, nextActions = nextActions
                 )
             )
         }
@@ -1157,10 +1162,8 @@ class SearchTEIViewModel(
         )
     }
 
-    fun sequentialSearchNextAction() {
-        if (sequentialSearch.value?.nextAction != null) {
-            onSearchHelperActionSelected(sequentialSearch.value!!.nextAction!!)
-        }
+    fun sequentialSearchNextAction(action: SequentialSearchAction) {
+        onSearchHelperActionSelected(action)
     }
 
     fun resetSequentialSearch() {
