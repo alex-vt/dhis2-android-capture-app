@@ -173,6 +173,13 @@ class SearchTEList : FragmentGlobalAbstract() {
                     }
                 }
             })
+            liveAdapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
+                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                    if (positionStart == 0) {
+                        scrollToPosition(0)
+                    }
+                }
+            })
         }.also {
             recycler = it
         }
