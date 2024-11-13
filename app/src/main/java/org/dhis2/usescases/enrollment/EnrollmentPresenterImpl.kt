@@ -482,4 +482,10 @@ class EnrollmentPresenterImpl(
 
         return attValue?.value()
     }
+
+    fun registerLastFailure() {
+        pendingSave = true
+
+        saveBiometricValue(null)
+    }
 }
