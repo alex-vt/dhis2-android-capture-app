@@ -145,9 +145,9 @@ class SearchTEIViewModel(
 
             _sequentialSearch.postValue(
                 SequentialSearch.BiometricsSearch(
-                    simprintsItems = simprintsItems,
                     sessionId = sessionId,
                     isAgeNotSupported = ageNotSupported,
+                    biometricUid = filterValue,
                     previousSearch = previousSearch,
                     nextActions = nextActions
                 )
@@ -532,7 +532,7 @@ class SearchTEIViewModel(
 
             _sequentialSearch.postValue(
                 SequentialSearch.AttributeSearch(
-                    previousSearch = previousSearch, nextActions = nextActions
+                    previousSearch = previousSearch, nextActions = nextActions, queryData = queryData.toMap()
                 )
             )
         }

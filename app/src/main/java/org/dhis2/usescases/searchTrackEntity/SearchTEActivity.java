@@ -2,6 +2,7 @@ package org.dhis2.usescases.searchTrackEntity;
 
 import static android.view.View.GONE;
 import static org.dhis2.commons.extensions.ViewExtensionsKt.closeKeyboard;
+import static org.dhis2.usescases.biometrics.ui.SequentialSearchKt.failedBiometricsSessionId;
 import static org.dhis2.usescases.biometrics.ui.confirmationDialog.BiometricsSearchConfirmationDialogKt.BIOMETRICS_SEARCH_CONFIRMATION_DIALOG_TAG;
 import static org.dhis2.usescases.searchTrackEntity.searchparameters.SearchParametersScreenKt.initSearchScreen;
 
@@ -229,6 +230,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                 } else {
                     presenter.onEnrollClick(new HashMap<>(viewModel.getQueryData()),
                             viewModel.getSequentialSearch().getValue());
+
 
                     viewModel.resetSequentialSearch();
                     viewModel.clearQueryData();
@@ -514,8 +516,7 @@ public class SearchTEActivity extends ActivityGlobalAbstract implements SearchTE
                     Toast.makeText(getContext(), R.string.age_group_not_supported,
                             Toast.LENGTH_SHORT).show();
 
-                    presenter.searchOnBiometrics(
-                            Collections.singletonList(new SimprintsItem(BIOMETRICS_USER_NOT_FOUND, 0)), "NA", true);
+                    simulateNotFoundBiometricsSearch(null);
                 }
                 break;
             }
