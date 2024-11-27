@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.dhis2.R
+import org.dhis2.form.extensions.IS_SEARCH_OUTSIDE_PROGRAM_AVAILABLE
 import org.dhis2.usescases.searchTrackEntity.listView.SearchResult
 
 @Composable
@@ -55,6 +56,7 @@ fun SearchResult(
         SearchResult.SearchResultType.SEARCH_OUTSIDE -> SearchOutsideProgram(
             resultText = stringResource(R.string.search_no_results_in_program),
             buttonText = stringResource(R.string.search_outside_action),
+            isButtonVisible = IS_SEARCH_OUTSIDE_PROGRAM_AVAILABLE,
             onSearchOutsideClick = onSearchOutsideClick,
         )
 
@@ -147,7 +149,12 @@ fun LoadingContent(loadingDescription: String) {
 }
 
 @Composable
-fun SearchOutsideProgram(resultText: String, buttonText: String, onSearchOutsideClick: () -> Unit) {
+fun SearchOutsideProgram(
+    resultText: String,
+    buttonText: String,
+    isButtonVisible: Boolean,
+    onSearchOutsideClick: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -163,21 +170,23 @@ fun SearchOutsideProgram(resultText: String, buttonText: String, onSearchOutside
                 fontFamily = FontFamily(Font(R.font.rubik_regular)),
             ),
         )
-        Spacer(modifier = Modifier.size(16.dp))
-        Button(
-            onClick = onSearchOutsideClick,
-            border = BorderStroke(1.dp, colorResource(id = R.color.colorPrimary)),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = colorResource(id = R.color.white),
-            ),
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_search),
-                contentDescription = "",
-                tint = colorResource(id = R.color.colorPrimary),
-            )
+        if (isButtonVisible) {
             Spacer(modifier = Modifier.size(16.dp))
-            Text(text = buttonText, color = colorResource(id = R.color.colorPrimary))
+            Button(
+                onClick = onSearchOutsideClick,
+                border = BorderStroke(1.dp, colorResource(id = R.color.colorPrimary)),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = colorResource(id = R.color.white),
+                ),
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_search),
+                    contentDescription = "",
+                    tint = colorResource(id = R.color.colorPrimary),
+                )
+                Spacer(modifier = Modifier.size(16.dp))
+                Text(text = buttonText, color = colorResource(id = R.color.colorPrimary))
+            }
         }
     }
 }
