@@ -3,10 +3,12 @@ package org.dhis2.usescases.searchTrackEntity.ui.mapper
 import android.content.Context
 import android.content.SharedPreferences
 import org.dhis2.R
+import org.dhis2.commons.biometrics.BiometricsPreference
 import org.dhis2.commons.data.SearchTeiModel
 import org.dhis2.commons.date.toDateSpan
 import org.dhis2.commons.date.toOverdueOrScheduledUiText
 import org.dhis2.commons.resources.ResourceManager
+import org.dhis2.commons.ui.model.ListCardUiModel
 import org.dhis2.usescases.teiDashboard.ui.mapper.firstNameAttrUid
 import org.dhis2.usescases.teiDashboard.ui.mapper.lastNameAttrUid
 import org.dhis2.usescases.teiDashboard.ui.mapper.middleNameAttrUid
@@ -25,7 +27,6 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.util.Date
-import org.dhis2.commons.biometrics.BiometricsPreference
 
 class TEICardMapperTest {
 
@@ -92,56 +93,56 @@ class TEICardMapperTest {
 
     @Test
     fun `should format confirmation dialog title correctly`() {
-        val attributeValues = linkedMapOf(
-            "First name" to createAttributeValue(firstNameAttrUid, "John"),
-            "Middle name" to createAttributeValue(middleNameAttrUid, "Peter"),
-            "Last name" to createAttributeValue(lastNameAttrUid, "Smith")
+        val attributeValues = createAttributeValuesMap(
+            firstName = "John",
+            middleName = "Peter",
+            lastName = "Smith",
         )
 
-        val model = SearchTeiModel().apply {
-            setAttributeValues(attributeValues)
-            attributeValues.forEach { (key, value) -> addToAllAttributes(key, value) }
-            tei = TrackedEntityInstance.builder()
-                .uid("TEIUid")
-                .lastUpdated(currentDate)
-                .aggregatedSyncState(State.SYNCED)
-                .build()
-        }
+        val result = createModelAndMapForConfirmation(attributeValues)
 
-        val result = mapper.mapForConfirmationDialog(model)
         assertEquals("John Peter Smith", result.title)
     }
 
     @Test
     fun `should handle empty values in confirmation dialog title`() {
-        val attributeValues = linkedMapOf(
-            "First name" to createAttributeValue(firstNameAttrUid, "John"),
-            "Middle name" to createAttributeValue(middleNameAttrUid, "-"),
-            "Last name" to createAttributeValue(lastNameAttrUid, "Smith")
+        val attributeValues = createAttributeValuesMap(
+            firstName = "John",
+            middleName = "-",
+            lastName = "Smith",
         )
 
-        val model = SearchTeiModel().apply {
-            setAttributeValues(attributeValues)
-            attributeValues.forEach { (key, value) -> addToAllAttributes(key, value) }
-            tei = TrackedEntityInstance.builder()
-                .uid("TEIUid")
-                .lastUpdated(currentDate)
-                .aggregatedSyncState(State.SYNCED)
-                .build()
-        }
+        val result = createModelAndMapForConfirmation(attributeValues)
 
-        val result = mapper.mapForConfirmationDialog(model)
         assertEquals("John Smith", result.title)
     }
 
     @Test
     fun `should return dash when all name values are empty`() {
-        val attributeValues = linkedMapOf(
-            "First name" to createAttributeValue(firstNameAttrUid, "-"),
-            "Middle name" to createAttributeValue(middleNameAttrUid, "-"),
-            "Last name" to createAttributeValue(lastNameAttrUid, "-")
+        val attributeValues = createAttributeValuesMap(
+            firstName = "-",
+            middleName = "-",
+            lastName = "-",
         )
 
+        val result = createModelAndMapForConfirmation(attributeValues)
+
+        assertEquals("-", result.title)
+    }
+
+    private fun createAttributeValuesMap(
+        firstName: String,
+        middleName: String,
+        lastName: String,
+    ): LinkedHashMap<String, TrackedEntityAttributeValue> = linkedMapOf(
+        "First name" to createAttributeValue(firstNameAttrUid, firstName),
+        "Middle name" to createAttributeValue(middleNameAttrUid, middleName),
+        "Last name" to createAttributeValue(lastNameAttrUid, lastName)
+    )
+
+    private fun createModelAndMapForConfirmation(
+        attributeValues: LinkedHashMap<String, TrackedEntityAttributeValue>,
+    ): ListCardUiModel {
         val model = SearchTeiModel().apply {
             setAttributeValues(attributeValues)
             attributeValues.forEach { (key, value) -> addToAllAttributes(key, value) }
@@ -151,9 +152,7 @@ class TEICardMapperTest {
                 .aggregatedSyncState(State.SYNCED)
                 .build()
         }
-
-        val result = mapper.mapForConfirmationDialog(model)
-        assertEquals("-", result.title)
+        return mapper.mapForConfirmationDialog(model)
     }
 
     private fun createAttributeValue(uid: String, value: String): TrackedEntityAttributeValue {
