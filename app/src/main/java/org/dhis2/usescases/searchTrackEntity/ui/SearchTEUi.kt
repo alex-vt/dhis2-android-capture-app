@@ -56,7 +56,6 @@ import org.dhis2.commons.filters.workingLists.WorkingListChipGroup
 import org.dhis2.commons.filters.workingLists.WorkingListViewModel
 import org.dhis2.commons.resources.ColorType
 import org.dhis2.commons.resources.ColorUtils
-import org.dhis2.form.extensions.IS_SEARCH_OUTSIDE_PROGRAM_AVAILABLE
 import org.dhis2.usescases.searchTrackEntity.listView.SearchResult
 import org.hisp.dhis.mobile.ui.designsystem.component.ExtendedFAB
 import org.hisp.dhis.mobile.ui.designsystem.component.FAB
@@ -80,7 +79,6 @@ fun SearchResultUi(searchResult: SearchResult, onSearchOutsideClick: () -> Unit)
             resultText = stringResource(R.string.search_no_results_in_program)
                 .format(searchResult.extraData!!),
             buttonText = stringResource(R.string.search_outside_action),
-            isButtonVisible = IS_SEARCH_OUTSIDE_PROGRAM_AVAILABLE,
             onSearchOutsideClick = onSearchOutsideClick,
         )
 
@@ -351,12 +349,7 @@ fun LoadingContent(loadingDescription: String) {
 }
 
 @Composable
-fun SearchOutsideProgram(
-    resultText: String,
-    buttonText: String,
-    isButtonVisible: Boolean,
-    onSearchOutsideClick: () -> Unit,
-) {
+fun SearchOutsideProgram(resultText: String, buttonText: String, onSearchOutsideClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -372,44 +365,42 @@ fun SearchOutsideProgram(
                 fontFamily = FontFamily(Font(R.font.rubik_regular)),
             ),
         )
-        if (isButtonVisible) {
+        Spacer(modifier = Modifier.size(16.dp))
+        Button(
+            onClick = onSearchOutsideClick,
+            border = BorderStroke(
+                1.dp,
+                Color(
+                    ColorUtils().getPrimaryColor(
+                        LocalContext.current,
+                        ColorType.PRIMARY,
+                    ),
+                ),
+            ),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = colorResource(id = R.color.white),
+            ),
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "",
+                tint = Color(
+                    ColorUtils().getPrimaryColor(
+                        LocalContext.current,
+                        ColorType.PRIMARY,
+                    ),
+                ),
+            )
             Spacer(modifier = Modifier.size(16.dp))
-            Button(
-                onClick = onSearchOutsideClick,
-                border = BorderStroke(
-                    1.dp,
-                    Color(
-                        ColorUtils().getPrimaryColor(
-                            LocalContext.current,
-                            ColorType.PRIMARY,
-                        ),
+            Text(
+                text = buttonText,
+                color = Color(
+                    ColorUtils().getPrimaryColor(
+                        LocalContext.current,
+                        ColorType.PRIMARY,
                     ),
                 ),
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = colorResource(id = R.color.white),
-                ),
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_search),
-                    contentDescription = "",
-                    tint = Color(
-                        ColorUtils().getPrimaryColor(
-                            LocalContext.current,
-                            ColorType.PRIMARY,
-                        ),
-                    ),
-                )
-                Spacer(modifier = Modifier.size(16.dp))
-                Text(
-                    text = buttonText,
-                    color = Color(
-                        ColorUtils().getPrimaryColor(
-                            LocalContext.current,
-                            ColorType.PRIMARY,
-                        ),
-                    ),
-                )
-            }
+            )
         }
     }
 }
