@@ -307,6 +307,14 @@ class SearchTEList : FragmentGlobalAbstract() {
                 displayResult(null)
             }
         }
+
+        scrollToTopOnSequentialSearch()
+    }
+
+    private fun scrollToTopOnSequentialSearch() {
+        viewModel.sequentialSearch.observe(viewLifecycleOwner) {
+            recycler.scrollToPosition(0)
+        }
     }
 
     private fun updateRecycler() {
@@ -335,15 +343,8 @@ class SearchTEList : FragmentGlobalAbstract() {
         displayResult(null)
     }
 
-    private var previousSequentialSearch: SequentialSearch? = null
-
     private fun initData() {
         displayLoadingData()
-
-        if (viewModel.sequentialSearch.value != previousSequentialSearch) {
-            recycler.scrollToPosition(0)
-        }
-        previousSequentialSearch = viewModel.sequentialSearch.value
 
         viewModel.fetchListResults {
 
